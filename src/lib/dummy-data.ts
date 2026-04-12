@@ -1,4 +1,5 @@
 import { Task, Habit, Goal, Note, FocusSession } from './types';
+import { getTasks, setTasks, getHabits, setHabits, getGoals, setGoals, getNotes, setNotes, getFocusSessions, setFocusSessions } from './store';
 
 const today = new Date().toISOString().split('T')[0];
 const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -42,7 +43,6 @@ export const dummyFocusSessions: FocusSession[] = [
 ];
 
 export function seedDummyData() {
-  const { getTasks, setTasks, getHabits, setHabits, getGoals, setGoals, getNotes, setNotes, getFocusSessions, setFocusSessions } = require('./store');
   if (getTasks().length === 0) setTasks(dummyTasks);
   if (getHabits().length === 0) setHabits(dummyHabits);
   if (getGoals().length === 0) setGoals(dummyGoals);
