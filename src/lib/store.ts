@@ -43,7 +43,12 @@ export const getHabits = () => get<Habit[]>(STORAGE_KEYS.habits, []);
 export const setHabits = (h: Habit[]) => set(STORAGE_KEYS.habits, h);
 
 // Goals
-export const getGoals = () => get<Goal[]>(STORAGE_KEYS.goals, []);
+export const getGoals = () => get<Goal[]>(STORAGE_KEYS.goals, []).map(g => ({
+  ...g,
+  linkedTaskIds: g.linkedTaskIds ?? [],
+  linkedHabitIds: g.linkedHabitIds ?? [],
+  linkedNoteIds: g.linkedNoteIds ?? [],
+}));
 export const setGoals = (g: Goal[]) => set(STORAGE_KEYS.goals, g);
 
 // Notes
