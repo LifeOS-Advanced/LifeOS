@@ -2,6 +2,8 @@ export type LifestyleMode = 'student' | 'freelancer' | 'employee' | 'creator' | 
 
 export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus';
 
+export type LifeArea = 'work' | 'study' | 'health' | 'money' | 'personal' | 'family' | 'faith' | 'projects';
+
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
 
@@ -14,6 +16,7 @@ export interface Task {
   dueDate?: string;
   tags: string[];
   goalId?: string;
+  lifeArea?: LifeArea;
   createdAt: string;
 }
 
@@ -25,6 +28,7 @@ export interface Habit {
   streak: number;
   completedDates: string[];
   goalId?: string;
+  lifeArea?: LifeArea;
   createdAt: string;
 }
 
@@ -37,6 +41,8 @@ export interface Goal {
   milestones: Milestone[];
   linkedTaskIds: string[];
   linkedHabitIds: string[];
+  linkedNoteIds: string[];
+  lifeArea?: LifeArea;
   createdAt: string;
 }
 
@@ -52,6 +58,9 @@ export interface Note {
   content: string;
   tags: string[];
   pinned: boolean;
+  taskId?: string;
+  goalId?: string;
+  lifeArea?: LifeArea;
   createdAt: string;
   updatedAt: string;
 }
@@ -62,6 +71,7 @@ export interface FocusSession {
   duration: number; // minutes
   completedAt: string;
   distractionNotes?: string;
+  taskId?: string;
 }
 
 export interface UserProfile {
