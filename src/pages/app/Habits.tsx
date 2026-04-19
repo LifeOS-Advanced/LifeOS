@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
+import { EmptyState } from '@/components/app/EmptyState';
+import { useNewParam } from '@/hooks/use-new-param';
 
 export default function Habits() {
   const goals = getGoals();
