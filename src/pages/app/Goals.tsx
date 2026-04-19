@@ -1,26 +1,43 @@
 import { useState } from 'react';
-import { getGoals, setGoals, getTasks, getHabits } from '@/lib/store';
-import { Goal, Milestone } from '@/lib/types';
+import { getGoals, setGoals, getTasks, getHabits, getNotes } from '@/lib/store';
+import { Goal, LifeArea } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Target, CheckCircle2, Circle, Link2 } from 'lucide-react';
+import { Plus, Target, CheckCircle2, Circle, CheckSquare, Zap, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
+import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
+import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 
 export default function Goals() {
   const [goals, setLocalGoals] = useState(getGoals());
   const tasks = getTasks();
   const habits = getHabits();
+  const notes = getNotes();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', targetDate: '' });
+  const [areaFilter, setAreaFilter] = useState<LifeArea | 'all'>('all');
+  const [form, setForm] = useState<{ title: string; description: string; targetDate: string; lifeArea?: LifeArea }>({ title: '', description: '', targetDate: '' });
 
   const save = (updated: Goal[]) => { setLocalGoals(updated); setGoals(updated); };
 
   const createGoal = () => {
     if (!form.title.trim()) return;
-    const newGoal: Goal = { id: `g${Date.now()}`, title: form.title, description: form.description, targetDate: form.targetDate, progress: 0, milestones: [], linkedTaskIds: [], linkedHabitIds: [], createdAt: new Date().toISOString() };
+    const newGoal: Goal = {
+      id: `g${Date.now()}`,
+      title: form.title,
+      description: form.description,
+      targetDate: form.targetDate,
+      progress: 0,
+      milestones: [],
+      linkedTaskIds: [],
+      linkedHabitIds: [],
+      linkedNoteIds: [],
+      lifeArea: form.lifeArea,
+      createdAt: new Date().toISOString(),
+    };
     save([newGoal, ...goals]);
     setForm({ title: '', description: '', targetDate: '' });
     setDialogOpen(false);
@@ -40,6 +57,8 @@ export default function Goals() {
     save(goals.map(g => g.id === goalId ? { ...g, milestones: [...g.milestones, { id: `m${Date.now()}`, title, completed: false }] } : g));
   };
 
+  const visible = goals.filter(g => areaFilter === 'all' || g.lifeArea === areaFilter);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -54,8 +73,9 @@ export default function Goals() {
           <DialogContent>
             <DialogHeader><DialogTitle>Create Goal</DialogTitle></DialogHeader>
             <div className="space-y-4 mt-2">
-              <div><Label>Title</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Launch personal brand" /></div>
+              <div><Label>Title</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Get fit in 90 days" /></div>
               <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What do you want to achieve?" /></div>
+              <div><Label>Life Area</Label><LifeAreaSelect value={form.lifeArea} onChange={v => setForm({ ...form, lifeArea: v })} /></div>
               <div><Label>Target Date</Label><Input type="date" value={form.targetDate} onChange={e => setForm({ ...form, targetDate: e.target.value })} /></div>
               <Button onClick={createGoal} className="w-full gradient-primary text-primary-foreground">Create Goal</Button>
             </div>
@@ -63,16 +83,19 @@ export default function Goals() {
         </Dialog>
       </div>
 
-      {goals.length === 0 ? (
+      <LifeAreaFilter value={areaFilter} onChange={setAreaFilter} />
+
+      {visible.length === 0 ? (
         <div className="rounded-xl border border-border bg-card shadow-card text-center py-16">
           <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No goals yet. Set your first goal!</p>
+          <p className="text-muted-foreground">No goals here yet.</p>
         </div>
       ) : (
         <div className="space-y-6">
-          {goals.map((goal, i) => {
-            const linkedTasks = tasks.filter(t => goal.linkedTaskIds.includes(t.id));
-            const linkedHabits = habits.filter(h => goal.linkedHabitIds.includes(h.id));
+          {visible.map((goal, i) => {
+            const linkedTasks = tasks.filter(t => goal.linkedTaskIds.includes(t.id) || t.goalId === goal.id);
+            const linkedHabits = habits.filter(h => goal.linkedHabitIds.includes(h.id) || h.goalId === goal.id);
+            const linkedNotes = notes.filter(n => goal.linkedNoteIds.includes(n.id) || n.goalId === goal.id);
 
             return (
               <motion.div
@@ -80,15 +103,18 @@ export default function Goals() {
                 className="rounded-xl border border-border bg-card shadow-card overflow-hidden"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.08 }}
               >
                 <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-foreground">{goal.title}</h3>
+                  <div className="flex items-start justify-between mb-4 gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="text-lg font-bold text-foreground">{goal.title}</h3>
+                        <LifeAreaBadge area={goal.lifeArea} />
+                      </div>
                       {goal.description && <p className="text-sm text-muted-foreground mt-1">{goal.description}</p>}
                     </div>
-                    {goal.targetDate && <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">{goal.targetDate}</span>}
+                    {goal.targetDate && <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full whitespace-nowrap">{goal.targetDate}</span>}
                   </div>
 
                   <div className="mb-4">
@@ -101,10 +127,9 @@ export default function Goals() {
                     </div>
                   </div>
 
-                  {/* Milestones */}
                   {goal.milestones.length > 0 && (
-                    <div className="space-y-2 mb-4">
-                      <h4 className="text-sm font-semibold text-foreground">Milestones</h4>
+                    <div className="space-y-1 mb-4">
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Milestones</h4>
                       {goal.milestones.map(m => (
                         <button key={m.id} onClick={() => toggleMilestone(goal.id, m.id)} className="flex items-center gap-2 w-full text-left py-1 hover:bg-secondary/50 rounded px-2 transition-colors">
                           {m.completed ? <CheckCircle2 className="h-4 w-4 text-success shrink-0" /> : <Circle className="h-4 w-4 text-border shrink-0" />}
@@ -114,8 +139,7 @@ export default function Goals() {
                     </div>
                   )}
 
-                  {/* Add Milestone */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mb-4">
                     <Input
                       placeholder="Add milestone..."
                       className="text-sm"
@@ -128,13 +152,13 @@ export default function Goals() {
                     />
                   </div>
 
-                  {/* Linked items */}
-                  {(linkedTasks.length > 0 || linkedHabits.length > 0) && (
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Link2 className="h-3 w-3" />
-                        {linkedTasks.length > 0 && <span>{linkedTasks.length} linked task{linkedTasks.length !== 1 && 's'}</span>}
-                        {linkedHabits.length > 0 && <span>· {linkedHabits.length} linked habit{linkedHabits.length !== 1 && 's'}</span>}
+                  {(linkedTasks.length > 0 || linkedHabits.length > 0 || linkedNotes.length > 0) && (
+                    <div className="pt-4 border-t border-border space-y-3">
+                      <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Connected to this goal</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <LinkedGroup icon={CheckSquare} label="Tasks" items={linkedTasks.map(x => x.title)} accent="text-primary" />
+                        <LinkedGroup icon={Zap} label="Habits" items={linkedHabits.map(x => x.title)} accent="text-accent" />
+                        <LinkedGroup icon={BookOpen} label="Notes" items={linkedNotes.map(x => x.title)} accent="text-info" />
                       </div>
                     </div>
                   )}
@@ -143,6 +167,25 @@ export default function Goals() {
             );
           })}
         </div>
+      )}
+    </div>
+  );
+}
+
+function LinkedGroup({ icon: Icon, label, items, accent }: { icon: any; label: string; items: string[]; accent: string }) {
+  return (
+    <div className="rounded-lg bg-secondary/40 p-3">
+      <div className={`flex items-center gap-1.5 text-xs font-semibold mb-2 ${accent}`}>
+        <Icon className="h-3.5 w-3.5" />
+        {label} ({items.length})
+      </div>
+      {items.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic">None linked</p>
+      ) : (
+        <ul className="space-y-1">
+          {items.slice(0, 3).map(t => <li key={t} className="text-xs text-foreground truncate">· {t}</li>)}
+          {items.length > 3 && <li className="text-xs text-muted-foreground">+{items.length - 3} more</li>}
+        </ul>
       )}
     </div>
   );
