@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, LayoutGrid, List, Trash2, Edit2, Target } from 'lucide-react';
+import { Plus, Search, LayoutGrid, List, Trash2, Edit2, Target, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
+import { EmptyState } from '@/components/app/EmptyState';
+import { useNewParam } from '@/hooks/use-new-param';
 
 export default function Tasks() {
   const goals = getGoals();
@@ -23,6 +25,8 @@ export default function Tasks() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [form, setForm] = useState<{ title: string; description: string; priority: TaskPriority; status: TaskStatus; dueDate: string; tags: string; goalId?: string; lifeArea?: LifeArea }>({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '' });
+
+  useNewParam(() => setDialogOpen(true));
 
   const save = (updated: Task[]) => { setLocalTasks(updated); setTasks(updated); };
 
@@ -150,10 +154,19 @@ export default function Tasks() {
         </div>
       </div>
 
-      {viewMode === 'list' ? (
+      {tasks.length === 0 ? (
+        <EmptyState
+          icon={CheckSquare}
+          title="No tasks yet"
+          description="Add your first task and turn chaos into something slightly less embarrassing."
+          ctaLabel="Create Task"
+          onCta={() => setDialogOpen(true)}
+          tip="Press ⌘K anywhere to quickly add a task."
+        />
+      ) : viewMode === 'list' ? (
         <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">No tasks found.</div>
+            <div className="text-center py-12 text-muted-foreground">No tasks match your filters.</div>
           ) : filtered.map(task => (
             <motion.div key={task.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-border last:border-0 hover:bg-secondary/30 transition-colors group" layout>
               <button onClick={() => updateStatus(task.id, task.status === 'done' ? 'todo' : task.status === 'todo' ? 'in-progress' : 'done')} className={`h-5 w-5 rounded-full border-2 shrink-0 transition-colors ${task.status === 'done' ? 'border-success bg-success' : 'border-border hover:border-primary'}`} />

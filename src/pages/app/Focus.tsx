@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Timer, Play, Pause, RotateCcw, Clock, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { EmptyState } from '@/components/app/EmptyState';
 
 export default function Focus() {
   const tasks = getTasks();
@@ -130,10 +131,12 @@ export default function Focus() {
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2"><Clock className="h-4 w-4" />Recent Sessions</h2>
         {sessions.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card shadow-card text-center py-12">
-            <Timer className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No focus sessions yet. Start your first one!</p>
-          </div>
+          <EmptyState
+            icon={Timer}
+            title="No focus sessions yet"
+            description="Pick a task, hit start, and let the timer hold you accountable."
+            tip="25-minute sessions are a great default — try one now."
+          />
         ) : (
           <div className="space-y-2">
             {sessions.slice(0, 10).map(session => {
