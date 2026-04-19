@@ -19,12 +19,16 @@ export default function Dashboard() {
   const completedToday = tasks.filter(t => t.status === 'done').length;
   const todaySessions = sessions.filter(s => s.completedAt === today);
 
-  const stats = [
-    { label: 'Tasks done', value: completedToday, icon: CheckSquare, color: 'text-primary' },
-    { label: 'Active habits', value: habits.length, icon: Zap, color: 'text-accent' },
-    { label: 'Goals in progress', value: goals.length, icon: Target, color: 'text-warning' },
-    { label: 'Focus sessions', value: todaySessions.length, icon: Timer, color: 'text-success' },
+  const baseStats = [
+    { key: 'tasks', label: 'Tasks done', value: completedToday, icon: CheckSquare, color: 'text-primary' },
+    { key: 'habits', label: 'Active habits', value: habits.length, icon: Zap, color: 'text-accent' },
+    { key: 'goals', label: 'Goals in progress', value: goals.length, icon: Target, color: 'text-warning' },
+    { key: 'focus', label: 'Focus sessions', value: todaySessions.length, icon: Timer, color: 'text-success' },
   ];
+  const priority = profile?.dashboardPriority;
+  const stats = priority
+    ? [...baseStats].sort((a, b) => (a.key === priority ? -1 : b.key === priority ? 1 : 0))
+    : baseStats;
 
   // Featured "connected goal" — pick the one with the most linked items
   const connectedGoal = [...goals].sort((a, b) => {
