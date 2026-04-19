@@ -1,7 +1,8 @@
 import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { setAuthenticated } from '@/lib/store';
+import { setAuthenticated, getProfile } from '@/lib/store';
+import { ModuleKey } from '@/lib/types';
 import {
   Sidebar,
   SidebarContent,
@@ -14,14 +15,15 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const items = [
-  { title: 'Dashboard', url: '/app', icon: LayoutDashboard },
-  { title: 'Tasks', url: '/app/tasks', icon: CheckSquare },
-  { title: 'Habits', url: '/app/habits', icon: Zap },
-  { title: 'Goals', url: '/app/goals', icon: Target },
-  { title: 'Notes', url: '/app/notes', icon: BookOpen },
-  { title: 'Focus', url: '/app/focus', icon: Timer },
-];
+const moduleItems: Record<ModuleKey, { title: string; url: string; icon: typeof CheckSquare }> = {
+  tasks: { title: 'Tasks', url: '/app/tasks', icon: CheckSquare },
+  habits: { title: 'Habits', url: '/app/habits', icon: Zap },
+  goals: { title: 'Goals', url: '/app/goals', icon: Target },
+  notes: { title: 'Notes', url: '/app/notes', icon: BookOpen },
+  focus: { title: 'Focus', url: '/app/focus', icon: Timer },
+};
+
+const dashboardItem = { title: 'Dashboard', url: '/app', icon: LayoutDashboard };
 
 export function AppSidebar() {
   const { state } = useSidebar();
