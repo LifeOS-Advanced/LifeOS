@@ -30,6 +30,9 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const location = useLocation();
   const navigate = useNavigate();
+  const profile = getProfile();
+  const enabled = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[]);
+  const items = [dashboardItem, ...enabled.map(k => moduleItems[k]).filter(Boolean)];
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
