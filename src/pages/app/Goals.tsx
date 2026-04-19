@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
+import { EmptyState } from '@/components/app/EmptyState';
+import { useNewParam } from '@/hooks/use-new-param';
 
 export default function Goals() {
   const [goals, setLocalGoals] = useState(getGoals());
@@ -20,6 +22,8 @@ export default function Goals() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [areaFilter, setAreaFilter] = useState<LifeArea | 'all'>('all');
   const [form, setForm] = useState<{ title: string; description: string; targetDate: string; lifeArea?: LifeArea }>({ title: '', description: '', targetDate: '' });
+
+  useNewParam(() => setDialogOpen(true));
 
   const save = (updated: Goal[]) => { setLocalGoals(updated); setGoals(updated); };
 
@@ -85,10 +89,19 @@ export default function Goals() {
 
       <LifeAreaFilter value={areaFilter} onChange={setAreaFilter} />
 
-      {visible.length === 0 ? (
+      {goals.length === 0 ? (
+        <EmptyState
+          icon={Target}
+          title="No goals yet"
+          description="Goals turn vague wishes into actual plans. Define one and start aiming."
+          ctaLabel="Create Goal"
+          onCta={() => setDialogOpen(true)}
+          tip="Link tasks and habits to a goal so progress feels real."
+        />
+      ) : visible.length === 0 ? (
         <div className="rounded-xl border border-border bg-card shadow-card text-center py-16">
           <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No goals here yet.</p>
+          <p className="text-muted-foreground">No goals in this life area yet.</p>
         </div>
       ) : (
         <div className="space-y-6">

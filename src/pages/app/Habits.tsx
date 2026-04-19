@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
+import { EmptyState } from '@/components/app/EmptyState';
+import { useNewParam } from '@/hooks/use-new-param';
 
 export default function Habits() {
   const goals = getGoals();
@@ -19,6 +21,8 @@ export default function Habits() {
   const [areaFilter, setAreaFilter] = useState<LifeArea | 'all'>('all');
   const [form, setForm] = useState<{ title: string; description: string; frequency: 'daily' | 'weekly'; lifeArea?: LifeArea; goalId?: string }>({ title: '', description: '', frequency: 'daily' });
   const today = new Date().toISOString().split('T')[0];
+
+  useNewParam(() => setDialogOpen(true));
 
   const save = (updated: Habit[]) => { setLocalHabits(updated); setHabits(updated); };
 
@@ -91,10 +95,19 @@ export default function Habits() {
       <LifeAreaFilter value={areaFilter} onChange={setAreaFilter} />
 
       <div className="space-y-4">
-        {visible.length === 0 ? (
+        {habits.length === 0 ? (
+          <EmptyState
+            icon={Zap}
+            title="No habits yet"
+            description="Tiny daily reps compound into who you become. Pick one habit to start."
+            ctaLabel="Create Habit"
+            onCta={() => setDialogOpen(true)}
+            tip="Start absurdly small — 2 minutes a day beats 'someday'."
+          />
+        ) : visible.length === 0 ? (
           <div className="rounded-xl border border-border bg-card shadow-card text-center py-16">
             <Zap className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No habits here yet. Start building your routine!</p>
+            <p className="text-muted-foreground">No habits in this life area yet.</p>
           </div>
         ) : visible.map((habit, i) => {
           const goal = goals.find(g => g.id === habit.goalId);

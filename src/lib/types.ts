@@ -2,6 +2,9 @@ export type LifestyleMode = 'student' | 'freelancer' | 'employee' | 'creator' | 
 
 export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus';
 
+export type ImprovementArea = 'discipline' | 'studying' | 'productivity' | 'health' | 'money' | 'focus';
+export type DayIntensity = 'light' | 'moderate' | 'intense';
+
 export type LifeArea = 'work' | 'study' | 'health' | 'money' | 'personal' | 'family' | 'faith' | 'projects';
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
@@ -80,4 +83,7 @@ export interface UserProfile {
   lifestyleMode: LifestyleMode;
   enabledModules: ModuleKey[];
   theme: 'light' | 'dark' | 'system';
+  improvementFocus?: ImprovementArea[];
+  dayIntensity?: DayIntensity;
+  dashboardPriority?: ModuleKey;
 }

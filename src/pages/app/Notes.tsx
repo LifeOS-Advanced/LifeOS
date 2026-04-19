@@ -12,6 +12,8 @@ import { motion } from 'framer-motion';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
+import { EmptyState } from '@/components/app/EmptyState';
+import { useNewParam } from '@/hooks/use-new-param';
 
 export default function Notes() {
   const tasks = getTasks();
@@ -22,6 +24,8 @@ export default function Notes() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [form, setForm] = useState<{ title: string; content: string; tags: string; lifeArea?: LifeArea; taskId?: string; goalId?: string }>({ title: '', content: '', tags: '' });
+
+  useNewParam(() => setDialogOpen(true));
 
   const save = (updated: Note[]) => { setLocalNotes(updated); setNotes(updated); };
 
@@ -112,10 +116,19 @@ export default function Notes() {
         <Input className="pl-10" placeholder="Search notes..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      {filtered.length === 0 ? (
+      {notes.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="No notes yet"
+          description="Your future self will thank you for writing things down. Capture one thought."
+          ctaLabel="Create Note"
+          onCta={() => setDialogOpen(true)}
+          tip="Pin notes you reference often — they stay at the top."
+        />
+      ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border bg-card shadow-card text-center py-16">
           <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No notes here yet.</p>
+          <p className="text-muted-foreground">No notes match your search.</p>
         </div>
       ) : (
         <>

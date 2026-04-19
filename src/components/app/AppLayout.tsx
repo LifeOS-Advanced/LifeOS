@@ -1,10 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
+import { CommandBar, useCommandBar } from './CommandBar';
 import { getProfile } from '@/lib/store';
+import { Search } from 'lucide-react';
 
 export function AppLayout() {
   const profile = getProfile();
+  const { open, setOpen } = useCommandBar();
 
   return (
     <SidebarProvider>
@@ -16,6 +19,14 @@ export function AppLayout() {
               <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setOpen(true)}
+                className="hidden sm:inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+              >
+                <Search className="h-3.5 w-3.5" />
+                <span>Search…</span>
+                <kbd className="ml-3 rounded bg-secondary px-1.5 py-0.5 text-[10px] font-mono">⌘K</kbd>
+              </button>
               <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-semibold">
                 {(profile?.name || 'U').charAt(0).toUpperCase()}
               </div>
@@ -25,6 +36,7 @@ export function AppLayout() {
             <Outlet />
           </main>
         </div>
+        <CommandBar open={open} onOpenChange={setOpen} />
       </div>
     </SidebarProvider>
   );
