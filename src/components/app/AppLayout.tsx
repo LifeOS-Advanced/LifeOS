@@ -2,6 +2,8 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { CommandBar, useCommandBar } from './CommandBar';
+import { DailyCheckInModal } from './DailyCheckIn';
+import { WeeklyReviewPrompt } from './WeeklyReviewPrompt';
 import { getProfile } from '@/lib/store';
 import { Search } from 'lucide-react';
 
@@ -37,6 +39,8 @@ export function AppLayout() {
           </main>
         </div>
         <CommandBar open={open} onOpenChange={setOpen} />
+        <DailyCheckInModal />
+        <WeeklyReviewPrompt />
       </div>
     </SidebarProvider>
   );

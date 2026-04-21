@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/command';
 import {
   CheckSquare, Zap, Target, BookOpen, Timer, LayoutDashboard, Settings,
-  Plus, Sun, Moon, Search,
+  Plus, Sun, Moon, Search, Sparkles,
 } from 'lucide-react';
 import { searchAll, SearchResult } from '@/lib/search';
 import { getProfile, setProfile } from '@/lib/store';
@@ -100,6 +100,9 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
           <CommandItem onSelect={() => go('/app/focus')}>
             <Timer className="mr-2 h-4 w-4" />Start focus session
           </CommandItem>
+          <CommandItem onSelect={() => go('/app/review')}>
+            <Sparkles className="mr-2 h-4 w-4" />Open weekly review
+          </CommandItem>
           <CommandItem onSelect={() => run(toggleTheme)}>
             <Sun className="mr-2 h-4 w-4 dark:hidden" />
             <Moon className="mr-2 h-4 w-4 hidden dark:inline" />
@@ -116,6 +119,7 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
           <CommandItem onSelect={() => go('/app/goals')}><Target className="mr-2 h-4 w-4" />Goals</CommandItem>
           <CommandItem onSelect={() => go('/app/notes')}><BookOpen className="mr-2 h-4 w-4" />Notes</CommandItem>
           <CommandItem onSelect={() => go('/app/focus')}><Timer className="mr-2 h-4 w-4" />Focus</CommandItem>
+          <CommandItem onSelect={() => go('/app/review')}><Sparkles className="mr-2 h-4 w-4" />Weekly review</CommandItem>
           <CommandItem onSelect={() => go('/app/settings')}><Settings className="mr-2 h-4 w-4" />Settings</CommandItem>
         </CommandGroup>
       </CommandList>
