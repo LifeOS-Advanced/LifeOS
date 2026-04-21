@@ -31,8 +31,15 @@
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
+    --border-subtle: 220 13% 94%;
     --input: 220 13% 91%;
     --ring: 234 89% 64%;
+
+    /* Surfaces — for visual hierarchy */
+    --surface: 0 0% 100%;
+    --surface-elevated: 0 0% 100%;
+    --surface-sunken: 220 14% 96%;
+    --text-secondary: 220 9% 46%;
 
     --radius: 0.75rem;
 
@@ -57,11 +64,18 @@
     --gradient-warm: linear-gradient(135deg, hsl(38 92% 50%), hsl(12 76% 61%));
     --gradient-hero: linear-gradient(135deg, hsl(220 20% 97%) 0%, hsl(234 89% 64% / 0.05) 50%, hsl(262 83% 58% / 0.08) 100%);
 
+    /* Elevation scale */
     --shadow-sm: 0 1px 2px hsl(220 13% 91% / 0.5);
     --shadow-md: 0 4px 12px hsl(220 13% 91% / 0.4);
     --shadow-lg: 0 10px 30px hsl(220 13% 91% / 0.5);
     --shadow-xl: 0 20px 50px hsl(220 13% 91% / 0.6);
     --shadow-glow: 0 0 30px hsl(234 89% 64% / 0.15);
+
+    /* Motion */
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --duration-slow: 400ms;
   }
 
   .dark {
@@ -90,8 +104,14 @@
     --destructive-foreground: 210 40% 98%;
 
     --border: 224 20% 18%;
+    --border-subtle: 224 20% 14%;
     --input: 224 20% 18%;
     --ring: 234 89% 67%;
+
+    --surface: 224 32% 12%;
+    --surface-elevated: 224 32% 14%;
+    --surface-sunken: 224 32% 10%;
+    --text-secondary: 218 11% 55%;
 
     --sidebar-background: 224 32% 10%;
     --sidebar-foreground: 210 40% 98%;
@@ -130,6 +150,30 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Typography scale — use these via @apply or component classes */
+  .text-display {
+    @apply text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1];
+  }
+  .text-h1 {
+    @apply text-2xl lg:text-3xl font-bold tracking-tight leading-tight;
+  }
+  .text-h2 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+  .text-h3 {
+    @apply text-base font-semibold;
+  }
+  .text-body {
+    @apply text-sm text-foreground;
+  }
+  .text-caption {
+    @apply text-xs text-muted-foreground;
+  }
+  .text-eyebrow {
+    @apply text-[11px] uppercase tracking-wider font-semibold text-muted-foreground;
   }
 }
 
@@ -169,5 +213,58 @@
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background: var(--gradient-primary);
+  }
+
+  /* Surfaces */
+  .surface-sunken {
+    background: hsl(var(--surface-sunken));
+  }
+  .surface-elevated {
+    background: hsl(var(--surface-elevated));
+  }
+  .border-subtle {
+    border-color: hsl(var(--border-subtle));
+  }
+
+  /* Microinteractions */
+  .check-pop {
+    animation: check-pop 360ms var(--ease-out-soft);
+  }
+  @keyframes check-pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+
+  .habit-pulse {
+    animation: habit-pulse 600ms var(--ease-out-soft);
+  }
+  @keyframes habit-pulse {
+    0%   { box-shadow: 0 0 0 0 hsl(var(--accent) / 0.5); }
+    100% { box-shadow: 0 0 0 14px hsl(var(--accent) / 0); }
+  }
+
+  /* Confetti-lite burst */
+  .burst {
+    position: relative;
+    pointer-events: none;
+  }
+  .burst::before,
+  .burst::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--primary));
+    opacity: 0;
+    animation: burst-ring 900ms var(--ease-out-soft) forwards;
+  }
+  .burst::after {
+    border-color: hsl(var(--accent));
+    animation-delay: 120ms;
+  }
+  @keyframes burst-ring {
+    0%   { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(2.4); opacity: 0; }
   }
 }
