@@ -1,9 +1,11 @@
-import { getTasks, getHabits, getGoals, getNotes, getFocusSessions, getProfile } from '@/lib/store';
+import { getTasks, getHabits, getGoals, getNotes, getFocusSessions, getProfile, getCheckIns } from '@/lib/store';
 import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TodayEngine } from '@/components/app/TodayEngine';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
+import { ConsistencyCard } from '@/components/app/ConsistencyCard';
+import { computeConsistency } from '@/lib/insights';
 
 const fadeIn = (delay: number) => ({ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { delay, duration: 0.4 } });
 
@@ -14,10 +16,12 @@ export default function Dashboard() {
   const goals = getGoals();
   const notes = getNotes();
   const sessions = getFocusSessions();
+  const checkIns = getCheckIns();
   const today = new Date().toISOString().split('T')[0];
 
   const completedToday = tasks.filter(t => t.status === 'done').length;
   const todaySessions = sessions.filter(s => s.completedAt === today);
+  const consistency = computeConsistency(habits, sessions, goals, checkIns);
 
   const baseStats = [
     { key: 'tasks', label: 'Tasks done', value: completedToday, icon: CheckSquare, color: 'text-primary' },
@@ -69,6 +73,11 @@ export default function Dashboard() {
             <p className="text-sm text-muted-foreground">{s.label}</p>
           </div>
         ))}
+      </motion.div>
+
+      {/* Consistency */}
+      <motion.div {...fadeIn(0.15)}>
+        <ConsistencyCard stats={consistency} />
       </motion.div>
 
       {/* Connected Goal Spotlight */}
