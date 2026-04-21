@@ -7,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Plus, Search, LayoutGrid, List, Trash2, Edit2, Target, CheckSquare } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
+import { TaskCheckbox } from '@/components/app/TaskCheckbox';
 import { useNewParam } from '@/hooks/use-new-param';
 
 export default function Tasks() {
@@ -57,7 +59,14 @@ export default function Tasks() {
     setForm({ title: task.title, description: task.description || '', priority: task.priority, status: task.status, dueDate: task.dueDate || '', tags: task.tags.join(', '), goalId: task.goalId, lifeArea: task.lifeArea });
     setDialogOpen(true);
   };
-  const updateStatus = (id: string, status: TaskStatus) => save(tasks.map(t => t.id === id ? { ...t, status } : t));
+  const updateStatus = (id: string, status: TaskStatus) => {
+    const prev = tasks.find(t => t.id === id);
+    save(tasks.map(t => t.id === id ? { ...t, status } : t));
+    if (status === 'done' && prev?.status !== 'done') {
+      toast.success('Task complete', { description: prev?.title });
+    }
+  };
+  const toggleDone = (task: Task, checked: boolean) => updateStatus(task.id, checked ? 'done' : 'todo');
 
   const statusCols: { status: TaskStatus; label: string; color: string }[] = [
     { status: 'todo', label: 'To Do', color: 'bg-secondary' },
@@ -167,25 +176,38 @@ export default function Tasks() {
         <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">No tasks match your filters.</div>
-          ) : filtered.map(task => (
-            <motion.div key={task.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-border last:border-0 hover:bg-secondary/30 transition-colors group" layout>
-              <button onClick={() => updateStatus(task.id, task.status === 'done' ? 'todo' : task.status === 'todo' ? 'in-progress' : 'done')} className={`h-5 w-5 rounded-full border-2 shrink-0 transition-colors ${task.status === 'done' ? 'border-success bg-success' : 'border-border hover:border-primary'}`} />
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  <LifeAreaBadge area={task.lifeArea} />
-                  {goalChip(task.goalId)}
-                  {task.tags.map(t => <span key={t} className="text-xs bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{t}</span>)}
-                </div>
-              </div>
-              {priorityBadge(task.priority)}
-              {task.dueDate && <span className="text-xs text-muted-foreground hidden sm:block">{task.dueDate}</span>}
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => openEdit(task)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Edit2 className="h-3.5 w-3.5" /></button>
-                <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
-              </div>
-            </motion.div>
-          ))}
+          ) : (
+            <AnimatePresence initial={false}>
+              {filtered.map(task => (
+                <motion.div
+                  key={task.id}
+                  layout
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -8, transition: { duration: 0.18 } }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center gap-3 px-5 py-3.5 border-b border-subtle last:border-0 hover:bg-secondary/40 data-[done=true]:bg-success/[0.03] transition-colors group"
+                  data-done={task.status === 'done'}
+                >
+                  <TaskCheckbox checked={task.status === 'done'} onChange={(c) => toggleDone(task, c)} />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium transition-colors ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      <LifeAreaBadge area={task.lifeArea} />
+                      {goalChip(task.goalId)}
+                      {task.tags.map(t => <span key={t} className="text-xs bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{t}</span>)}
+                    </div>
+                  </div>
+                  {priorityBadge(task.priority)}
+                  {task.dueDate && <span className="text-xs text-muted-foreground hidden sm:block tabular-nums">{task.dueDate}</span>}
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => openEdit(task)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Edit2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

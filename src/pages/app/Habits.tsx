@@ -26,7 +26,15 @@ export default function Habits() {
 
   const save = (updated: Habit[]) => { setLocalHabits(updated); setHabits(updated); };
 
+  const [pulsing, setPulsing] = useState<string | null>(null);
+
   const toggleToday = (id: string) => {
+    const habit = habits.find(h => h.id === id);
+    const wasDone = habit?.completedDates.includes(today);
+    if (!wasDone) {
+      setPulsing(id);
+      setTimeout(() => setPulsing(null), 600);
+    }
     save(habits.map(h => {
       if (h.id !== id) return h;
       const done = h.completedDates.includes(today);
@@ -123,7 +131,7 @@ export default function Habits() {
                 <div className="flex items-center gap-3 min-w-0">
                   <button
                     onClick={() => toggleToday(habit.id)}
-                    className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all shrink-0 ${habit.completedDates.includes(today) ? 'gradient-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-accent/20'}`}
+                    className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 shrink-0 ${pulsing === habit.id ? 'habit-pulse' : ''} ${habit.completedDates.includes(today) ? 'gradient-accent text-accent-foreground scale-105' : 'bg-secondary text-muted-foreground hover:bg-accent/20 hover:scale-105'}`}
                   >
                     <Check className="h-4 w-4" />
                   </button>

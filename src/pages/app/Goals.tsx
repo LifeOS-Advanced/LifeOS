@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Plus, Target, CheckCircle2, Circle, CheckSquare, Zap, BookOpen } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
@@ -48,12 +49,18 @@ export default function Goals() {
   };
 
   const toggleMilestone = (goalId: string, milestoneId: string) => {
+    let hitComplete = false;
     save(goals.map(g => {
       if (g.id !== goalId) return g;
       const updated = g.milestones.map(m => m.id === milestoneId ? { ...m, completed: !m.completed } : m);
       const progress = updated.length ? Math.round((updated.filter(m => m.completed).length / updated.length) * 100) : g.progress;
+      if (progress === 100 && g.progress !== 100) hitComplete = true;
       return { ...g, milestones: updated, progress };
     }));
+    if (hitComplete) {
+      const g = goals.find(x => x.id === goalId);
+      toast.success('🎉 Goal complete!', { description: g?.title });
+    }
   };
 
   const addMilestone = (goalId: string, title: string) => {
