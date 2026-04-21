@@ -77,6 +77,27 @@ export interface FocusSession {
   taskId?: string;
 }
 
+export type Mood = 1 | 2 | 3 | 4 | 5;
+export type EnergyLevel = 'low' | 'medium' | 'high';
+
+export interface DailyCheckIn {
+  date: string; // YYYY-MM-DD
+  mood: Mood;
+  energy: EnergyLevel;
+  mainFocus: string;
+  oneWord: string;
+  createdAt: string;
+}
+
+export interface WeeklyReview {
+  id: string;
+  weekStart: string; // YYYY-MM-DD (Monday)
+  wentWell: string;
+  gotIgnored: string;
+  improveNext: string;
+  createdAt: string;
+}
+
 export interface UserProfile {
   name: string;
   email: string;
