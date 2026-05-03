@@ -267,34 +267,67 @@ export default function Tasks() {
             <div className="text-center py-12 text-muted-foreground">No tasks match your filters.</div>
           ) : (
             <AnimatePresence initial={false}>
-              {filtered.map(task => (
-                <motion.div
-                  key={task.id}
-                  layout
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -8, transition: { duration: 0.18 } }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex items-center gap-3 px-5 py-3.5 border-b border-subtle last:border-0 hover:bg-secondary/40 data-[done=true]:bg-success/[0.03] transition-colors group"
-                  data-done={task.status === 'done'}
-                >
-                  <TaskCheckbox checked={task.status === 'done'} onChange={(c) => toggleDone(task, c)} />
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium transition-colors ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      <LifeAreaBadge area={task.lifeArea} />
-                      {goalChip(task.goalId)}
-                      {task.tags.map(t => <span key={t} className="text-xs bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{t}</span>)}
+              {filtered.map(task => {
+                const subs = task.subtasks ?? [];
+                const subDone = subs.filter(s => s.done).length;
+                const isExp = expanded[task.id];
+                return (
+                  <motion.div
+                    key={task.id}
+                    layout
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -8, transition: { duration: 0.18 } }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    className="border-b border-subtle last:border-0 hover:bg-secondary/40 data-[done=true]:bg-success/[0.03] transition-colors group"
+                    data-done={task.status === 'done'}
+                  >
+                    <div className="flex items-center gap-3 px-5 py-3.5">
+                      <TaskCheckbox checked={task.status === 'done'} onChange={(c) => toggleDone(task, c)} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          {subs.length > 0 && (
+                            <button onClick={() => setExpanded(e => ({ ...e, [task.id]: !e[task.id] }))} className="text-muted-foreground hover:text-foreground">
+                              {isExp ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                            </button>
+                          )}
+                          <p className={`text-sm font-medium transition-colors truncate ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          <LifeAreaBadge area={task.lifeArea} />
+                          {goalChip(task.goalId)}
+                          {(task.recurrence && task.recurrence.frequency !== 'none') && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-accent/10 text-accent-foreground px-2 py-0.5 rounded-full">
+                              <Repeat className="h-3 w-3" />{task.recurrence.frequency}
+                            </span>
+                          )}
+                          {subs.length > 0 && (
+                            <span className="text-xs text-muted-foreground">{subDone}/{subs.length} subtasks</span>
+                          )}
+                          {task.tags.map(t => <span key={t} className="text-xs bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{t}</span>)}
+                        </div>
+                      </div>
+                      {priorityBadge(task.priority)}
+                      {task.dueDate && <span className="text-xs text-muted-foreground hidden sm:block tabular-nums">{task.dueDate}</span>}
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => openEdit(task)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
                     </div>
-                  </div>
-                  {priorityBadge(task.priority)}
-                  {task.dueDate && <span className="text-xs text-muted-foreground hidden sm:block tabular-nums">{task.dueDate}</span>}
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEdit(task)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Edit2 className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
-                  </div>
-                </motion.div>
-              ))}
+                    {isExp && subs.length > 0 && (
+                      <div className="pl-14 pr-5 pb-3 space-y-1.5">
+                        {subs.map(s => (
+                          <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input type="checkbox" checked={s.done} onChange={() => toggleSubtaskOnTask(task.id, s.id)}
+                              className="h-3.5 w-3.5 rounded border-border accent-primary" />
+                            <span className={s.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{s.title}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           )}
         </div>
