@@ -5,11 +5,14 @@ import { CommandBar, useCommandBar } from './CommandBar';
 import { DailyCheckInModal } from './DailyCheckIn';
 import { WeeklyReviewPrompt } from './WeeklyReviewPrompt';
 import { getProfile } from '@/lib/store';
+import { generateRecurringInstances } from '@/lib/recurrence';
 import { Search } from 'lucide-react';
+import { useEffect } from 'react';
 
 export function AppLayout() {
   const profile = getProfile();
   const { open, setOpen } = useCommandBar();
+  useEffect(() => { generateRecurringInstances(); }, []);
 
   return (
     <SidebarProvider>

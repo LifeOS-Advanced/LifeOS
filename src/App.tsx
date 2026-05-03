@@ -16,6 +16,7 @@ import Notes from "./pages/app/Notes";
 import Focus from "./pages/app/Focus";
 import Settings from "./pages/app/Settings";
 import Review from "./pages/app/Review";
+import CalendarPage from "./pages/app/Calendar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="notes" element={<Notes />} />
             <Route path="focus" element={<Focus />} />
             <Route path="review" element={<Review />} />
+            <Route path="calendar" element={<CalendarPage />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />

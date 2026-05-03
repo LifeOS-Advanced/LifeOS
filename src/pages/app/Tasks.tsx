@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { getTasks, setTasks, getGoals } from '@/lib/store';
-import { Task, TaskStatus, TaskPriority, LifeArea } from '@/lib/types';
+import { Task, TaskStatus, TaskPriority, LifeArea, RecurrenceFrequency, Subtask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, LayoutGrid, List, Trash2, Edit2, Target, CheckSquare } from 'lucide-react';
+import { Plus, Search, LayoutGrid, List, Trash2, Edit2, Target, CheckSquare, Repeat, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
@@ -15,6 +15,11 @@ import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { TaskCheckbox } from '@/components/app/TaskCheckbox';
 import { useNewParam } from '@/hooks/use-new-param';
+
+const WEEKDAYS = [
+  { i: 0, l: 'S' }, { i: 1, l: 'M' }, { i: 2, l: 'T' }, { i: 3, l: 'W' },
+  { i: 4, l: 'T' }, { i: 5, l: 'F' }, { i: 6, l: 'S' },
+];
 
 export default function Tasks() {
   const goals = getGoals();
@@ -26,7 +31,13 @@ export default function Tasks() {
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [form, setForm] = useState<{ title: string; description: string; priority: TaskPriority; status: TaskStatus; dueDate: string; tags: string; goalId?: string; lifeArea?: LifeArea }>({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '' });
+  const [form, setForm] = useState<{
+    title: string; description: string; priority: TaskPriority; status: TaskStatus;
+    dueDate: string; tags: string; goalId?: string; lifeArea?: LifeArea;
+    recurrence: RecurrenceFrequency; daysOfWeek: number[]; subtasks: Subtask[];
+  }>({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: [] });
+  const [subtaskDraft, setSubtaskDraft] = useState('');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useNewParam(() => setDialogOpen(true));
 
@@ -43,21 +54,60 @@ export default function Tasks() {
   const handleSubmit = () => {
     if (!form.title.trim()) return;
     const tagArr = form.tags.split(',').map(s => s.trim()).filter(Boolean);
+    const recurrence = form.recurrence === 'none'
+      ? undefined
+      : { frequency: form.recurrence, daysOfWeek: form.recurrence === 'weekly' ? form.daysOfWeek : undefined };
     if (editingTask) {
-      save(tasks.map(t => t.id === editingTask.id ? { ...t, ...form, tags: tagArr } : t));
+      save(tasks.map(t => t.id === editingTask.id ? { ...t, ...form, tags: tagArr, recurrence, subtasks: form.subtasks } : t));
     } else {
-      const newTask: Task = { id: `t${Date.now()}`, title: form.title, description: form.description, status: form.status, priority: form.priority, dueDate: form.dueDate, tags: tagArr, goalId: form.goalId, lifeArea: form.lifeArea, createdAt: new Date().toISOString() };
+      const newTask: Task = {
+        id: `t${Date.now()}`, title: form.title, description: form.description,
+        status: form.status, priority: form.priority, dueDate: form.dueDate, tags: tagArr,
+        goalId: form.goalId, lifeArea: form.lifeArea,
+        subtasks: form.subtasks.length ? form.subtasks : undefined,
+        recurrence,
+        lastGeneratedDate: recurrence ? form.dueDate || new Date().toISOString().split('T')[0] : undefined,
+        createdAt: new Date().toISOString(),
+      };
       save([newTask, ...tasks]);
     }
     resetForm();
   };
 
-  const resetForm = () => { setForm({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '' }); setEditingTask(null); setDialogOpen(false); };
+  const resetForm = () => {
+    setForm({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: [] });
+    setSubtaskDraft('');
+    setEditingTask(null);
+    setDialogOpen(false);
+  };
   const deleteTask = (id: string) => save(tasks.filter(t => t.id !== id));
   const openEdit = (task: Task) => {
     setEditingTask(task);
-    setForm({ title: task.title, description: task.description || '', priority: task.priority, status: task.status, dueDate: task.dueDate || '', tags: task.tags.join(', '), goalId: task.goalId, lifeArea: task.lifeArea });
+    setForm({
+      title: task.title, description: task.description || '', priority: task.priority, status: task.status,
+      dueDate: task.dueDate || '', tags: task.tags.join(', '), goalId: task.goalId, lifeArea: task.lifeArea,
+      recurrence: task.recurrence?.frequency ?? 'none',
+      daysOfWeek: task.recurrence?.daysOfWeek ?? [],
+      subtasks: task.subtasks ? [...task.subtasks] : [],
+    });
     setDialogOpen(true);
+  };
+
+  const addSubtaskToForm = () => {
+    if (!subtaskDraft.trim()) return;
+    setForm(f => ({ ...f, subtasks: [...f.subtasks, { id: `s${Date.now()}`, title: subtaskDraft.trim(), done: false }] }));
+    setSubtaskDraft('');
+  };
+  const removeFormSubtask = (id: string) => setForm(f => ({ ...f, subtasks: f.subtasks.filter(s => s.id !== id) }));
+  const toggleDayOfWeek = (i: number) => setForm(f => ({
+    ...f, daysOfWeek: f.daysOfWeek.includes(i) ? f.daysOfWeek.filter(x => x !== i) : [...f.daysOfWeek, i].sort()
+  }));
+
+  const toggleSubtaskOnTask = (taskId: string, subId: string) => {
+    save(tasks.map(t => t.id !== taskId ? t : {
+      ...t,
+      subtasks: t.subtasks?.map(s => s.id === subId ? { ...s, done: !s.done } : s),
+    }));
   };
   const updateStatus = (id: string, status: TaskStatus) => {
     const prev = tasks.find(t => t.id === id);
@@ -135,6 +185,45 @@ export default function Tasks() {
                 </div>
               </div>
               <div><Label>Due Date</Label><Input type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
+              <div>
+                <Label>Repeats</Label>
+                <Select value={form.recurrence} onValueChange={v => setForm({ ...form, recurrence: v as RecurrenceFrequency })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Does not repeat</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.recurrence === 'weekly' && (
+                  <div className="flex gap-1 mt-2">
+                    {WEEKDAYS.map(d => (
+                      <button key={d.i} type="button" onClick={() => toggleDayOfWeek(d.i)}
+                        className={`h-8 w-8 rounded-full text-xs font-medium transition-colors ${form.daysOfWeek.includes(d.i) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                        {d.l}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label>Subtasks</Label>
+                <div className="space-y-1.5">
+                  {form.subtasks.map(s => (
+                    <div key={s.id} className="flex items-center gap-2 text-sm">
+                      <span className="flex-1 truncate">{s.title}</span>
+                      <button type="button" onClick={() => removeFormSubtask(s.id)} className="text-muted-foreground hover:text-destructive"><X className="h-3.5 w-3.5" /></button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input value={subtaskDraft} onChange={e => setSubtaskDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubtaskToForm(); } }}
+                      placeholder="Add subtask and press Enter" />
+                    <Button type="button" variant="outline" onClick={addSubtaskToForm}>Add</Button>
+                  </div>
+                </div>
+              </div>
               <div><Label>Tags (comma separated)</Label><Input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="work, personal" /></div>
               <Button onClick={handleSubmit} className="w-full gradient-primary text-primary-foreground">{editingTask ? 'Save Changes' : 'Create Task'}</Button>
             </div>
@@ -178,34 +267,67 @@ export default function Tasks() {
             <div className="text-center py-12 text-muted-foreground">No tasks match your filters.</div>
           ) : (
             <AnimatePresence initial={false}>
-              {filtered.map(task => (
-                <motion.div
-                  key={task.id}
-                  layout
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -8, transition: { duration: 0.18 } }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex items-center gap-3 px-5 py-3.5 border-b border-subtle last:border-0 hover:bg-secondary/40 data-[done=true]:bg-success/[0.03] transition-colors group"
-                  data-done={task.status === 'done'}
-                >
-                  <TaskCheckbox checked={task.status === 'done'} onChange={(c) => toggleDone(task, c)} />
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium transition-colors ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      <LifeAreaBadge area={task.lifeArea} />
-                      {goalChip(task.goalId)}
-                      {task.tags.map(t => <span key={t} className="text-xs bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{t}</span>)}
+              {filtered.map(task => {
+                const subs = task.subtasks ?? [];
+                const subDone = subs.filter(s => s.done).length;
+                const isExp = expanded[task.id];
+                return (
+                  <motion.div
+                    key={task.id}
+                    layout
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -8, transition: { duration: 0.18 } }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    className="border-b border-subtle last:border-0 hover:bg-secondary/40 data-[done=true]:bg-success/[0.03] transition-colors group"
+                    data-done={task.status === 'done'}
+                  >
+                    <div className="flex items-center gap-3 px-5 py-3.5">
+                      <TaskCheckbox checked={task.status === 'done'} onChange={(c) => toggleDone(task, c)} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          {subs.length > 0 && (
+                            <button onClick={() => setExpanded(e => ({ ...e, [task.id]: !e[task.id] }))} className="text-muted-foreground hover:text-foreground">
+                              {isExp ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                            </button>
+                          )}
+                          <p className={`text-sm font-medium transition-colors truncate ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          <LifeAreaBadge area={task.lifeArea} />
+                          {goalChip(task.goalId)}
+                          {(task.recurrence && task.recurrence.frequency !== 'none') && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-accent/10 text-accent-foreground px-2 py-0.5 rounded-full">
+                              <Repeat className="h-3 w-3" />{task.recurrence.frequency}
+                            </span>
+                          )}
+                          {subs.length > 0 && (
+                            <span className="text-xs text-muted-foreground">{subDone}/{subs.length} subtasks</span>
+                          )}
+                          {task.tags.map(t => <span key={t} className="text-xs bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{t}</span>)}
+                        </div>
+                      </div>
+                      {priorityBadge(task.priority)}
+                      {task.dueDate && <span className="text-xs text-muted-foreground hidden sm:block tabular-nums">{task.dueDate}</span>}
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => openEdit(task)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
                     </div>
-                  </div>
-                  {priorityBadge(task.priority)}
-                  {task.dueDate && <span className="text-xs text-muted-foreground hidden sm:block tabular-nums">{task.dueDate}</span>}
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEdit(task)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Edit2 className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => deleteTask(task.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
-                  </div>
-                </motion.div>
-              ))}
+                    {isExp && subs.length > 0 && (
+                      <div className="pl-14 pr-5 pb-3 space-y-1.5">
+                        {subs.map(s => (
+                          <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                            <input type="checkbox" checked={s.done} onChange={() => toggleSubtaskOnTask(task.id, s.id)}
+                              className="h-3.5 w-3.5 rounded border-border accent-primary" />
+                            <span className={s.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{s.title}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           )}
         </div>

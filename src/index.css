@@ -268,3 +268,29 @@
     100% { transform: scale(2.4); opacity: 0; }
   }
 }
+
+/* FullCalendar themed overrides */
+.lifeos-calendar .fc {
+  --fc-border-color: hsl(var(--border));
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: hsl(var(--secondary));
+  --fc-today-bg-color: hsl(var(--primary) / 0.06);
+  --fc-button-bg-color: hsl(var(--secondary));
+  --fc-button-border-color: hsl(var(--border));
+  --fc-button-text-color: hsl(var(--foreground));
+  --fc-button-hover-bg-color: hsl(var(--secondary) / 0.7);
+  --fc-button-hover-border-color: hsl(var(--border));
+  --fc-button-active-bg-color: hsl(var(--primary));
+  --fc-button-active-border-color: hsl(var(--primary));
+  font-family: inherit;
+  color: hsl(var(--foreground));
+}
+.lifeos-calendar .fc .fc-toolbar-title { font-size: 1.05rem; font-weight: 600; }
+.lifeos-calendar .fc .fc-button { border-radius: 0.5rem; padding: 0.35rem 0.75rem; font-weight: 500; text-transform: capitalize; }
+.lifeos-calendar .fc .fc-button-primary:not(:disabled).fc-button-active { color: hsl(var(--primary-foreground)); }
+.lifeos-calendar .fc-daygrid-day-number, .lifeos-calendar .fc-col-header-cell-cushion { color: hsl(var(--muted-foreground)); text-decoration: none; font-size: 0.8rem; }
+.lifeos-calendar .fc-event { border: none; border-radius: 0.35rem; padding: 1px 4px; font-size: 0.72rem; cursor: pointer; }
+.lifeos-calendar .fc-evt-task { background: hsl(var(--primary) / 0.85); color: hsl(var(--primary-foreground)); }
+.lifeos-calendar .fc-evt-goal { background: hsl(var(--accent) / 0.9); color: hsl(var(--accent-foreground)); }
+.lifeos-calendar .fc-evt-habit { background: hsl(var(--success, 142 70% 45%) / 0.18); color: hsl(var(--success, 142 70% 35%)); }
+.lifeos-calendar .fc-evt-done { opacity: 0.5; text-decoration: line-through; }
