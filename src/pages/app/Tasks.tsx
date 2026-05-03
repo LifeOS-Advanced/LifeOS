@@ -185,6 +185,45 @@ export default function Tasks() {
                 </div>
               </div>
               <div><Label>Due Date</Label><Input type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
+              <div>
+                <Label>Repeats</Label>
+                <Select value={form.recurrence} onValueChange={v => setForm({ ...form, recurrence: v as RecurrenceFrequency })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Does not repeat</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.recurrence === 'weekly' && (
+                  <div className="flex gap-1 mt-2">
+                    {WEEKDAYS.map(d => (
+                      <button key={d.i} type="button" onClick={() => toggleDayOfWeek(d.i)}
+                        className={`h-8 w-8 rounded-full text-xs font-medium transition-colors ${form.daysOfWeek.includes(d.i) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                        {d.l}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label>Subtasks</Label>
+                <div className="space-y-1.5">
+                  {form.subtasks.map(s => (
+                    <div key={s.id} className="flex items-center gap-2 text-sm">
+                      <span className="flex-1 truncate">{s.title}</span>
+                      <button type="button" onClick={() => removeFormSubtask(s.id)} className="text-muted-foreground hover:text-destructive"><X className="h-3.5 w-3.5" /></button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input value={subtaskDraft} onChange={e => setSubtaskDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubtaskToForm(); } }}
+                      placeholder="Add subtask and press Enter" />
+                    <Button type="button" variant="outline" onClick={addSubtaskToForm}>Add</Button>
+                  </div>
+                </div>
+              </div>
               <div><Label>Tags (comma separated)</Label><Input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="work, personal" /></div>
               <Button onClick={handleSubmit} className="w-full gradient-primary text-primary-foreground">{editingTask ? 'Save Changes' : 'Create Task'}</Button>
             </div>
