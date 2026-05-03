@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/command';
 import {
   CheckSquare, Zap, Target, BookOpen, Timer, LayoutDashboard, Settings,
-  Plus, Sun, Moon, Search, Sparkles,
+  Plus, Sun, Moon, Search, Sparkles, CalendarDays,
 } from 'lucide-react';
 import { searchAll, SearchResult } from '@/lib/search';
 import { getProfile, setProfile } from '@/lib/store';

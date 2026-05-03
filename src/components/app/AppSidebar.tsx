@@ -1,4 +1,4 @@
-import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { setAuthenticated, getProfile } from '@/lib/store';
@@ -32,8 +32,9 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const profile = getProfile();
   const enabled = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[]);
+  const calendarItem = { title: 'Calendar', url: '/app/calendar', icon: CalendarDays };
   const reviewItem = { title: 'Weekly Review', url: '/app/review', icon: Sparkles };
-  const items = [dashboardItem, ...enabled.map(k => moduleItems[k]).filter(Boolean), reviewItem];
+  const items = [dashboardItem, ...enabled.map(k => moduleItems[k]).filter(Boolean), calendarItem, reviewItem];
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
