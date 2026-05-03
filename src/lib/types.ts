@@ -9,6 +9,19 @@ export type LifeArea = 'work' | 'study' | 'health' | 'money' | 'personal' | 'fam
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
+export type RecurrenceFrequency = 'none' | 'daily' | 'weekly' | 'monthly';
+
+export interface RecurrenceRule {
+  frequency: RecurrenceFrequency;
+  // For weekly: array of weekday indices 0-6 (Sun..Sat). Empty = same weekday as start.
+  daysOfWeek?: number[];
+}
+
+export interface Subtask {
+  id: string;
+  title: string;
+  done: boolean;
+}
 
 export interface Task {
   id: string;
@@ -20,6 +33,12 @@ export interface Task {
   tags: string[];
   goalId?: string;
   lifeArea?: LifeArea;
+  subtasks?: Subtask[];
+  recurrence?: RecurrenceRule;
+  // For recurring tasks: tracks last generated occurrence date
+  lastGeneratedDate?: string;
+  // For instances spawned from a recurring template
+  recurrenceParentId?: string;
   createdAt: string;
 }
 
