@@ -31,7 +31,13 @@ export default function Tasks() {
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [form, setForm] = useState<{ title: string; description: string; priority: TaskPriority; status: TaskStatus; dueDate: string; tags: string; goalId?: string; lifeArea?: LifeArea }>({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '' });
+  const [form, setForm] = useState<{
+    title: string; description: string; priority: TaskPriority; status: TaskStatus;
+    dueDate: string; tags: string; goalId?: string; lifeArea?: LifeArea;
+    recurrence: RecurrenceFrequency; daysOfWeek: number[]; subtasks: Subtask[];
+  }>({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: [] });
+  const [subtaskDraft, setSubtaskDraft] = useState('');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useNewParam(() => setDialogOpen(true));
 
@@ -48,21 +54,60 @@ export default function Tasks() {
   const handleSubmit = () => {
     if (!form.title.trim()) return;
     const tagArr = form.tags.split(',').map(s => s.trim()).filter(Boolean);
+    const recurrence = form.recurrence === 'none'
+      ? undefined
+      : { frequency: form.recurrence, daysOfWeek: form.recurrence === 'weekly' ? form.daysOfWeek : undefined };
     if (editingTask) {
-      save(tasks.map(t => t.id === editingTask.id ? { ...t, ...form, tags: tagArr } : t));
+      save(tasks.map(t => t.id === editingTask.id ? { ...t, ...form, tags: tagArr, recurrence, subtasks: form.subtasks } : t));
     } else {
-      const newTask: Task = { id: `t${Date.now()}`, title: form.title, description: form.description, status: form.status, priority: form.priority, dueDate: form.dueDate, tags: tagArr, goalId: form.goalId, lifeArea: form.lifeArea, createdAt: new Date().toISOString() };
+      const newTask: Task = {
+        id: `t${Date.now()}`, title: form.title, description: form.description,
+        status: form.status, priority: form.priority, dueDate: form.dueDate, tags: tagArr,
+        goalId: form.goalId, lifeArea: form.lifeArea,
+        subtasks: form.subtasks.length ? form.subtasks : undefined,
+        recurrence,
+        lastGeneratedDate: recurrence ? form.dueDate || new Date().toISOString().split('T')[0] : undefined,
+        createdAt: new Date().toISOString(),
+      };
       save([newTask, ...tasks]);
     }
     resetForm();
   };
 
-  const resetForm = () => { setForm({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '' }); setEditingTask(null); setDialogOpen(false); };
+  const resetForm = () => {
+    setForm({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: [] });
+    setSubtaskDraft('');
+    setEditingTask(null);
+    setDialogOpen(false);
+  };
   const deleteTask = (id: string) => save(tasks.filter(t => t.id !== id));
   const openEdit = (task: Task) => {
     setEditingTask(task);
-    setForm({ title: task.title, description: task.description || '', priority: task.priority, status: task.status, dueDate: task.dueDate || '', tags: task.tags.join(', '), goalId: task.goalId, lifeArea: task.lifeArea });
+    setForm({
+      title: task.title, description: task.description || '', priority: task.priority, status: task.status,
+      dueDate: task.dueDate || '', tags: task.tags.join(', '), goalId: task.goalId, lifeArea: task.lifeArea,
+      recurrence: task.recurrence?.frequency ?? 'none',
+      daysOfWeek: task.recurrence?.daysOfWeek ?? [],
+      subtasks: task.subtasks ? [...task.subtasks] : [],
+    });
     setDialogOpen(true);
+  };
+
+  const addSubtaskToForm = () => {
+    if (!subtaskDraft.trim()) return;
+    setForm(f => ({ ...f, subtasks: [...f.subtasks, { id: `s${Date.now()}`, title: subtaskDraft.trim(), done: false }] }));
+    setSubtaskDraft('');
+  };
+  const removeFormSubtask = (id: string) => setForm(f => ({ ...f, subtasks: f.subtasks.filter(s => s.id !== id) }));
+  const toggleDayOfWeek = (i: number) => setForm(f => ({
+    ...f, daysOfWeek: f.daysOfWeek.includes(i) ? f.daysOfWeek.filter(x => x !== i) : [...f.daysOfWeek, i].sort()
+  }));
+
+  const toggleSubtaskOnTask = (taskId: string, subId: string) => {
+    save(tasks.map(t => t.id !== taskId ? t : {
+      ...t,
+      subtasks: t.subtasks?.map(s => s.id === subId ? { ...s, done: !s.done } : s),
+    }));
   };
   const updateStatus = (id: string, status: TaskStatus) => {
     const prev = tasks.find(t => t.id === id);
