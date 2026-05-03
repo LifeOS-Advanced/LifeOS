@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { getTasks, setTasks, getGoals } from '@/lib/store';
-import { Task, TaskStatus, TaskPriority, LifeArea } from '@/lib/types';
+import { Task, TaskStatus, TaskPriority, LifeArea, RecurrenceFrequency, Subtask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, LayoutGrid, List, Trash2, Edit2, Target, CheckSquare } from 'lucide-react';
+import { Plus, Search, LayoutGrid, List, Trash2, Edit2, Target, CheckSquare, Repeat, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
@@ -15,6 +15,11 @@ import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { TaskCheckbox } from '@/components/app/TaskCheckbox';
 import { useNewParam } from '@/hooks/use-new-param';
+
+const WEEKDAYS = [
+  { i: 0, l: 'S' }, { i: 1, l: 'M' }, { i: 2, l: 'T' }, { i: 3, l: 'W' },
+  { i: 4, l: 'T' }, { i: 5, l: 'F' }, { i: 6, l: 'S' },
+];
 
 export default function Tasks() {
   const goals = getGoals();
