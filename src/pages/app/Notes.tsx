@@ -1,19 +1,19 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { getNotes, setNotes, getTasks, getGoals } from '@/lib/store';
 import { Note, LifeArea } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Pin, Trash2, BookOpen, CheckSquare, Target } from 'lucide-react';
+import { Plus, Search, Pin, Trash2, BookOpen, CheckSquare, Target, Folder, FolderPlus, Link2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { useNewParam } from '@/hooks/use-new-param';
+import { RichEditor, NOTE_TEMPLATES, htmlToText } from '@/components/app/RichEditor';
 
 export default function Notes() {
   const tasks = getTasks();
@@ -21,69 +21,106 @@ export default function Notes() {
   const [notes, setLocalNotes] = useState(getNotes());
   const [search, setSearch] = useState('');
   const [areaFilter, setAreaFilter] = useState<LifeArea | 'all'>('all');
+  const [folderFilter, setFolderFilter] = useState<string | 'all'>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [form, setForm] = useState<{ title: string; content: string; tags: string; lifeArea?: LifeArea; taskId?: string; goalId?: string }>({ title: '', content: '', tags: '' });
+  const [form, setForm] = useState<{ title: string; content: string; tags: string; lifeArea?: LifeArea; taskId?: string; goalId?: string; folder?: string; template: string }>({ title: '', content: '', tags: '', template: 'blank' });
 
   useNewParam(() => setDialogOpen(true));
 
   const save = (updated: Note[]) => { setLocalNotes(updated); setNotes(updated); };
 
+  const folders = useMemo(() => Array.from(new Set(notes.map(n => n.folder).filter(Boolean) as string[])).sort(), [notes]);
+
+  // Backlinks: notes whose content references current note title via [[Title]]
+  const backlinksFor = (note: Note) =>
+    notes.filter(n => n.id !== note.id && n.content.toLowerCase().includes(`[[${note.title.toLowerCase()}]]`));
+
   const handleSubmit = () => {
     if (!form.title.trim()) return;
     const now = new Date().toISOString();
     const tagArr = form.tags.split(',').map(s => s.trim()).filter(Boolean);
+    const folder = form.folder?.trim() || undefined;
     if (editingNote) {
-      save(notes.map(n => n.id === editingNote.id ? { ...n, title: form.title, content: form.content, tags: tagArr, lifeArea: form.lifeArea, taskId: form.taskId, goalId: form.goalId, updatedAt: now } : n));
+      save(notes.map(n => n.id === editingNote.id ? { ...n, title: form.title, content: form.content, tags: tagArr, lifeArea: form.lifeArea, taskId: form.taskId, goalId: form.goalId, folder, updatedAt: now } : n));
     } else {
-      const newNote: Note = { id: `n${Date.now()}`, title: form.title, content: form.content, tags: tagArr, pinned: false, lifeArea: form.lifeArea, taskId: form.taskId, goalId: form.goalId, createdAt: now, updatedAt: now };
+      const newNote: Note = { id: `n${Date.now()}`, title: form.title, content: form.content, tags: tagArr, pinned: false, lifeArea: form.lifeArea, taskId: form.taskId, goalId: form.goalId, folder, createdAt: now, updatedAt: now };
       save([newNote, ...notes]);
     }
     resetForm();
   };
 
-  const resetForm = () => { setForm({ title: '', content: '', tags: '' }); setEditingNote(null); setDialogOpen(false); };
+  const resetForm = () => { setForm({ title: '', content: '', tags: '', template: 'blank' }); setEditingNote(null); setDialogOpen(false); };
 
   const openEdit = (note: Note) => {
     setEditingNote(note);
-    setForm({ title: note.title, content: note.content, tags: note.tags.join(', '), lifeArea: note.lifeArea, taskId: note.taskId, goalId: note.goalId });
+    setForm({ title: note.title, content: note.content, tags: note.tags.join(', '), lifeArea: note.lifeArea, taskId: note.taskId, goalId: note.goalId, folder: note.folder, template: 'blank' });
     setDialogOpen(true);
   };
 
   const togglePin = (id: string) => save(notes.map(n => n.id === id ? { ...n, pinned: !n.pinned } : n));
   const deleteNote = (id: string) => save(notes.filter(n => n.id !== id));
 
+  const applyTemplate = (id: string) => {
+    setForm(f => ({ ...f, template: id, content: NOTE_TEMPLATES.find(t => t.id === id)?.content ?? f.content }));
+  };
+
   const filtered = notes.filter(n => {
     if (areaFilter !== 'all' && n.lifeArea !== areaFilter) return false;
+    if (folderFilter !== 'all' && (n.folder ?? '') !== folderFilter) return false;
     if (!search) return true;
     const s = search.toLowerCase();
-    return n.title.toLowerCase().includes(s) || n.content.toLowerCase().includes(s) || n.tags.some(t => t.toLowerCase().includes(s));
+    return n.title.toLowerCase().includes(s) || htmlToText(n.content).toLowerCase().includes(s) || n.tags.some(t => t.toLowerCase().includes(s));
   });
 
   const pinned = filtered.filter(n => n.pinned);
   const unpinned = filtered.filter(n => !n.pinned);
 
+  // Recent edits
+  const recent = [...notes].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5);
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Notes</h1>
-          <p className="text-muted-foreground text-sm">Capture ideas, attach them to what matters.</p>
+          <p className="text-muted-foreground text-sm">Your second brain. Use <code className="text-xs bg-secondary px-1 rounded">[[Note title]]</code> to link notes.</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={v => { if (!v) resetForm(); setDialogOpen(v); }}>
           <DialogTrigger asChild>
             <Button className="gradient-primary text-primary-foreground shadow-glow hover:opacity-90"><Plus className="h-4 w-4 mr-2" />New Note</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editingNote ? 'Edit Note' : 'New Note'}</DialogTitle></DialogHeader>
             <div className="space-y-4 mt-2">
+              {!editingNote && (
+                <div>
+                  <Label>Template</Label>
+                  <div className="flex gap-2 flex-wrap mt-1">
+                    {NOTE_TEMPLATES.map(t => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => applyTemplate(t.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${form.template === t.id ? 'gradient-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div><Label>Title</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Note title" /></div>
-              <div><Label>Content</Label><Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Write your thoughts..." rows={6} /></div>
+              <div><Label>Content</Label><RichEditor value={form.content} onChange={c => setForm({ ...form, content: c })} placeholder="Write your thoughts..." /></div>
               <div className="grid grid-cols-2 gap-3">
+                <div><Label>Folder</Label>
+                  <Input value={form.folder ?? ''} onChange={e => setForm({ ...form, folder: e.target.value })} placeholder="e.g. Research" list="note-folders" />
+                  <datalist id="note-folders">{folders.map(f => <option key={f} value={f} />)}</datalist>
+                </div>
                 <div><Label>Life Area</Label><LifeAreaSelect value={form.lifeArea} onChange={v => setForm({ ...form, lifeArea: v })} /></div>
-                <div><Label>Tags</Label><Input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="ideas, work" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
+                <div><Label>Tags</Label><Input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="ideas, work" /></div>
                 <div><Label>Attach to Task</Label>
                   <Select value={form.taskId ?? 'none'} onValueChange={v => setForm({ ...form, taskId: v === 'none' ? undefined : v })}>
                     <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
@@ -93,16 +130,28 @@ export default function Notes() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div><Label>Attach to Goal</Label>
-                  <Select value={form.goalId ?? 'none'} onValueChange={v => setForm({ ...form, goalId: v === 'none' ? undefined : v })}>
-                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {goals.map(g => <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
+              <div><Label>Attach to Goal</Label>
+                <Select value={form.goalId ?? 'none'} onValueChange={v => setForm({ ...form, goalId: v === 'none' ? undefined : v })}>
+                  <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {goals.map(g => <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              {editingNote && (
+                <div className="rounded-lg border border-border p-3 bg-secondary/30">
+                  <div className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1"><Link2 className="h-3 w-3" />Backlinks</div>
+                  {backlinksFor(editingNote).length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">No notes link here yet. Reference this note as <code className="bg-background px-1 rounded">[[{editingNote.title}]]</code></p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {backlinksFor(editingNote).map(n => <li key={n.id} className="text-xs text-foreground">· {n.title}</li>)}
+                    </ul>
+                  )}
+                </div>
+              )}
               <Button onClick={handleSubmit} className="w-full gradient-primary text-primary-foreground">{editingNote ? 'Save' : 'Create Note'}</Button>
             </div>
           </DialogContent>
@@ -110,6 +159,18 @@ export default function Notes() {
       </div>
 
       <LifeAreaFilter value={areaFilter} onChange={setAreaFilter} />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button onClick={() => setFolderFilter('all')} className={`px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${folderFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+          <Folder className="h-3 w-3" />All
+        </button>
+        {folders.map(f => (
+          <button key={f} onClick={() => setFolderFilter(f)} className={`px-3 py-1 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${folderFilter === f ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+            <Folder className="h-3 w-3" />{f}
+          </button>
+        ))}
+        {folders.length === 0 && <span className="text-xs text-muted-foreground italic flex items-center gap-1"><FolderPlus className="h-3 w-3" />Add folders when creating notes</span>}
+      </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -128,35 +189,54 @@ export default function Notes() {
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border bg-card shadow-card text-center py-16">
           <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No notes match your search.</p>
+          <p className="text-muted-foreground">No notes match your filters.</p>
         </div>
       ) : (
-        <>
-          {pinned.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-1.5"><Pin className="h-3.5 w-3.5" />Pinned</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pinned.map((note, i) => <NoteCard key={note.id} note={note} index={i} tasks={tasks} goals={goals} onEdit={openEdit} onPin={togglePin} onDelete={deleteNote} />)}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-6">
+          <div className="space-y-6">
+            {pinned.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-1.5"><Pin className="h-3.5 w-3.5" />Pinned</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {pinned.map((note, i) => <NoteCard key={note.id} note={note} index={i} tasks={tasks} goals={goals} backlinks={backlinksFor(note).length} onEdit={openEdit} onPin={togglePin} onDelete={deleteNote} />)}
+                </div>
               </div>
-            </div>
-          )}
-          {unpinned.length > 0 && (
-            <div>
-              {pinned.length > 0 && <h2 className="text-sm font-semibold text-muted-foreground mb-3">Other Notes</h2>}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {unpinned.map((note, i) => <NoteCard key={note.id} note={note} index={i} tasks={tasks} goals={goals} onEdit={openEdit} onPin={togglePin} onDelete={deleteNote} />)}
+            )}
+            {unpinned.length > 0 && (
+              <div>
+                {pinned.length > 0 && <h2 className="text-sm font-semibold text-muted-foreground mb-3">Other Notes</h2>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {unpinned.map((note, i) => <NoteCard key={note.id} note={note} index={i} tasks={tasks} goals={goals} backlinks={backlinksFor(note).length} onEdit={openEdit} onPin={togglePin} onDelete={deleteNote} />)}
+                </div>
               </div>
+            )}
+          </div>
+
+          <aside className="space-y-4">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+              <h3 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-3">Recent edits</h3>
+              <ul className="space-y-2">
+                {recent.map(n => (
+                  <li key={n.id}>
+                    <button onClick={() => openEdit(n)} className="text-sm text-foreground hover:text-primary text-left w-full truncate">
+                      {n.title}
+                    </button>
+                    <p className="text-[10px] text-muted-foreground">{new Date(n.updatedAt).toLocaleDateString()}</p>
+                  </li>
+                ))}
+              </ul>
             </div>
-          )}
-        </>
+          </aside>
+        </div>
       )}
     </div>
   );
 }
 
-function NoteCard({ note, index, tasks, goals, onEdit, onPin, onDelete }: { note: Note; index: number; tasks: ReturnType<typeof getTasks>; goals: ReturnType<typeof getGoals>; onEdit: (n: Note) => void; onPin: (id: string) => void; onDelete: (id: string) => void }) {
+function NoteCard({ note, index, tasks, goals, backlinks, onEdit, onPin, onDelete }: { note: Note; index: number; tasks: ReturnType<typeof getTasks>; goals: ReturnType<typeof getGoals>; backlinks: number; onEdit: (n: Note) => void; onPin: (id: string) => void; onDelete: (id: string) => void }) {
   const linkedTask = note.taskId ? tasks.find(t => t.id === note.taskId) : undefined;
   const linkedGoal = note.goalId ? goals.find(g => g.id === note.goalId) : undefined;
+  const preview = htmlToText(note.content).slice(0, 160);
   return (
     <motion.div
       className="rounded-xl border border-border bg-card p-5 shadow-card hover:shadow-card-hover transition-all group cursor-pointer"
@@ -172,9 +252,19 @@ function NoteCard({ note, index, tasks, goals, onEdit, onPin, onDelete }: { note
           <button onClick={() => onDelete(note.id)} className="p-1 rounded text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground line-clamp-3 mb-3">{note.content}</p>
+      <p className="text-xs text-muted-foreground line-clamp-3 mb-3">{preview}</p>
       <div className="flex flex-wrap gap-1.5">
         <LifeAreaBadge area={note.lifeArea} />
+        {note.folder && (
+          <span className="inline-flex items-center gap-1 text-xs bg-secondary text-foreground px-2 py-0.5 rounded-full">
+            <Folder className="h-3 w-3" />{note.folder}
+          </span>
+        )}
+        {backlinks > 0 && (
+          <span className="inline-flex items-center gap-1 text-xs bg-info/10 text-info px-2 py-0.5 rounded-full">
+            <Link2 className="h-3 w-3" />{backlinks}
+          </span>
+        )}
         {linkedTask && (
           <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
             <CheckSquare className="h-3 w-3" />{linkedTask.title}
