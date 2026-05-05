@@ -116,7 +116,9 @@ export default function Focus() {
 
   // Best time of day
   const hourCounts = sessions.reduce<Record<number, number>>((acc, s) => {
-    const ts = new Date(s.id.replace('f', '')).getHours();
+    const n = Number(s.id.replace('f', ''));
+    if (!Number.isFinite(n)) return acc;
+    const ts = new Date(n).getHours();
     acc[ts] = (acc[ts] || 0) + 1;
     return acc;
   }, {});
