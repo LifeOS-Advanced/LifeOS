@@ -138,6 +138,8 @@ export default function Goals() {
                     {goal.targetDate && <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full whitespace-nowrap">{goal.targetDate}</span>}
                   </div>
 
+                  <GoalIntelligence goal={goal} linkedTasks={linkedTasks} linkedHabits={linkedHabits} />
+
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-foreground">Progress</span>
