@@ -13,6 +13,7 @@ import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
+import { GoalIntelligence } from '@/components/app/GoalIntelligence';
 import { useNewParam } from '@/hooks/use-new-param';
 
 export default function Goals() {
@@ -136,6 +137,8 @@ export default function Goals() {
                     </div>
                     {goal.targetDate && <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full whitespace-nowrap">{goal.targetDate}</span>}
                   </div>
+
+                  <GoalIntelligence goal={goal} linkedTasks={linkedTasks} linkedHabits={linkedHabits} />
 
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">

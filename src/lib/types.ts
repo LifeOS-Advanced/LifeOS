@@ -77,12 +77,13 @@ export interface Milestone {
 export interface Note {
   id: string;
   title: string;
-  content: string;
+  content: string; // HTML (TipTap) or plain text legacy
   tags: string[];
   pinned: boolean;
   taskId?: string;
   goalId?: string;
   lifeArea?: LifeArea;
+  folder?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,9 +91,11 @@ export interface Note {
 export interface FocusSession {
   id: string;
   label: string;
+  sessionGoal?: string;
   duration: number; // minutes
   completedAt: string;
   distractionNotes?: string;
+  interruptions?: number;
   taskId?: string;
 }
 
