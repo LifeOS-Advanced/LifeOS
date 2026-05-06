@@ -120,6 +120,20 @@ export interface WeeklyReview {
   createdAt: string;
 }
 
+export type DashboardWidgetKey = 'today' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
+
+export interface UserPreferences {
+  timezone: string;
+  weekStartDay: 0 | 1; // 0=Sun, 1=Mon
+  defaultFocusDuration: number; // minutes
+  dashboardWidgets: DashboardWidgetKey[];
+  notifications: {
+    dailyReminders: boolean;
+    habitStreakAlerts: boolean;
+    goalDeadlineWarnings: boolean;
+  };
+}
+
 export interface UserProfile {
   name: string;
   email: string;
@@ -129,4 +143,18 @@ export interface UserProfile {
   improvementFocus?: ImprovementArea[];
   dayIntensity?: DayIntensity;
   dashboardPriority?: ModuleKey;
+  preferences?: UserPreferences;
 }
+
+export const DEFAULT_PREFERENCES: UserPreferences = {
+  timezone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
+  weekStartDay: 1,
+  defaultFocusDuration: 25,
+  dashboardWidgets: ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+  notifications: {
+    dailyReminders: true,
+    habitStreakAlerts: true,
+    goalDeadlineWarnings: true,
+  },
+};
+
