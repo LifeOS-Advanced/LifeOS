@@ -14,6 +14,7 @@ import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { useNewParam } from '@/hooks/use-new-param';
 import { RichEditor, NOTE_TEMPLATES, htmlToText } from '@/components/app/RichEditor';
+import { noteFormSchema, validateOrToast } from '@/lib/schemas';
 
 export default function Notes() {
   const tasks = getTasks();
@@ -37,7 +38,8 @@ export default function Notes() {
     notes.filter(n => n.id !== note.id && n.content.toLowerCase().includes(`[[${note.title.toLowerCase()}]]`));
 
   const handleSubmit = () => {
-    if (!form.title.trim()) return;
+    const valid = validateOrToast(noteFormSchema, { title: form.title, content: form.content, tags: form.tags, folder: form.folder });
+    if (!valid) return;
     const now = new Date().toISOString();
     const tagArr = form.tags.split(',').map(s => s.trim()).filter(Boolean);
     const folder = form.folder?.trim() || undefined;

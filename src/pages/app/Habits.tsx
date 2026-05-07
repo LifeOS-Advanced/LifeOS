@@ -13,6 +13,7 @@ import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { useNewParam } from '@/hooks/use-new-param';
+import { habitFormSchema, validateOrToast } from '@/lib/schemas';
 
 export default function Habits() {
   const goals = getGoals();
@@ -47,7 +48,8 @@ export default function Habits() {
   };
 
   const createHabit = () => {
-    if (!form.title.trim()) return;
+    const valid = validateOrToast(habitFormSchema, { title: form.title, description: form.description, frequency: form.frequency });
+    if (!valid) return;
     const newHabit: Habit = { id: `h${Date.now()}`, title: form.title, description: form.description, frequency: form.frequency, streak: 0, completedDates: [], lifeArea: form.lifeArea, goalId: form.goalId, createdAt: new Date().toISOString() };
     save([newHabit, ...habits]);
     setForm({ title: '', description: '', frequency: 'daily' });
