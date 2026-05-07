@@ -15,6 +15,7 @@ import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { GoalIntelligence } from '@/components/app/GoalIntelligence';
 import { useNewParam } from '@/hooks/use-new-param';
+import { goalFormSchema, validateOrToast } from '@/lib/schemas';
 
 export default function Goals() {
   const [goals, setLocalGoals] = useState(getGoals());
@@ -30,7 +31,8 @@ export default function Goals() {
   const save = (updated: Goal[]) => { setLocalGoals(updated); setGoals(updated); };
 
   const createGoal = () => {
-    if (!form.title.trim()) return;
+    const valid = validateOrToast(goalFormSchema, { title: form.title, description: form.description, targetDate: form.targetDate });
+    if (!valid) return;
     const newGoal: Goal = {
       id: `g${Date.now()}`,
       title: form.title,

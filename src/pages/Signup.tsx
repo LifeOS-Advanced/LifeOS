@@ -1,5 +1,7 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,17 +9,28 @@ import { setAuthenticated, setProfile } from '@/lib/store';
 import { dummyTasks, dummyHabits, dummyGoals, dummyNotes, dummyFocusSessions } from '@/lib/dummy-data';
 import { setTasks, setHabits, setGoals, setNotes, setFocusSessions } from '@/lib/store';
 import { ArrowLeft, Mail, Lock, User } from 'lucide-react';
+import { signupSchema } from '@/lib/schemas';
+import { DEFAULT_PREFERENCES } from '@/lib/types';
+
+type SignupValues = z.infer<typeof signupSchema>;
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignupValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { name: '', email: '', password: '' },
+  });
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (values: SignupValues) => {
     setAuthenticated(true);
-    setProfile({ name: name || 'User', email, lifestyleMode: 'personal-growth', enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'], theme: 'light' });
+    setProfile({
+      name: values.name,
+      email: values.email,
+      lifestyleMode: 'personal-growth',
+      enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'],
+      theme: 'light',
+      preferences: DEFAULT_PREFERENCES,
+    });
     setTasks(dummyTasks);
     setHabits(dummyHabits);
     setGoals(dummyGoals);
@@ -25,6 +38,8 @@ export default function Signup() {
     setFocusSessions(dummyFocusSessions);
     navigate('/onboarding');
   };
+
+  const oauth = () => onSubmit({ name: 'New User', email: 'demo@lifeos.app', password: 'demopassword' });
 
   return (
     <div className="min-h-screen gradient-hero flex items-center justify-center p-6">
@@ -42,29 +57,32 @@ export default function Signup() {
           <h1 className="text-2xl font-bold text-foreground mb-1">Create your account</h1>
           <p className="text-muted-foreground mb-8">Start organizing your life in minutes.</p>
 
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="name">Full name</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="name" placeholder="John Doe" className="pl-10" value={name} onChange={e => setName(e.target.value)} required />
+                <Input id="name" placeholder="John Doe" className="pl-10" aria-invalid={!!errors.name} {...register('name')} />
               </div>
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="you@example.com" className="pl-10" value={email} onChange={e => setEmail(e.target.value)} required />
+                <Input id="email" type="email" placeholder="you@example.com" className="pl-10" aria-invalid={!!errors.email} {...register('email')} />
               </div>
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="password" type="password" placeholder="••••••••" className="pl-10" value={password} onChange={e => setPassword(e.target.value)} required />
+                <Input id="password" type="password" placeholder="At least 8 characters" className="pl-10" aria-invalid={!!errors.password} {...register('password')} />
               </div>
+              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
             </div>
-            <Button type="submit" className="w-full gradient-primary text-primary-foreground font-semibold h-11 shadow-glow hover:opacity-90 transition-opacity">
+            <Button type="submit" disabled={isSubmitting} className="w-full gradient-primary text-primary-foreground font-semibold h-11 shadow-glow hover:opacity-90 transition-opacity">
               Create account
             </Button>
           </form>
@@ -75,8 +93,8 @@ export default function Signup() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="h-11" onClick={handleSignup}>Google</Button>
-            <Button variant="outline" className="h-11" onClick={handleSignup}>GitHub</Button>
+            <Button type="button" variant="outline" className="h-11" onClick={oauth}>Google</Button>
+            <Button type="button" variant="outline" className="h-11" onClick={oauth}>GitHub</Button>
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6">

@@ -15,6 +15,7 @@ import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { TaskCheckbox } from '@/components/app/TaskCheckbox';
 import { useNewParam } from '@/hooks/use-new-param';
+import { taskFormSchema, validateOrToast } from '@/lib/schemas';
 
 const WEEKDAYS = [
   { i: 0, l: 'S' }, { i: 1, l: 'M' }, { i: 2, l: 'T' }, { i: 3, l: 'W' },
@@ -52,7 +53,17 @@ export default function Tasks() {
   });
 
   const handleSubmit = () => {
-    if (!form.title.trim()) return;
+    const valid = validateOrToast(taskFormSchema, {
+      title: form.title,
+      description: form.description,
+      priority: form.priority,
+      status: form.status,
+      dueDate: form.dueDate,
+      tags: form.tags,
+      recurrence: form.recurrence,
+      daysOfWeek: form.daysOfWeek,
+    });
+    if (!valid) return;
     const tagArr = form.tags.split(',').map(s => s.trim()).filter(Boolean);
     const recurrence = form.recurrence === 'none'
       ? undefined
