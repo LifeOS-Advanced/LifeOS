@@ -18,7 +18,6 @@ import Focus from "./pages/app/Focus";
 import Settings from "./pages/app/Settings";
 import Review from "./pages/app/Review";
 import CalendarPage from "./pages/app/Calendar";
-import CalendarPage from "./pages/app/Calendar";
 import Insights from "./pages/app/Insights";
 import NotFound from "./pages/NotFound";
 
