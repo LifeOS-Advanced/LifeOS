@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/command';
 import {
   CheckSquare, Zap, Target, BookOpen, Timer, LayoutDashboard, Settings,
-  Plus, Sun, Moon, Search, Sparkles, CalendarDays,
+  Plus, Sun, Moon, Search, Sparkles, CalendarDays, LineChart,
 } from 'lucide-react';
 import { searchAll, SearchResult } from '@/lib/search';
 import { getProfile, setProfile } from '@/lib/store';
@@ -120,6 +120,7 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
           <CommandItem onSelect={() => go('/app/notes')}><BookOpen className="mr-2 h-4 w-4" />Notes</CommandItem>
           <CommandItem onSelect={() => go('/app/focus')}><Timer className="mr-2 h-4 w-4" />Focus</CommandItem>
           <CommandItem onSelect={() => go('/app/calendar')}><CalendarDays className="mr-2 h-4 w-4" />Calendar</CommandItem>
+          <CommandItem onSelect={() => go('/app/insights')}><LineChart className="mr-2 h-4 w-4" />Insights</CommandItem>
           <CommandItem onSelect={() => go('/app/review')}><Sparkles className="mr-2 h-4 w-4" />Weekly review</CommandItem>
           <CommandItem onSelect={() => go('/app/settings')}><Settings className="mr-2 h-4 w-4" />Settings</CommandItem>
         </CommandGroup>

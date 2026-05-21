@@ -18,6 +18,7 @@ import Focus from "./pages/app/Focus";
 import Settings from "./pages/app/Settings";
 import Review from "./pages/app/Review";
 import CalendarPage from "./pages/app/Calendar";
+import Insights from "./pages/app/Insights";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="focus" element={<Focus />} />
             <Route path="review" element={<Review />} />
             <Route path="calendar" element={<CalendarPage />} />
+            <Route path="insights" element={<Insights />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />

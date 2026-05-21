@@ -122,11 +122,18 @@ export interface WeeklyReview {
 
 export type DashboardWidgetKey = 'today' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
 
+export type AccentTheme = 'indigo' | 'emerald' | 'slate' | 'amber';
+
 export interface UserPreferences {
   timezone: string;
   weekStartDay: 0 | 1; // 0=Sun, 1=Mon
   defaultFocusDuration: number; // minutes
   dashboardWidgets: DashboardWidgetKey[];
+  /** Display order for dashboard widgets (subset of dashboardWidgets) */
+  widgetOrder?: DashboardWidgetKey[];
+  /** Modules pinned to the top of the sidebar */
+  pinnedModules?: ModuleKey[];
+  accentTheme?: AccentTheme;
   notifications: {
     dailyReminders: boolean;
     habitStreakAlerts: boolean;
@@ -151,10 +158,14 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   weekStartDay: 1,
   defaultFocusDuration: 25,
   dashboardWidgets: ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+  widgetOrder: ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+  pinnedModules: [],
+  accentTheme: 'indigo',
   notifications: {
     dailyReminders: true,
     habitStreakAlerts: true,
     goalDeadlineWarnings: true,
   },
 };
+
 

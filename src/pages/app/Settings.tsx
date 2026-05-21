@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getProfile, setProfile } from '@/lib/store';
-import { UserProfile, ModuleKey, DEFAULT_PREFERENCES, DashboardWidgetKey, UserPreferences } from '@/lib/types';
+import { applyAccent, ACCENT_OPTIONS } from '@/lib/theme';
+import { UserProfile, ModuleKey, DEFAULT_PREFERENCES, DashboardWidgetKey, UserPreferences, AccentTheme } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon } from 'lucide-react';
+import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon, Palette, Pin, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionHeader, Chip } from '@/components/app/patterns';
 
@@ -18,14 +19,15 @@ const moduleList: { key: ModuleKey; label: string; icon: typeof CheckSquare }[] 
   { key: 'focus', label: 'Focus', icon: Timer },
 ];
 
-const widgetList: { key: DashboardWidgetKey; label: string }[] = [
-  { key: 'today', label: 'Today engine' },
-  { key: 'habits', label: 'Habits' },
-  { key: 'goals', label: 'Goals' },
-  { key: 'focus', label: 'Focus stats' },
-  { key: 'consistency', label: 'Consistency' },
-  { key: 'insights', label: 'Insights' },
-];
+const widgetMeta: Record<DashboardWidgetKey, string> = {
+  today: 'Today engine',
+  habits: 'Habits',
+  goals: 'Goals',
+  focus: 'Focus stats',
+  consistency: 'Consistency',
+  insights: 'Insights',
+};
+const ALL_WIDGETS: DashboardWidgetKey[] = ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'];
 
 const focusPresets = [15, 25, 45, 50, 90];
 
@@ -38,7 +40,7 @@ function getTimezones(): string[] {
   return ['UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Asia/Singapore', 'Australia/Sydney'];
 }
 
-export default function Settings() {
+export default function SettingsPage() {
   const initial = getProfile() || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[], theme: 'light' as const };
   const [profile, setLocalProfile] = useState<UserProfile>({
     ...initial,
@@ -47,10 +49,17 @@ export default function Settings() {
 
   const prefs = profile.preferences!;
   const timezones = useMemo(getTimezones, []);
+  const order: DashboardWidgetKey[] = useMemo(() => {
+    const o = prefs.widgetOrder ?? DEFAULT_PREFERENCES.widgetOrder!;
+    // Ensure all widgets appear once
+    const seen = new Set(o);
+    return [...o, ...ALL_WIDGETS.filter(w => !seen.has(w))];
+  }, [prefs.widgetOrder]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', profile.theme === 'dark');
-  }, [profile.theme]);
+    applyAccent(prefs.accentTheme);
+  }, [profile.theme, prefs.accentTheme]);
 
   const update = (changes: Partial<UserProfile>) => {
     const updated = { ...profile, ...changes };
@@ -67,9 +76,29 @@ export default function Settings() {
     update({ enabledModules: modules });
   };
 
+  const togglePinned = (key: ModuleKey) => {
+    const cur = prefs.pinnedModules ?? [];
+    const next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key];
+    updatePrefs({ pinnedModules: next });
+  };
+
   const toggleWidget = (key: DashboardWidgetKey) => {
     const widgets = prefs.dashboardWidgets.includes(key) ? prefs.dashboardWidgets.filter(w => w !== key) : [...prefs.dashboardWidgets, key];
     updatePrefs({ dashboardWidgets: widgets });
+  };
+
+  const moveWidget = (key: DashboardWidgetKey, dir: -1 | 1) => {
+    const idx = order.indexOf(key);
+    const swap = idx + dir;
+    if (idx < 0 || swap < 0 || swap >= order.length) return;
+    const next = [...order];
+    [next[idx], next[swap]] = [next[swap], next[idx]];
+    updatePrefs({ widgetOrder: next });
+  };
+
+  const setAccent = (a: AccentTheme) => {
+    updatePrefs({ accentTheme: a });
+    applyAccent(a);
   };
 
   const saveChanges = () => {
@@ -96,7 +125,7 @@ export default function Settings() {
       {/* Appearance */}
       <section className="rounded-xl border border-border bg-card p-6 shadow-card">
         <SectionHeader icon={profile.theme === 'dark' ? Moon : Sun} title="Appearance" />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-5">
           {(['light', 'dark'] as const).map(t => (
             <button
               key={t}
@@ -107,6 +136,25 @@ export default function Settings() {
               <span className="text-sm font-medium capitalize">{t}</span>
             </button>
           ))}
+        </div>
+
+        <div>
+          <div className="flex items-center gap-2 mb-2 text-sm font-medium text-foreground"><Palette className="h-4 w-4" /> Accent color</div>
+          <div className="grid grid-cols-4 gap-2">
+            {ACCENT_OPTIONS.map(opt => {
+              const active = (prefs.accentTheme || 'indigo') === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setAccent(opt.value)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all ${active ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/30'}`}
+                >
+                  <span className="h-4 w-4 rounded-full ring-1 ring-border" style={{ background: opt.swatch }} />
+                  <span className="text-xs font-medium text-foreground">{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -159,32 +207,55 @@ export default function Settings() {
         </div>
       </section>
 
-      {/* Dashboard widgets */}
+      {/* Dashboard customization */}
       <section className="rounded-xl border border-border bg-card p-6 shadow-card">
-        <SectionHeader icon={LayoutDashboard} title="Dashboard widgets" description="Choose what shows on your dashboard." />
-        <div className="space-y-2">
-          {widgetList.map(w => (
-            <div key={w.key} className="flex items-center justify-between py-1.5">
-              <span className="text-sm text-foreground">{w.label}</span>
-              <Switch checked={prefs.dashboardWidgets.includes(w.key)} onCheckedChange={() => toggleWidget(w.key)} />
-            </div>
-          ))}
-        </div>
+        <SectionHeader icon={LayoutDashboard} title="Dashboard widgets" description="Reorder, show or hide widgets on your dashboard." />
+        <ul className="space-y-1.5">
+          {order.map((key, idx) => {
+            const visible = prefs.dashboardWidgets.includes(key);
+            return (
+              <li key={key} className="flex items-center gap-2 rounded-lg border border-subtle px-3 py-2 bg-card">
+                <span className="flex-1 text-sm text-foreground">{widgetMeta[key]}</span>
+                <button onClick={() => moveWidget(key, -1)} disabled={idx === 0} className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-secondary disabled:opacity-30">
+                  <ArrowUp className="h-3.5 w-3.5" />
+                </button>
+                <button onClick={() => moveWidget(key, 1)} disabled={idx === order.length - 1} className="h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-secondary disabled:opacity-30">
+                  <ArrowDown className="h-3.5 w-3.5" />
+                </button>
+                <button onClick={() => toggleWidget(key)} className={`h-7 w-7 inline-flex items-center justify-center rounded-md hover:bg-secondary ${visible ? 'text-primary' : 'text-muted-foreground'}`} title={visible ? 'Hide' : 'Show'}>
+                  {visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       {/* Modules */}
       <section className="rounded-xl border border-border bg-card p-6 shadow-card">
-        <SectionHeader icon={CalIcon} title="Modules" description="Enable or disable major sections." />
+        <SectionHeader icon={CalIcon} title="Modules" description="Enable sections and pin favorites to the top of the sidebar." />
         <div className="space-y-2">
-          {moduleList.map(m => (
-            <div key={m.key} className="flex items-center justify-between py-1.5">
-              <div className="flex items-center gap-3">
-                <m.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">{m.label}</span>
+          {moduleList.map(m => {
+            const enabled = profile.enabledModules.includes(m.key);
+            const pinned = (prefs.pinnedModules ?? []).includes(m.key);
+            return (
+              <div key={m.key} className="flex items-center justify-between py-1.5 gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <m.icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">{m.label}</span>
+                </div>
+                <button
+                  onClick={() => togglePinned(m.key)}
+                  disabled={!enabled}
+                  className={`h-7 w-7 inline-flex items-center justify-center rounded-md transition-colors ${pinned ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:bg-secondary'} disabled:opacity-30`}
+                  title={pinned ? 'Unpin' : 'Pin to sidebar'}
+                >
+                  <Pin className="h-3.5 w-3.5" />
+                </button>
+                <Switch checked={enabled} onCheckedChange={() => toggleModule(m.key)} />
               </div>
-              <Switch checked={profile.enabledModules.includes(m.key)} onCheckedChange={() => toggleModule(m.key)} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
