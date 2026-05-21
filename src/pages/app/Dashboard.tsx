@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getTasks, getHabits, getGoals, getNotes, getFocusSessions, getProfile, getCheckIns } from '@/lib/store';
-import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2 } from 'lucide-react';
+import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TodayEngine } from '@/components/app/TodayEngine';
@@ -8,6 +8,7 @@ import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { ConsistencyCard } from '@/components/app/ConsistencyCard';
 import { DashboardSkeleton } from '@/components/app/DashboardSkeleton';
 import { computeConsistency } from '@/lib/insights';
+import { DEFAULT_PREFERENCES, DashboardWidgetKey } from '@/lib/types';
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 10 },
