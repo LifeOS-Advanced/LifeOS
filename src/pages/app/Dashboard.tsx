@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { getTasks, getHabits, getGoals, getNotes, getFocusSessions, getProfile, getCheckIns } from '@/lib/store';
 import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
