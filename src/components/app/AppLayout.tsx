@@ -4,15 +4,17 @@ import { AppSidebar } from './AppSidebar';
 import { CommandBar, useCommandBar } from './CommandBar';
 import { DailyCheckInModal } from './DailyCheckIn';
 import { WeeklyReviewPrompt } from './WeeklyReviewPrompt';
+import { QuickCapture } from './QuickCapture';
 import { getProfile } from '@/lib/store';
 import { generateRecurringInstances } from '@/lib/recurrence';
+import { applyThemeFromProfile } from '@/lib/theme';
 import { Search } from 'lucide-react';
 import { useEffect } from 'react';
 
 export function AppLayout() {
   const profile = getProfile();
   const { open, setOpen } = useCommandBar();
-  useEffect(() => { generateRecurringInstances(); }, []);
+  useEffect(() => { generateRecurringInstances(); applyThemeFromProfile(); }, []);
 
   return (
     <SidebarProvider>
@@ -44,6 +46,7 @@ export function AppLayout() {
         <CommandBar open={open} onOpenChange={setOpen} />
         <DailyCheckInModal />
         <WeeklyReviewPrompt />
+        <QuickCapture />
       </div>
     </SidebarProvider>
   );
