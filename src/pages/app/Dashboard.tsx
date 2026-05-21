@@ -41,16 +41,24 @@ export default function Dashboard() {
   const consistency = computeConsistency(habits, sessions, goals, checkIns);
   const todayCheckIn = checkIns.find(c => c.date === today);
 
+  const prefs = profile?.preferences ?? DEFAULT_PREFERENCES;
+  const visible = new Set<DashboardWidgetKey>(prefs.dashboardWidgets ?? DEFAULT_PREFERENCES.dashboardWidgets);
+  const order = (prefs.widgetOrder ?? DEFAULT_PREFERENCES.widgetOrder!) as DashboardWidgetKey[];
+  const show = (k: DashboardWidgetKey) => visible.has(k);
+  const orderIndex = (k: DashboardWidgetKey) => {
+    const i = order.indexOf(k);
+    return i === -1 ? 999 : i;
+  };
+
   const baseStats = [
-    { key: 'tasks', label: 'Tasks done', value: completedToday, icon: CheckSquare, color: 'text-primary' },
-    { key: 'habits', label: 'Active habits', value: habits.length, icon: Zap, color: 'text-accent' },
-    { key: 'goals', label: 'Goals in progress', value: goals.length, icon: Target, color: 'text-warning' },
-    { key: 'focus', label: 'Focus sessions', value: todaySessions.length, icon: Timer, color: 'text-success' },
+    { key: 'today' as DashboardWidgetKey, label: 'Tasks done', value: completedToday, icon: CheckSquare, color: 'text-primary' },
+    { key: 'habits' as DashboardWidgetKey, label: 'Active habits', value: habits.length, icon: Zap, color: 'text-accent' },
+    { key: 'goals' as DashboardWidgetKey, label: 'Goals in progress', value: goals.length, icon: Target, color: 'text-warning' },
+    { key: 'focus' as DashboardWidgetKey, label: 'Focus sessions', value: todaySessions.length, icon: Timer, color: 'text-success' },
   ];
-  const priority = profile?.dashboardPriority;
-  const stats = priority
-    ? [...baseStats].sort((a, b) => (a.key === priority ? -1 : b.key === priority ? 1 : 0))
-    : baseStats;
+  const stats = baseStats
+    .filter(s => show(s.key))
+    .sort((a, b) => orderIndex(a.key) - orderIndex(b.key));
 
   const connectedGoal = [...goals].sort((a, b) => {
     const aCount = (tasks.filter(t => a.linkedTaskIds.includes(t.id) || t.goalId === a.id).length)
