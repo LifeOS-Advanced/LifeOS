@@ -1,4 +1,4 @@
-import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays, LineChart, Pin } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { setAuthenticated, getProfile } from '@/lib/store';
@@ -8,6 +8,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -24,6 +25,9 @@ const moduleItems: Record<ModuleKey, { title: string; url: string; icon: typeof 
 };
 
 const dashboardItem = { title: 'Dashboard', url: '/app', icon: LayoutDashboard };
+const calendarItem = { title: 'Calendar', url: '/app/calendar', icon: CalendarDays };
+const insightsItem = { title: 'Insights', url: '/app/insights', icon: LineChart };
+const reviewItem = { title: 'Weekly Review', url: '/app/review', icon: Sparkles };
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -32,9 +36,10 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const profile = getProfile();
   const enabled = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[]);
-  const calendarItem = { title: 'Calendar', url: '/app/calendar', icon: CalendarDays };
-  const reviewItem = { title: 'Weekly Review', url: '/app/review', icon: Sparkles };
-  const items = [dashboardItem, ...enabled.map(k => moduleItems[k]).filter(Boolean), calendarItem, reviewItem];
+  const pinned = (profile?.preferences?.pinnedModules ?? []).filter(k => enabled.includes(k));
+  const moduleNav = enabled.filter(k => !pinned.includes(k)).map(k => moduleItems[k]).filter(Boolean);
+  const pinnedNav = pinned.map(k => moduleItems[k]).filter(Boolean);
+  const utilityNav = [calendarItem, insightsItem, reviewItem];
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
@@ -46,6 +51,23 @@ export function AppSidebar() {
     navigate('/');
   };
 
+  const renderItem = (item: { title: string; url: string; icon: typeof CheckSquare }, pinned?: boolean) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton asChild>
+        <NavLink
+          to={item.url}
+          end={item.url === '/app'}
+          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${isActive(item.url) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`}
+          activeClassName="bg-primary/10 text-primary"
+        >
+          <item.icon className="h-4.5 w-4.5 shrink-0" />
+          {!collapsed && <span className="flex-1">{item.title}</span>}
+          {!collapsed && pinned && <Pin className="h-3 w-3 text-muted-foreground/60" />}
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <div className="h-16 flex items-center px-4 border-b border-border">
@@ -54,24 +76,31 @@ export function AppSidebar() {
       </div>
 
       <SidebarContent className="px-2 py-4">
+        {pinnedNav.length > 0 && (
+          <SidebarGroup>
+            {!collapsed && <SidebarGroupLabel className="text-[10px] uppercase tracking-wider">Pinned</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {pinnedNav.map(item => renderItem(item, true))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map(item => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === '/app'}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${isActive(item.url) ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`}
-                      activeClassName="bg-primary/10 text-primary"
-                    >
-                      <item.icon className="h-4.5 w-4.5 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {renderItem(dashboardItem)}
+              {moduleNav.map(item => renderItem(item))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          {!collapsed && <SidebarGroupLabel className="text-[10px] uppercase tracking-wider">Workspace</SidebarGroupLabel>}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {utilityNav.map(item => renderItem(item))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
