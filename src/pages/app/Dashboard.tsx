@@ -93,80 +93,108 @@ export default function Dashboard() {
         )}
       </motion.header>
 
-      {/* Row 1 — HERO: Today's plan dominates */}
-      <motion.section {...fadeIn(0.05)}>
-        <TodayEngine tasks={tasks} habits={habits} goals={goals} />
-      </motion.section>
+      {/* Row 1 — HERO: Today's plan (gated on 'today') */}
+      {show('today') && (
+        <motion.section {...fadeIn(0.05)}>
+          <TodayEngine tasks={tasks} habits={habits} goals={goals} />
+        </motion.section>
+      )}
 
-      {/* Row 2 — Supporting stats (lower emphasis, sunken surface) */}
-      <motion.section {...fadeIn(0.1)} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {stats.map(s => (
-          <div
-            key={s.label}
-            className="rounded-xl border border-subtle surface-sunken p-4 transition-all duration-200 hover:border-border hover:bg-card"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <s.icon className={`h-4 w-4 ${s.color}`} />
-              <TrendingUp className="h-3.5 w-3.5 text-success/70" />
-            </div>
-            <p className="text-2xl font-semibold text-foreground tabular-nums leading-none mt-2">{s.value}</p>
-            <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-          </div>
-        ))}
-      </motion.section>
-
-      {/* Row 3 — Consistency & connected goal side-by-side on wide screens */}
-      <motion.section {...fadeIn(0.15)} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          {connectedGoal ? (
-            <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden h-full">
-              <div className="px-5 py-4 border-b border-subtle flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Link2 className="h-4 w-4 text-primary" />
-                  <h2 className="text-h3 text-foreground">Connected Goal</h2>
-                </div>
-                <Link to="/app/goals" className="text-xs text-primary hover:underline font-medium">View all</Link>
+      {/* Row 2 — Supporting stats (filtered by widget visibility) */}
+      {stats.length > 0 && (
+        <motion.section {...fadeIn(0.1)} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {stats.map(s => (
+            <div
+              key={s.label}
+              className="rounded-xl border border-subtle surface-sunken p-4 transition-all duration-200 hover:border-border hover:bg-card"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <s.icon className={`h-4 w-4 ${s.color}`} />
+                <TrendingUp className="h-3.5 w-3.5 text-success/70" />
               </div>
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-semibold text-foreground truncate">{connectedGoal.title}</h3>
-                      <LifeAreaBadge area={connectedGoal.lifeArea} />
+              <p className="text-2xl font-semibold text-foreground tabular-nums leading-none mt-2">{s.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+            </div>
+          ))}
+        </motion.section>
+      )}
+
+      {/* Row 3 — Goals & Consistency */}
+      {(show('goals') || show('consistency')) && (
+        <motion.section {...fadeIn(0.15)} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {show('goals') && (
+            <div className={show('consistency') ? 'lg:col-span-2' : 'lg:col-span-3'}>
+              {connectedGoal ? (
+                <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden h-full">
+                  <div className="px-5 py-4 border-b border-subtle flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Link2 className="h-4 w-4 text-primary" />
+                      <h2 className="text-h3 text-foreground">Connected Goal</h2>
                     </div>
-                    {connectedGoal.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{connectedGoal.description}</p>}
+                    <Link to="/app/goals" className="text-xs text-primary hover:underline font-medium">View all</Link>
                   </div>
-                  <span className="text-sm font-semibold text-primary shrink-0 tabular-nums">{connectedGoal.progress}%</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-5">
-                  <motion.div
-                    className="h-full rounded-full gradient-primary"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${connectedGoal.progress}%` }}
-                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                </div>
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-lg font-semibold text-foreground truncate">{connectedGoal.title}</h3>
+                          <LifeAreaBadge area={connectedGoal.lifeArea} />
+                        </div>
+                        {connectedGoal.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{connectedGoal.description}</p>}
+                      </div>
+                      <span className="text-sm font-semibold text-primary shrink-0 tabular-nums">{connectedGoal.progress}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-5">
+                      <motion.div
+                        className="h-full rounded-full gradient-primary"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${connectedGoal.progress}%` }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <ConnectedColumn icon={CheckSquare} label="Tasks" accent="text-primary" items={goalTasks.map(t => ({ id: t.id, title: t.title, meta: t.status }))} />
-                  <ConnectedColumn icon={Zap} label="Habits" accent="text-accent" items={goalHabits.map(h => ({ id: h.id, title: h.title, meta: `${h.streak}d streak` }))} />
-                  <ConnectedColumn icon={BookOpen} label="Notes" accent="text-info" items={goalNotes.map(n => ({ id: n.id, title: n.title }))} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <ConnectedColumn icon={CheckSquare} label="Tasks" accent="text-primary" items={goalTasks.map(t => ({ id: t.id, title: t.title, meta: t.status }))} />
+                      <ConnectedColumn icon={Zap} label="Habits" accent="text-accent" items={goalHabits.map(h => ({ id: h.id, title: h.title, meta: `${h.streak}d streak` }))} />
+                      <ConnectedColumn icon={BookOpen} label="Notes" accent="text-info" items={goalNotes.map(n => ({ id: n.id, title: n.title }))} />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-dashed border-border bg-card/40 p-8 h-full flex items-center justify-center">
-              <p className="text-sm text-muted-foreground">No goals yet — create one to see connections.</p>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border bg-card/40 p-8 h-full flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">No goals yet — create one to see connections.</p>
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        <div>
-          <ConsistencyCard stats={consistency} />
-        </div>
-      </motion.section>
+          {show('consistency') && (
+            <div className={show('goals') ? '' : 'lg:col-span-3'}>
+              <ConsistencyCard stats={consistency} />
+            </div>
+          )}
+        </motion.section>
+      )}
 
-      {/* Row 4 — Pinned notes (lowest emphasis) */}
+      {/* Insights teaser */}
+      {show('insights') && (
+        <motion.section {...fadeIn(0.18)}>
+          <Link to="/app/insights" className="block rounded-xl border border-border bg-card p-5 shadow-card hover:shadow-card-hover hover:border-primary/40 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+                <LineChart className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2"><h2 className="text-h3 text-foreground">Insights</h2><span className="text-[10px] uppercase tracking-wider text-primary font-semibold">New</span></div>
+                <p className="text-xs text-muted-foreground">Completion trends, focus hours, habit consistency, and goal pace.</p>
+              </div>
+              <span className="text-xs text-primary font-medium">Open →</span>
+            </div>
+          </Link>
+        </motion.section>
+      )}
+
+      {/* Pinned notes (always shown) */}
       <motion.section {...fadeIn(0.2)} className="rounded-xl border border-subtle bg-card/60">
         <div className="flex items-center justify-between px-5 py-4 border-b border-subtle">
           <div className="flex items-center gap-2">
