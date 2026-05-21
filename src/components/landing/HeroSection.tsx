@@ -27,7 +27,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             Your life, organized like a{' '}
-            <span className="text-gradient">clean operating system.</span>
+            <span className="">clean operating system.</span>
           </motion.h1>
 
           <motion.p
