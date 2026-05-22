@@ -1,14 +1,19 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ResponsiveContainer, LineChart, Line, AreaChart, Area, BarChart, Bar,
   RadialBarChart, RadialBar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from 'recharts';
-import { Activity, Timer, Target, Zap, TrendingUp, Compass } from 'lucide-react';
+import { Activity, Timer, Target, Zap, TrendingUp, Compass, Flame, CheckSquare, Trophy } from 'lucide-react';
 import { getTasks, getHabits, getGoals, getFocusSessions, getCheckIns } from '@/lib/store';
-import { computeWeeklyStats, computeConsistency, lastNDates, ymd } from '@/lib/insights';
+import { computeWeeklyStats, computeConsistency, lastNDates } from '@/lib/insights';
 import { LIFE_AREAS } from '@/lib/life-areas';
 import { SectionHeader, StatCard } from '@/components/app/patterns';
+import { cn } from '@/lib/utils';
+
+type Range = 'week' | 'month' | 'all';
+const RANGE_LABEL: Record<Range, string> = { week: 'This week', month: 'This month', all: 'All time' };
+const RANGE_DAYS: Record<Range, number> = { week: 7, month: 30, all: 365 };
 
 const ACCENT = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--info))', 'hsl(var(--success))', 'hsl(var(--destructive))'];
 
@@ -18,9 +23,39 @@ export default function Insights() {
   const goals = getGoals();
   const sessions = getFocusSessions();
   const checkIns = getCheckIns();
+  const [range, setRange] = useState<Range>('month');
 
   const weekly = useMemo(() => computeWeeklyStats(tasks, habits, goals, sessions), [tasks, habits, goals, sessions]);
   const consistency = useMemo(() => computeConsistency(habits, sessions, goals, checkIns), [habits, sessions, goals, checkIns]);
+
+  // Headline stats (independent of range)
+  const bestStreak = useMemo(() => habits.reduce((m, h) => Math.max(m, h.streak || 0), 0), [habits]);
+  const goalsCompleted = useMemo(() => goals.filter(g => g.progress >= 100).length, [goals]);
+
+  // Per-goal progress bars
+  const goalProgressData = useMemo(
+    () => goals.slice(0, 8).map(g => ({ name: g.title.length > 24 ? g.title.slice(0, 22) + '…' : g.title, progress: Math.round(g.progress) })),
+    [goals],
+  );
+
+  // Task velocity (tasks completed per day) over selected range
+  const velocityData = useMemo(() => {
+    const n = RANGE_DAYS[range];
+    const days = lastNDates(n);
+    return days.map(d => ({
+      date: d.slice(5),
+      completed: tasks.filter(t => t.status === 'done' && t.createdAt.startsWith(d)).length,
+    }));
+  }, [tasks, range]);
+
+  // Focus minutes per day over selected range
+  const focusRangeData = useMemo(() => {
+    const days = lastNDates(RANGE_DAYS[range]);
+    return days.map(d => ({
+      date: d.slice(5),
+      minutes: sessions.filter(s => s.completedAt === d).reduce((sum, s) => sum + (s.duration || 0), 0),
+    }));
+  }, [sessions, range]);
 
   // 30-day completion-rate trend
   const trend30 = useMemo(() => {
