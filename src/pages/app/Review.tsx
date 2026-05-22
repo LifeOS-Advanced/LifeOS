@@ -129,7 +129,10 @@ export default function Review() {
           <Textarea value={improveNext} onChange={e => setImproveNext(e.target.value)} placeholder="One thing you'll change…" className="mt-2 min-h-[80px]" />
         </div>
 
-        <div className="flex justify-end pt-2">
+        <div className="flex flex-wrap justify-end gap-2 pt-2">
+          <Button variant="outline" onClick={() => (window.location.href = '/app/tasks?range=week')}>
+            Plan next week →
+          </Button>
           <Button onClick={handleSave}>{existing ? 'Update review' : 'Save review'}</Button>
         </div>
       </motion.div>

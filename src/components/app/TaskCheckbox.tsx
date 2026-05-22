@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface TaskCheckboxProps {
@@ -12,7 +11,8 @@ interface TaskCheckboxProps {
 
 /**
  * Animated round checkbox used for task completion.
- * Includes a spring scale + check fade + soft ring burst on completion.
+ * Uses an SVG path with `pathLength` so the checkmark visibly draws itself in,
+ * plus a soft ring burst on first completion.
  */
 export function TaskCheckbox({ checked, onChange, size = 'md', className }: TaskCheckboxProps) {
   const [bursting, setBursting] = useState(false);
@@ -27,7 +27,7 @@ export function TaskCheckbox({ checked, onChange, size = 'md', className }: Task
   };
 
   const sizeClass = size === 'sm' ? 'h-4 w-4' : 'h-5 w-5';
-  const iconSize = size === 'sm' ? 10 : 12;
+  const svgSize = size === 'sm' ? 10 : 12;
 
   return (
     <button
@@ -46,16 +46,28 @@ export function TaskCheckbox({ checked, onChange, size = 'md', className }: Task
     >
       <AnimatePresence>
         {checked && (
-          <motion.span
+          <motion.svg
             key="check"
-            initial={{ scale: 0, opacity: 0 }}
+            width={svgSize}
+            height={svgSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
+            exit={{ scale: 0.6, opacity: 0 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center justify-center"
           >
-            <Check size={iconSize} strokeWidth={3.5} />
-          </motion.span>
+            <motion.path
+              d="M5 12.5L10 17.5L19 7.5"
+              stroke="currentColor"
+              strokeWidth={3.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.35, ease: 'easeOut', delay: 0.05 }}
+            />
+          </motion.svg>
         )}
       </AnimatePresence>
       {bursting && <span className="burst absolute inset-0 rounded-full" aria-hidden />}
