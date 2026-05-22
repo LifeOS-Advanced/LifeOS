@@ -1,6 +1,28 @@
+import { useEffect, useState } from 'react';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+
+/** Hook: animates a numeric value from 0 → target over `duration` ms. */
+function useCountUp(target: number, duration = 700) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!Number.isFinite(target)) { setVal(target); return; }
+    let raf = 0;
+    const start = performance.now();
+    const from = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      setVal(from + (target - from) * eased);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return val;
+}
 
 interface StatCardProps {
   icon?: LucideIcon;
@@ -38,7 +60,9 @@ export function StatCard({ icon: Icon, label, value, hint, trend, trendLabel, ac
           </div>
         )}
       </div>
-      <div className="text-2xl font-bold text-foreground tabular-nums">{value}</div>
+      <div className="text-2xl font-bold text-foreground tabular-nums">
+        <CountValue value={value} />
+      </div>
       <div className="mt-1 flex items-center gap-1.5 text-xs">
         {trend && (
           <span className={cn('inline-flex items-center gap-0.5 font-medium', trendColor)}>
@@ -50,4 +74,17 @@ export function StatCard({ icon: Icon, label, value, hint, trend, trendLabel, ac
       </div>
     </motion.div>
   );
+}
+
+/** Renders a number with a brief count-up animation; passes through non-numeric values. */
+function CountValue({ value }: { value: string | number }) {
+  // Extract numeric prefix from value (e.g. "12.5" from "12.5h" or "84%")
+  const raw = String(value);
+  const match = raw.match(/^(-?\d+(?:\.\d+)?)(.*)$/);
+  if (!match) return <>{value}</>;
+  const num = parseFloat(match[1]);
+  const suffix = match[2];
+  const decimals = (match[1].split('.')[1] || '').length;
+  const animated = useCountUp(num);
+  return <>{animated.toFixed(decimals)}{suffix}</>;
 }
