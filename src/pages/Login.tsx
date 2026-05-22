@@ -22,13 +22,6 @@ export default function Login() {
 
   const onSubmit = (_values: LoginValues) => {
     setAuthenticated(true);
-    if (getTasks().length === 0) {
-      setTasks(dummyTasks);
-      setHabits(dummyHabits);
-      setGoals(dummyGoals);
-      setNotes(dummyNotes);
-      setFocusSessions(dummyFocusSessions);
-    }
     navigate(isOnboarded() ? '/app' : '/onboarding');
   };
 
