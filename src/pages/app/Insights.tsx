@@ -120,19 +120,93 @@ export default function Insights() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <header>
-        <p className="text-eyebrow">Productivity intelligence</p>
-        <h1 className="text-h1 text-foreground">Insights</h1>
-        <p className="text-sm text-muted-foreground mt-1">Patterns in your last 7–30 days.</p>
+      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <p className="text-eyebrow">Productivity intelligence</p>
+          <h1 className="text-h1 text-foreground">Your Insights</h1>
+          <p className="text-sm text-muted-foreground mt-1">Patterns across {RANGE_LABEL[range].toLowerCase()}.</p>
+        </div>
+        <div className="inline-flex rounded-lg border border-border bg-card p-1 shadow-card self-start">
+          {(['week', 'month', 'all'] as Range[]).map(r => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                range === r ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {RANGE_LABEL[r]}
+            </button>
+          ))}
+        </div>
       </header>
 
-      {/* High-level stats */}
+      {/* Headline summary stats */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard icon={Flame} label="Best habit streak" value={bestStreak} hint="all time" accent="warning" />
+        <StatCard icon={CheckSquare} label="Tasks done this week" value={weekly.tasksCompleted} accent="primary" />
+        <StatCard icon={Timer} label="Total focus hours" value={(weekly.focusMinutes / 60).toFixed(1)} hint={`${weekly.focusSessions} sessions`} accent="success" />
+        <StatCard icon={Trophy} label="Goals completed" value={goalsCompleted} hint={`of ${goals.length}`} accent="primary" />
+      </section>
+
+      {/* Secondary stats */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard icon={Activity} label="Weekly score" value={`${consistency.weeklyScore}`} hint="0–100" accent="primary" />
-        <StatCard icon={Timer} label="Focus hours" value={(weekly.focusMinutes / 60).toFixed(1)} hint={`${weekly.focusSessions} sessions`} accent="success" />
         <StatCard icon={Zap} label="Habit consistency" value={`${weekly.habitConsistency}%`} accent="warning" />
         <StatCard icon={Target} label="Goal momentum" value={`${consistency.goalMomentum}%`} hint="avg active" accent="primary" />
+        <StatCard icon={TrendingUp} label="Goals progressing" value={weekly.goalsProgressed} hint="this week" accent="success" />
       </section>
+
+      {/* Task velocity */}
+      <Card title={`Task velocity — ${RANGE_LABEL[range].toLowerCase()}`} icon={TrendingUp} description="Tasks completed per day.">
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={velocityData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border-subtle))" vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+            <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
+            <Tooltip {...tooltipStyle()} formatter={(v: number) => [`${v}`, 'Completed']} />
+            <Line type="monotone" dataKey="completed" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </Card>
+
+      {/* Focus time over range */}
+      <Card title={`Focus time — ${RANGE_LABEL[range].toLowerCase()}`} icon={Timer} description="Minutes spent in focus sessions each day.">
+        <ResponsiveContainer width="100%" height={220}>
+          <AreaChart data={focusRangeData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <defs>
+              <linearGradient id="g-focus" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="hsl(var(--success))" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border-subtle))" vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+            <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} unit="m" />
+            <Tooltip {...tooltipStyle()} formatter={(v: number) => [`${v} min`, 'Focus']} />
+            <Area type="monotone" dataKey="minutes" stroke="hsl(var(--success))" strokeWidth={2} fill="url(#g-focus)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </Card>
+
+      {/* Per-goal progress */}
+      <Card title="Goal progress" icon={Target} description="Current progress per active goal.">
+        {goalProgressData.length === 0 ? (
+          <Empty label="No goals yet — add one to track progress here." />
+        ) : (
+          <ResponsiveContainer width="100%" height={Math.max(180, goalProgressData.length * 36 + 40)}>
+            <BarChart data={goalProgressData} layout="vertical" margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border-subtle))" horizontal={false} />
+              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} unit="%" />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }} axisLine={false} tickLine={false} width={140} />
+              <Tooltip {...tooltipStyle()} formatter={(v: number) => [`${v}%`, 'Progress']} />
+              <Bar dataKey="progress" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} background={{ fill: 'hsl(var(--secondary))' }} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </Card>
+
 
       {/* Completion trend */}
       <Card title="Completion rate — 30 days" icon={TrendingUp} description="Share of tasks created each day that were also completed.">
