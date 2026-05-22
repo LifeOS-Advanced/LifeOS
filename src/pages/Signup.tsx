@@ -5,9 +5,7 @@ import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { setAuthenticated, setProfile } from '@/lib/store';
-import { dummyTasks, dummyHabits, dummyGoals, dummyNotes, dummyFocusSessions } from '@/lib/dummy-data';
-import { setTasks, setHabits, setGoals, setNotes, setFocusSessions } from '@/lib/store';
+import { setAuthenticated, setProfile, setTasks, setHabits, setGoals, setNotes, setFocusSessions } from '@/lib/store';
 import { ArrowLeft, Mail, Lock, User } from 'lucide-react';
 import { signupSchema } from '@/lib/schemas';
 import { DEFAULT_PREFERENCES } from '@/lib/types';
@@ -31,11 +29,12 @@ export default function Signup() {
       theme: 'light',
       preferences: DEFAULT_PREFERENCES,
     });
-    setTasks(dummyTasks);
-    setHabits(dummyHabits);
-    setGoals(dummyGoals);
-    setNotes(dummyNotes);
-    setFocusSessions(dummyFocusSessions);
+    // New accounts start completely empty — the user adds their own data.
+    setTasks([]);
+    setHabits([]);
+    setGoals([]);
+    setNotes([]);
+    setFocusSessions([]);
     navigate('/onboarding');
   };
 
