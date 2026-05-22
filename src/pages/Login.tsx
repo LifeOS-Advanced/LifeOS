@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { setAuthenticated, isOnboarded } from '@/lib/store';
-import { dummyTasks, dummyHabits, dummyGoals, dummyNotes, dummyFocusSessions } from '@/lib/dummy-data';
-import { setTasks, setHabits, setGoals, setNotes, setFocusSessions, getTasks } from '@/lib/store';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
 import { loginSchema } from '@/lib/schemas';
 
