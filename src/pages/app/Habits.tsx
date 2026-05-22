@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Star, Check, Zap, Target } from 'lucide-react';
+import { Plus, Star, Check, Zap, Target, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
@@ -150,9 +150,24 @@ export default function Habits() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-warning shrink-0">
-                  <Star className="h-4 w-4 fill-current" />
-                  <span className="text-sm font-semibold">{habit.streak}d</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  {(() => {
+                    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                    const y = yesterday.toISOString().split('T')[0];
+                    const atRisk = habit.frequency === 'daily'
+                      && habit.streak > 0
+                      && !habit.completedDates.includes(today)
+                      && !habit.completedDates.includes(y);
+                    return atRisk ? (
+                      <span title="Streak at risk — complete today to keep it alive" className="inline-flex items-center gap-1 text-xs font-medium text-warning bg-warning/10 px-2 py-0.5 rounded-full">
+                        <AlertTriangle className="h-3 w-3" /> at risk
+                      </span>
+                    ) : null;
+                  })()}
+                  <div className="flex items-center gap-1.5 text-warning">
+                    <Star className="h-4 w-4 fill-current" />
+                    <span className="text-sm font-semibold">{habit.streak}d</span>
+                  </div>
                 </div>
               </div>
 
