@@ -31,11 +31,12 @@ export default function Signup() {
       theme: 'light',
       preferences: DEFAULT_PREFERENCES,
     });
-    setTasks(dummyTasks);
-    setHabits(dummyHabits);
-    setGoals(dummyGoals);
-    setNotes(dummyNotes);
-    setFocusSessions(dummyFocusSessions);
+    // New accounts start completely empty — the user adds their own data.
+    setTasks([]);
+    setHabits([]);
+    setGoals([]);
+    setNotes([]);
+    setFocusSessions([]);
     navigate('/onboarding');
   };
 
