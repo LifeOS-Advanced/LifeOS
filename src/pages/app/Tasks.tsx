@@ -270,7 +270,7 @@ export default function Tasks() {
           description="Add your first task and turn chaos into something slightly less embarrassing."
           ctaLabel="Create Task"
           onCta={() => setDialogOpen(true)}
-          tip="Press ⌘K anywhere to quickly add a task."
+          tip="Press CTRL + K anywhere to quickly add a task."
         />
       ) : viewMode === 'list' ? (
         <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">

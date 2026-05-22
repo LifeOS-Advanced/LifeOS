@@ -29,7 +29,7 @@ export function EmptyState({ icon: Icon, title, description, ctaLabel, onCta, ti
         </Button>
       )}
       {tip && (
-        <p className="mt-5 text-xs text-muted-foreground italic">💡 {tip}</p>
+        <p className="mt-5 text-xs text-muted-foreground italic">💡 Tip {tip}</p>
       )}
     </motion.div>
   );
