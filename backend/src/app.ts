@@ -23,15 +23,19 @@ const app = express();
 app.use(helmet());
 
 // ── CORS ────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_URL ?? 'http://localhost:8080')
+const isProduction = process.env.NODE_ENV === 'production';
+const allowedOrigins = (process.env.CLIENT_URL ?? 'http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173')
   .split(',')
   .map((o) => o.trim());
+const localDevOrigin = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
 
 app.use(
   cors({
     origin: (origin, cb) => {
       // Allow server-to-server calls (no origin) and whitelisted origins
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      if (!origin || allowedOrigins.includes(origin) || (!isProduction && localDevOrigin.test(origin))) {
+        return cb(null, true);
+      }
       cb(new Error(`CORS: origin ${origin} not allowed`));
     },
     credentials: true,

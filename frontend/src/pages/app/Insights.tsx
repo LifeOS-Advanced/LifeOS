@@ -4,7 +4,7 @@ import {
   RadialBarChart, RadialBar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from 'recharts';
-import { Activity, Timer, Target, Zap, TrendingUp, Compass, Flame, CheckSquare, Trophy } from 'lucide-react';
+import { Activity, Timer, Target, Zap, TrendingUp, Compass, Flame, CheckSquare, Trophy, type LucideIcon } from 'lucide-react';
 import { getTasks, getHabits, getGoals, getFocusSessions, getCheckIns } from '@/lib/store';
 import { computeWeeklyStats, computeConsistency, lastNDates } from '@/lib/insights';
 import { LIFE_AREAS } from '@/lib/life-areas';
@@ -324,7 +324,7 @@ function tooltipStyle() {
   };
 }
 
-function Card({ title, icon, description, children }: { title: string; icon: any; description?: string; children: React.ReactNode }) {
+function Card({ title, icon, description, children }: { title: string; icon: LucideIcon; description?: string; children: React.ReactNode }) {
   return (
     <section className="rounded-xl border border-border bg-card p-5 shadow-card">
       <SectionHeader icon={icon} title={title} description={description} />

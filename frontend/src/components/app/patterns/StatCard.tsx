@@ -81,10 +81,10 @@ function CountValue({ value }: { value: string | number }) {
   // Extract numeric prefix from value (e.g. "12.5" from "12.5h" or "84%")
   const raw = String(value);
   const match = raw.match(/^(-?\d+(?:\.\d+)?)(.*)$/);
+  const num = match ? parseFloat(match[1]) : 0;
+  const animated = useCountUp(num);
   if (!match) return <>{value}</>;
-  const num = parseFloat(match[1]);
   const suffix = match[2];
   const decimals = (match[1].split('.')[1] || '').length;
-  const animated = useCountUp(num);
   return <>{animated.toFixed(decimals)}{suffix}</>;
 }

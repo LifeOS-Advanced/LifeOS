@@ -23,12 +23,9 @@ export function Chip({ children, onRemove, onClick, active, variant = 'default',
           ? 'bg-primary/10 text-primary border-primary/30'
           : 'bg-secondary text-secondary-foreground border-transparent hover:bg-secondary/70';
 
-  const Component: any = onClick ? 'button' : 'span';
-  return (
-    <Component
-      onClick={onClick}
-      className={cn('inline-flex items-center gap-1.5 rounded-full border font-medium transition-colors', sizing, styles)}
-    >
+  const className = cn('inline-flex items-center gap-1.5 rounded-full border font-medium transition-colors', sizing, styles);
+  const content = (
+    <>
       {icon}
       {children}
       {onRemove && (
@@ -41,6 +38,31 @@ export function Chip({ children, onRemove, onClick, active, variant = 'default',
           <X className="h-3 w-3" />
         </button>
       )}
-    </Component>
+    </>
+  );
+
+  if (onClick && !onRemove) {
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <span
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className={className}
+    >
+      {content}
+    </span>
   );
 }

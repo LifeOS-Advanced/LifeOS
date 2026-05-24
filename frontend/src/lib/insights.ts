@@ -82,7 +82,9 @@ export function computeWeeklyStats(
   }
   // Neglected = an area used in any tracked entity that has 0 activity this week
   const allUsedAreas = new Set<LifeArea>();
-  [...tasks, ...habits, ...goals].forEach(x => { if ((x as any).lifeArea) allUsedAreas.add((x as any).lifeArea); });
+  [...tasks, ...habits, ...goals].forEach(({ lifeArea }) => {
+    if (lifeArea) allUsedAreas.add(lifeArea);
+  });
   const neglectedCandidates = [...allUsedAreas].filter(a => !areaCounts.has(a));
   if (neglectedCandidates.length > 0) {
     const a = neglectedCandidates[0];

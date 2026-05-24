@@ -1,5 +1,5 @@
 import { Task, Habit, Goal } from '@/lib/types';
-import { TrendingUp, TrendingDown, Activity, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Calendar, type LucideIcon } from 'lucide-react';
 
 interface Props {
   goal: Goal;
@@ -74,7 +74,7 @@ export function GoalIntelligence({ goal, linkedTasks, linkedHabits }: Props) {
   );
 }
 
-function Stat({ icon: Icon, label, value, hint, tone = 'default' }: { icon: any; label: string; value: string; hint?: string; tone?: 'default' | 'success' | 'warning' | 'destructive' }) {
+function Stat({ icon: Icon, label, value, hint, tone = 'default' }: { icon: LucideIcon; label: string; value: string; hint?: string; tone?: 'default' | 'success' | 'warning' | 'destructive' }) {
   const toneClass = {
     default: 'text-foreground',
     success: 'text-success',

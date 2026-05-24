@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { AlertCircle, Star, Zap, Target, Timer, Sparkles, ArrowRight } from 'lucide-react';
+import { AlertCircle, Star, Zap, Target, Timer, Sparkles, ArrowRight, type LucideIcon } from 'lucide-react';
 import { Task, Habit, Goal } from '@/lib/types';
 import { LifeAreaBadge } from './LifeAreaBadge';
 
@@ -141,7 +141,7 @@ export function TodayEngine({ tasks, habits, goals }: Props) {
   );
 }
 
-function Row({ icon: Icon, iconClass, label, children }: { icon: any; iconClass: string; label: string; children: React.ReactNode }) {
+function Row({ icon: Icon, iconClass, label, children }: { icon: LucideIcon; iconClass: string; label: string; children: ReactNode }) {
   return (
     <div className="flex items-start gap-3">
       <div className={`mt-0.5 h-7 w-7 rounded-lg bg-secondary flex items-center justify-center shrink-0 ${iconClass}`}>
