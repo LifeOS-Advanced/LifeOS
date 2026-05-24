@@ -1,7 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, storeToken, clearToken } from '@/lib/api';
-import { setAuthenticated, setProfile, isOnboarded } from '@/lib/store';
+import { setAuthenticated, setProfile, isOnboarded, setOnboarded } from '@/lib/store';
 import { DEFAULT_PREFERENCES, type UserProfile } from '@/lib/types';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -20,6 +20,7 @@ interface AuthResponse {
 }
 
 interface AuthContextType {
+  register: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -56,6 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     handleSuccess(data);
   }
 
+  async function register(name: string, email: string, password: string) {
+    const data = await api.post<AuthResponse>('/api/auth/register', { name, email, password });
+    setOnboarded(false);
+    handleSuccess(data);
+  }
+
   async function loginWithGoogle(accessToken: string) {
     const data = await api.post<AuthResponse>('/api/auth/google', { accessToken });
     handleSuccess(data);
@@ -73,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ login, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ register, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

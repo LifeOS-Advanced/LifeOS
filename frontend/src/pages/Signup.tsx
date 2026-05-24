@@ -1,17 +1,17 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { setAuthenticated, setProfile, setTasks, setHabits, setGoals, setNotes, setFocusSessions } from '@/lib/store';
 import { ArrowLeft, Mail, Lock, User, ArrowRight, Check } from 'lucide-react';
 import { signupSchema } from '@/lib/schemas';
-import { DEFAULT_PREFERENCES } from '@/lib/types';
 import { motion } from 'framer-motion';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
 type SignupValues = z.infer<typeof signupSchema>;
 
@@ -38,7 +38,7 @@ const features = [
 ];
 
 export default function Signup() {
-  const navigate = useNavigate();
+  const { register: registerAccount, loginWithGoogle } = useAuth();
   const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignupValues>({
@@ -46,31 +46,22 @@ export default function Signup() {
     defaultValues: { name: '', email: '', password: '' },
   });
 
-  const bootstrap = (name: string, email: string) => {
-    setAuthenticated(true);
-    setProfile({
-      name,
-      email,
-      lifestyleMode: 'personal-growth',
-      enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'],
-      theme: 'light',
-      preferences: DEFAULT_PREFERENCES,
-    });
-    setTasks([]); setHabits([]); setGoals([]); setNotes([]); setFocusSessions([]);
-    navigate('/onboarding');
+  const onSubmit = async (values: SignupValues) => {
+    try {
+      await registerAccount(values.name, values.email, values.password);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create account');
+    }
   };
-
-  const onSubmit = (values: SignupValues) => bootstrap(values.name, values.email);
 
   const googleSignup = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        }).then(r => r.json());
-        bootstrap(userInfo.name || 'User', userInfo.email || '');
+        await loginWithGoogle(tokenResponse.access_token);
       } catch {
-        bootstrap('User', '');
+        toast.error('Could not sign up with Google');
+      } finally {
+        setOauthLoading(null);
       }
     },
     onError: () => setOauthLoading(null),
@@ -78,7 +69,11 @@ export default function Signup() {
 
   const handleGitHub = () => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    if (!clientId) { bootstrap('User', ''); return; }
+    if (!clientId) {
+      setOauthLoading(null);
+      toast.error('GitHub signup is not configured yet');
+      return;
+    }
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: `${window.location.origin}/auth/github/callback`,

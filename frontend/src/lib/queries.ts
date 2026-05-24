@@ -36,6 +36,62 @@ export const useSaveTasks = () => {
   });
 };
 
+export const useCreateTask = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (task: Omit<Task, 'id' | 'createdAt'>) => dataLayer.createTask(task),
+    onSuccess: (created) => {
+      qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => [created, ...prev]);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+  });
+};
+
+export const useUpdateTask = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Task> }) => dataLayer.updateTask(id, updates),
+    onSuccess: (updated) => {
+      qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => prev.map(task => task.id === updated.id ? updated : task));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+  });
+};
+
+export const useUpdateTaskStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: Task['status'] }) => dataLayer.updateTaskStatus(id, status),
+    onSuccess: (updated) => {
+      qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => prev.map(task => task.id === updated.id ? updated : task));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+  });
+};
+
+export const useUpdateSubtask = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, subtaskId, done }: { taskId: string; subtaskId: string; done: boolean }) =>
+      dataLayer.updateSubtask(taskId, subtaskId, done),
+    onSuccess: (updated) => {
+      qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => prev.map(task => task.id === updated.id ? updated : task));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+  });
+};
+
+export const useDeleteTask = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dataLayer.deleteTask(id),
+    onSuccess: (id) => {
+      qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => prev.filter(task => task.id !== id));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+  });
+};
+
 // ---- Habits ----
 export const useHabits = () =>
   useQuery({ queryKey: queryKeys.habits, queryFn: dataLayer.listHabits, initialData: [] as Habit[] });

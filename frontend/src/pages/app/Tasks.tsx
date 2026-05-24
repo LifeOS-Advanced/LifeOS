@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getTasks, setTasks, getGoals } from '@/lib/store';
+import { getGoals } from '@/lib/store';
 import { Task, TaskStatus, TaskPriority, LifeArea, RecurrenceFrequency, Subtask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/app/EmptyState';
 import { TaskCheckbox } from '@/components/app/TaskCheckbox';
 import { useNewParam } from '@/hooks/use-new-param';
 import { taskFormSchema, validateOrToast } from '@/lib/schemas';
+import { useCreateTask, useDeleteTask, useTasks, useUpdateSubtask, useUpdateTask, useUpdateTaskStatus } from '@/lib/queries';
 
 const WEEKDAYS = [
   { i: 0, l: 'S' }, { i: 1, l: 'M' }, { i: 2, l: 'T' }, { i: 3, l: 'W' },
@@ -24,7 +25,12 @@ const WEEKDAYS = [
 
 export default function Tasks() {
   const goals = getGoals();
-  const [tasks, setLocalTasks] = useState(getTasks());
+  const { data: tasks = [], isLoading } = useTasks();
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+  const updateStatusMutation = useUpdateTaskStatus();
+  const updateSubtaskMutation = useUpdateSubtask();
+  const deleteTaskMutation = useDeleteTask();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
@@ -42,8 +48,6 @@ export default function Tasks() {
 
   useNewParam(() => setDialogOpen(true));
 
-  const save = (updated: Task[]) => { setLocalTasks(updated); setTasks(updated); };
-
   const filtered = tasks.filter(t => {
     if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
@@ -52,7 +56,7 @@ export default function Tasks() {
     return true;
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const valid = validateOrToast(taskFormSchema, {
       title: form.title,
       description: form.description,
@@ -68,21 +72,30 @@ export default function Tasks() {
     const recurrence = form.recurrence === 'none'
       ? undefined
       : { frequency: form.recurrence, daysOfWeek: form.recurrence === 'weekly' ? form.daysOfWeek : undefined };
-    if (editingTask) {
-      save(tasks.map(t => t.id === editingTask.id ? { ...t, ...form, tags: tagArr, recurrence, subtasks: form.subtasks } : t));
-    } else {
-      const newTask: Task = {
-        id: `t${Date.now()}`, title: form.title, description: form.description,
-        status: form.status, priority: form.priority, dueDate: form.dueDate, tags: tagArr,
-        goalId: form.goalId, lifeArea: form.lifeArea,
-        subtasks: form.subtasks.length ? form.subtasks : undefined,
-        recurrence,
-        lastGeneratedDate: recurrence ? form.dueDate || new Date().toISOString().split('T')[0] : undefined,
-        createdAt: new Date().toISOString(),
-      };
-      save([newTask, ...tasks]);
+    const payload: Omit<Task, 'id' | 'createdAt'> = {
+      title: form.title,
+      description: form.description,
+      status: form.status,
+      priority: form.priority,
+      dueDate: form.dueDate,
+      tags: tagArr,
+      goalId: form.goalId,
+      lifeArea: form.lifeArea,
+      subtasks: form.subtasks.length ? form.subtasks : undefined,
+      recurrence,
+      lastGeneratedDate: recurrence ? (editingTask?.lastGeneratedDate ?? form.dueDate) || new Date().toISOString().split('T')[0] : undefined,
+    };
+
+    try {
+      if (editingTask) {
+        await updateTaskMutation.mutateAsync({ id: editingTask.id, updates: payload });
+      } else {
+        await createTaskMutation.mutateAsync(payload);
+      }
+      resetForm();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not save task');
     }
-    resetForm();
   };
 
   const resetForm = () => {
@@ -91,7 +104,11 @@ export default function Tasks() {
     setEditingTask(null);
     setDialogOpen(false);
   };
-  const deleteTask = (id: string) => save(tasks.filter(t => t.id !== id));
+  const deleteTask = (id: string) => {
+    deleteTaskMutation.mutate(id, {
+      onError: (error) => toast.error(error instanceof Error ? error.message : 'Could not delete task'),
+    });
+  };
   const openEdit = (task: Task) => {
     setEditingTask(task);
     setForm({
@@ -115,17 +132,27 @@ export default function Tasks() {
   }));
 
   const toggleSubtaskOnTask = (taskId: string, subId: string) => {
-    save(tasks.map(t => t.id !== taskId ? t : {
-      ...t,
-      subtasks: t.subtasks?.map(s => s.id === subId ? { ...s, done: !s.done } : s),
-    }));
+    const task = tasks.find(t => t.id === taskId);
+    const subtask = task?.subtasks?.find(s => s.id === subId);
+    if (!subtask) return;
+    updateSubtaskMutation.mutate(
+      { taskId, subtaskId: subId, done: !subtask.done },
+      { onError: (error) => toast.error(error instanceof Error ? error.message : 'Could not update subtask') },
+    );
   };
   const updateStatus = (id: string, status: TaskStatus) => {
     const prev = tasks.find(t => t.id === id);
-    save(tasks.map(t => t.id === id ? { ...t, status } : t));
-    if (status === 'done' && prev?.status !== 'done') {
-      toast.success('Task complete', { description: prev?.title });
-    }
+    updateStatusMutation.mutate(
+      { id, status },
+      {
+        onSuccess: () => {
+          if (status === 'done' && prev?.status !== 'done') {
+            toast.success('Task complete', { description: prev?.title });
+          }
+        },
+        onError: (error) => toast.error(error instanceof Error ? error.message : 'Could not update task'),
+      },
+    );
   };
   const toggleDone = (task: Task, checked: boolean) => updateStatus(task.id, checked ? 'done' : 'todo');
 
@@ -236,7 +263,13 @@ export default function Tasks() {
                 </div>
               </div>
               <div><Label>Tags (comma separated)</Label><Input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="work, personal" /></div>
-              <Button onClick={handleSubmit} className="w-full gradient-primary text-primary-foreground">{editingTask ? 'Save Changes' : 'Create Task'}</Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={createTaskMutation.isPending || updateTaskMutation.isPending}
+                className="w-full gradient-primary text-primary-foreground"
+              >
+                {editingTask ? 'Save Changes' : 'Create Task'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -263,7 +296,11 @@ export default function Tasks() {
         </div>
       </div>
 
-      {tasks.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-xl border border-border bg-card shadow-card text-center py-12 text-muted-foreground">
+          Loading tasks...
+        </div>
+      ) : tasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
           title="No tasks yet"
