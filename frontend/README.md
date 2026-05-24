@@ -1,368 +1,234 @@
 # LifeOS
 
-**LifeOS** is a modern personal life management web app built to help users manage their daily life in one connected system.
+**LifeOS** is a full-stack personal life management web app that helps users manage their daily life in one connected system.
 
-It combines tasks, habits, goals, notes, focus sessions, and personalized dashboard tools into a single platform.  
-Instead of using separate apps for planning, tracking, and organizing, LifeOS gives users one clean place to manage everything.
-
----
-
-## Overview
-
-LifeOS is designed as a **personal operating system for life**.
-
-It helps users:
-- manage tasks
-- track habits
-- set and monitor goals
-- write and organize notes
-- run focus sessions with a Pomodoro timer
-- personalize their workflow through onboarding and settings
-
-The app is built with a clean modern UI inspired by productivity tools like Linear and Notion, while focusing on a more personal and lifestyle-oriented experience.
+It combines tasks, habits, goals, notes, focus sessions, check-ins, weekly reviews, and a personalised dashboard into a single platform backed by a real REST API and MongoDB database.
 
 ---
 
-## Core Idea
+## Tech Stack
 
-Most people manage life across multiple disconnected tools:
-- tasks in one app
-- notes in another
-- goals in their head
-- habits tracked inconsistently
-- focus and time management ignored completely
+### Frontend
+- **React 18** + **Vite**
+- **TypeScript**
+- **Tailwind CSS** + custom design tokens
+- **shadcn/ui** component library
+- **Framer Motion** for animations
+- **React Router v6** for routing (with route protection)
+- **TanStack Query (React Query)** for server-state management
+- **React Hook Form** + **Zod** for form validation
+- **TipTap** rich text editor (Notes)
+- **FullCalendar** for the Calendar view
+- **Recharts** for analytics charts
+- **@react-oauth/google** for Google OAuth
 
-LifeOS solves that by creating one connected workspace where these systems work together.
+### Backend
+- **Node.js** + **Express**
+- **TypeScript**
+- **MongoDB** via **Mongoose**
+- **JWT** (access + refresh token rotation)
+- **bcryptjs** for password hashing
+- **express-validator** for input validation
+- **Helmet**, **cors**, **compression**, **morgan**
+- **express-rate-limit** (global + auth-specific)
+
+---
+
+## Architecture
+
+```
+lifeos/
+├── backend/          # Express REST API
+│   └── src/
+│       ├── config/   # DB connection
+│       ├── middleware/# auth guard, error handler
+│       ├── models/   # Mongoose schemas (User, Task, Habit, Goal, Note, FocusSession, DailyCheckIn, WeeklyReview)
+│       ├── routes/   # auth, tasks, habits, goals, notes, focus, checkIns, reviews, profile
+│       └── utils/    # JWT helpers, response helpers
+└── frontend/         # React SPA
+    └── src/
+        ├── components/
+        │   ├── app/  # AppLayout, AppSidebar, Dashboard widgets, ProtectedRoute, …
+        │   ├── landing/# Landing page sections
+        │   └── ui/   # shadcn/ui primitives
+        ├── context/  # AuthContext (API-backed login/logout)
+        ├── hooks/    # useIsMobile, useToast, useNewParam
+        ├── lib/      # api client, store (localStorage), queries, types, schemas, …
+        └── pages/    # Landing, Login, Signup, Onboarding, app/* pages
+```
+
+---
+
+## Authentication
+
+Authentication is **JWT-based** with httpOnly refresh-cookie rotation.
+
+| Flow | Notes |
+|---|---|
+| Register / Login | Email + password via `POST /api/auth/register` and `/api/auth/login` |
+| Google OAuth | Access-token exchange via `POST /api/auth/google` |
+| Token refresh | Silent refresh via httpOnly cookie at `POST /api/auth/refresh` |
+| Logout | Revokes refresh token server-side via `POST /api/auth/logout` |
+
+The frontend stores the short-lived **access token** in `localStorage` and uses an `AuthContext` (`src/context/AuthContext.tsx`) to expose `login`, `loginWithGoogle`, and `logout` to the rest of the app.
+
+All `/app/**` routes are wrapped in a `ProtectedRoute` component that redirects unauthenticated users to `/login`.
+
+> **Note:** The Signup page (`pages/Signup.tsx`) currently bootstraps the session using localStorage directly and does not call the API. It works for local demos. Wiring it to `POST /api/auth/register` is the next migration step.
+
+---
+
+## Data Layer
+
+The app has a deliberate two-speed data layer:
+
+- **API-backed:** Authentication (login, logout, profile fetch).
+- **localStorage-backed:** Tasks, habits, goals, notes, focus sessions, check-ins, and weekly reviews — via `src/lib/store.ts` and the `dataLayer` abstraction in `src/lib/data-layer.ts`.
+
+Migrating a module to the API requires only updating the corresponding function in `data-layer.ts`; all React Query call sites remain unchanged.
+
+---
+
+## API Routes
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Create account |
+| POST | `/api/auth/login` | Sign in |
+| POST | `/api/auth/google` | Google OAuth sign-in |
+| POST | `/api/auth/refresh` | Rotate tokens |
+| POST | `/api/auth/logout` | Revoke refresh token |
+| GET  | `/api/auth/me` | Current user |
+| GET/POST/PUT/DELETE | `/api/tasks` | Task CRUD + status/subtask patches |
+| GET/POST/PUT/DELETE | `/api/habits` | Habit CRUD + toggle |
+| GET/POST/PUT/DELETE | `/api/goals` | Goal CRUD + milestones |
+| GET/POST/PUT/DELETE | `/api/notes` | Note CRUD + pin |
+| GET/POST/DELETE | `/api/focus` | Focus sessions |
+| GET/POST | `/api/checkins` | Daily check-ins (upsert per day) |
+| GET/POST | `/api/reviews` | Weekly reviews (upsert per week) |
+| GET/PUT/PATCH | `/api/profile` | Profile read/update/password change |
+| GET | `/api/health` | Health check |
 
 ---
 
 ## Main Features
 
 ### 1. Landing Page
-The landing page introduces the product and explains its value clearly.
-
-Includes:
-- hero section with gradient heading
-- feature cards
-- testimonials section
-- FAQ section
-- CTA sections
-- footer
-
----
+Hero section, feature cards (bento grid), testimonials, FAQ, and CTA.
 
 ### 2. Authentication
-Users can create an account or log in through clean, modern auth pages.
-
-Includes:
-- login page
-- signup page
-- social login placeholders
-- card-based layout
-- local persistence support
-
----
+Login and signup pages with email/password and Google OAuth. Clean split-panel layout.
 
 ### 3. Onboarding
-After signup, users go through a 2-step onboarding flow.
-
-#### Step 1: Lifestyle Mode
-Users choose a mode such as:
-- Student
-- Freelancer
-- Employee
-- Creator
-- Personal Growth
-
-#### Step 2: Module Selection
-Users choose which modules they want enabled:
-- Tasks
-- Habits
-- Goals
-- Notes
-- Focus
-
-This makes the app feel more personalized from the start.
-
----
+5-step onboarding: lifestyle mode → improvement focus → day intensity → dashboard priority → module selection.
 
 ### 4. Dashboard
-The dashboard acts as the central control center of the app.
+Personalised control centre with:
+- **Today Engine** — AI-style planning panel surfacing overdue tasks, the most important task, habits due, and a suggested focus session.
+- **Stat cards** — Tasks done, active habits, goals in progress, focus sessions (widget-configurable).
+- **Connected Goal** — shows tasks, habits, and notes linked to your most-linked goal.
+- **Consistency card** — check-in streak, weekly score, habit streak, focus streak, goal momentum.
+- **Insights teaser** — link to the full analytics page.
+- **Pinned Notes** strip.
 
-Includes:
-- stats cards
-- today’s tasks
-- active habits
-- goals progress
-- recent notes
-- quick overview widgets
-
-Purpose:
-- help users quickly understand their current state
-- reduce mental clutter
-- make daily planning easier
-
----
+All widgets are individually toggleable and reorderable in Settings.
 
 ### 5. Tasks
-The Tasks page allows users to manage their work in a structured way.
-
-Includes:
-- create task
-- edit task
-- delete task
-- due dates
-- priority
-- status
-- tags
-- search
-- filters
-- list view
-- board view
-
-Supported statuses:
-- To Do
-- In Progress
-- Done
-
----
+Full task management: priority, status, due date, tags, life area, goal link, subtasks, and recurrence (daily/weekly/monthly). Board view and list view. Animated `TaskCheckbox` with pathLength draw-in.
 
 ### 6. Habits
-The Habits page helps users build consistency through daily and weekly tracking.
-
-Includes:
-- create habit
-- mark habits complete
-- streak tracking
-- daily/weekly frequency
-- 7-day completion history
-
-Purpose:
-- help users stay disciplined
-- make progress visible over time
-
----
+Daily/weekly habits with 7-day history grid, streak tracking, "at risk" badge, and goal linking.
 
 ### 7. Goals
-The Goals page helps users define larger targets and track progress.
-
-Includes:
-- create goal
-- add description
-- set target date
-- track progress
-- define milestones
-- link habits and tasks
-
-Purpose:
-- turn abstract goals into visible progress
-
----
+Goals with milestones, progress bar, target date, life area, and linked task/habit/note columns. **GoalIntelligence** panel shows time remaining, pace (on track vs behind), momentum, and habit consistency.
 
 ### 8. Notes
-The Notes page gives users a flexible space to capture ideas and information.
-
-Includes:
-- create notes
-- edit notes inline
-- delete notes
-- pin notes
-- tag notes
-- search notes
-- view in grid layout
-
-Purpose:
-- store useful thoughts, plans, or reference material inside the same system
-
----
+Rich-text editor (TipTap) with templates (blank, meeting, daily journal, project brief), folders, tags, pinning, life area tagging, task/goal linking, and `[[backlink]]` detection.
 
 ### 9. Focus
-The Focus page helps users work with intention using a Pomodoro timer.
+Circular Pomodoro timer with preset durations, session goal, task linking, distraction logging, interruption counter, and fullscreen mode. Sessions list with analytics (today's minutes, best hour, top task).
 
-Includes:
-- circular timer UI
-- start / pause / reset
-- preset durations
-- distraction notes
-- session-based focus workflow
+### 10. Calendar
+FullCalendar month/week view with tasks (drag-to-reschedule), goals (target dates), and habit completions overlaid. Filter chips per type.
 
-Purpose:
-- support deep work
-- reduce distraction
-- turn planning into action
+### 11. Insights
+Full analytics page with:
+- Task velocity, focus time, completion rate, productivity trend (line/area charts)
+- Per-goal progress (horizontal bar)
+- Habit consistency dial (radial)
+- Life-area distribution (pie)
+- Goals on track vs behind
+- Range picker: this week / this month / all time
 
----
+### 12. Weekly Review
+Structured Sunday reflection with auto-detected most-productive and neglected life areas, a week-at-a-glance bar chart, and three reflection prompts (went well / got ignored / improve next).
 
-### 10. Settings
-The Settings page lets users personalize the product.
-
-Includes:
-- profile settings
-- theme toggle
-- module preferences
-- notification placeholders
-
-Purpose:
-- let users adapt the system to their own workflow
+### 13. Settings
+Profile, theme (light/dark), accent colour (indigo/emerald/slate/amber), timezone, week start day, default focus duration, dashboard widget visibility + order, module enable/disable + sidebar pin, notification toggles.
 
 ---
 
 ## Design System
 
-LifeOS uses a clean visual style built for calm productivity.
-
-### Design direction
-- modern SaaS dashboard style
-- indigo-based palette
-- inspired by Linear and Notion
-- glassmorphism navbar
-- gradient CTA elements
-- smooth page/component animations
-- semantic design tokens
-
-### UX goals
-- clean layout
-- easy navigation
-- minimal friction
-- clear hierarchy
-- responsive experience on desktop and mobile
-
----
-
-## Current Tech Direction
-
-LifeOS is built with:
-
-- **React**
-- **Vite**
-- **MERN-ready architecture**
-- **Framer Motion** for smooth animations
-- **localStorage** for persistence in the current version
-
----
-
-## Data Persistence
-
-At the moment, data is stored in **localStorage**.
-
-### Current behavior
-- dummy data is seeded on first login
-- user changes persist locally in the browser
-- no backend/database is required for the current build
-
-### Future plan
-LifeOS is intended to move toward full MERN stack architecture with:
-- MongoDB
-- Express
-- React
-- Node.js
-
----
-
-## Product Structure
-
-LifeOS is currently organized into 10 main sections:
-
-1. Landing Page  
-2. Login  
-3. Signup  
-4. Onboarding  
-5. Dashboard  
-6. Tasks  
-7. Habits  
-8. Goals  
-9. Notes  
-10. Focus  
-11. Settings  
-
----
-
-## Who It Is For
-
-LifeOS is built for users who want one place to manage life more clearly.
-
-### Main target users
-- students
-- freelancers
-- developers
-- creators
-- young professionals
-- self-improvement users
-- people rebuilding consistency and discipline
-
----
-
-## Why LifeOS Exists
-
-LifeOS is not just a to-do app.
-
-It is meant to become a **connected life management system** where:
-- tasks support goals
-- habits build consistency
-- notes store useful thinking
-- focus sessions turn plans into action
-- the dashboard keeps everything visible
-
-The goal is to help users feel:
-- more organized
-- less overwhelmed
-- more consistent
-- more in control of their daily life
-
----
-
-## Current Version
-
-### Implemented
-- landing page
-- auth pages
-- onboarding
-- dashboard
-- tasks
-- habits
-- goals
-- notes
-- focus timer
-- settings
-- local data persistence
-- realistic seeded dummy data
-- theme support
-- motion and UI polish
-
-### Planned Enhancements
-- Life Areas
-- linked task/habit/goal/note relationships
-- command bar
-- global search
-- weekly review
-- recurring tasks
-- subtasks
-- calendar/timeline view
-- insights page
-- backend integration
-- real authentication
-- database persistence
-
----
-
-## Future Vision
-
-The long-term vision of LifeOS is to become a **modular personal operating system** for everyday life.
-
-That means:
-- smarter dashboards
-- stronger relationships between modules
-- better analytics
-- personalized onboarding
-- full-stack persistence
-- premium-level UX
+- **Palette:** indigo-primary, emerald-accent, warm semantic tokens (success, warning, info, destructive).
+- **Typography:** DM Sans (body) + Instrument Serif (display/italic accents).
+- **Sidebar:** dark-panelled sidebar (`hsl(224 28% 7%)`) with collapsible icon mode.
+- **Glassmorphism** navbar on the landing page.
+- **Animations:** Framer Motion page transitions, count-up stat cards, milestone toggles, burst rings on task completion, habit-pulse on check-in.
 
 ---
 
 ## Local Development
 
-Example development setup:
+### Prerequisites
+- Node.js 18+
+- MongoDB (local or Atlas)
+
+### Backend
 
 ```bash
+cd backend
+cp .env.example .env   # fill in MONGODB_URI, JWT_SECRET, JWT_REFRESH_SECRET
 npm install
-npm run dev
+npm run dev            # ts-node-dev, port 5000
+```
+
+### Frontend
+
+```bash
+cd frontend
+cp .env.example .env   # set VITE_API_URL=http://localhost:5000 (optional, defaults to that)
+npm install
+npm run dev            # Vite dev server, port 5173
+```
+
+### Environment Variables
+
+**Backend `.env`**
+```
+MONGODB_URI=mongodb://localhost:27017/lifeos
+PORT=5000
+NODE_ENV=development
+JWT_SECRET=your_access_token_secret
+JWT_REFRESH_SECRET=your_refresh_token_secret
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=30d
+CLIENT_URL=http://localhost:5173
+```
+
+**Frontend `.env`**
+```
+VITE_API_URL=http://localhost:5000
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id   # optional
+VITE_GITHUB_CLIENT_ID=your_github_oauth_client_id   # optional
+```
+
+---
+
+## Known Limitations / Planned Work
+
+- **Signup** bypasses the API — it seeds localStorage directly. Migrating to `POST /api/auth/register` is the next step.
+- **App data** (tasks, habits, goals, notes, focus) is still stored in localStorage via `data-layer.ts`. Each module can be migrated to the API independently by updating that file.
+- No email verification or password-reset flow yet.
+- Native mobile app planned.
+- Push/browser notifications are UI-only (no delivery mechanism yet).
