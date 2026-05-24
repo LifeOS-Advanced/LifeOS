@@ -2,7 +2,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { protect } from '../middleware/auth';
-import { FocusSession, DailyCheckIn, WeeklyReview } from '../models/index';
+import { FocusSession, DailyCheckIn, WeeklyReview } from '../models/Index'; // fix: capital I to match filename on case-sensitive FS
 import { User } from '../models/User';
 import { ok, created, noContent, AppError } from '../utils/response';
 

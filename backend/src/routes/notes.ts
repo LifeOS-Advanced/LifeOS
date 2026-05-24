@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { protect } from '../middleware/auth';
-import { Note } from '../models/index';
+import { Note } from '../models/Index';
 import { ok, created, noContent, AppError } from '../utils/response';
 
 const router = Router();

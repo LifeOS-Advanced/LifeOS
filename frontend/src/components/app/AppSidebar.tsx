@@ -1,7 +1,8 @@
 import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays, LineChart, Pin } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { setAuthenticated, getProfile } from '@/lib/store';
+import { useLocation } from 'react-router-dom';
+import { getProfile } from '@/lib/store';
+import { useAuth } from '@/context/AuthContext';
 import { ModuleKey } from '@/lib/types';
 import {
   Sidebar,
@@ -17,38 +18,34 @@ import {
 } from '@/components/ui/sidebar';
 
 const moduleItems: Record<ModuleKey, { title: string; url: string; icon: typeof CheckSquare }> = {
-  tasks: { title: 'Tasks', url: '/app/tasks', icon: CheckSquare },
+  tasks: { title: 'Tasks',  url: '/app/tasks',  icon: CheckSquare },
   habits: { title: 'Habits', url: '/app/habits', icon: Zap },
-  goals: { title: 'Goals', url: '/app/goals', icon: Target },
-  notes: { title: 'Notes', url: '/app/notes', icon: BookOpen },
-  focus: { title: 'Focus', url: '/app/focus', icon: Timer },
+  goals: { title: 'Goals',  url: '/app/goals',  icon: Target },
+  notes: { title: 'Notes',  url: '/app/notes',  icon: BookOpen },
+  focus: { title: 'Focus',  url: '/app/focus',  icon: Timer },
 };
 
-const dashboardItem = { title: 'Dashboard', url: '/app', icon: LayoutDashboard };
-const calendarItem = { title: 'Calendar', url: '/app/calendar', icon: CalendarDays };
-const insightsItem = { title: 'Insights', url: '/app/insights', icon: LineChart };
-const reviewItem = { title: 'Weekly Review', url: '/app/review', icon: Sparkles };
+const dashboardItem = { title: 'Dashboard',     url: '/app',             icon: LayoutDashboard };
+const calendarItem  = { title: 'Calendar',       url: '/app/calendar',    icon: CalendarDays };
+const insightsItem  = { title: 'Insights',       url: '/app/insights',    icon: LineChart };
+const reviewItem    = { title: 'Weekly Review',  url: '/app/review',      icon: Sparkles };
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const location = useLocation();
-  const navigate = useNavigate();
-  const profile = getProfile();
-  const enabled = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[]);
-  const pinned = (profile?.preferences?.pinnedModules ?? []).filter(k => enabled.includes(k));
-  const moduleNav = enabled.filter(k => !pinned.includes(k)).map(k => moduleItems[k]).filter(Boolean);
-  const pinnedNav = pinned.map(k => moduleItems[k]).filter(Boolean);
+  const location  = useLocation();
+  const profile   = getProfile();
+  const { logout } = useAuth();
+
+  const enabled    = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[]);
+  const pinned     = (profile?.preferences?.pinnedModules ?? []).filter(k => enabled.includes(k));
+  const moduleNav  = enabled.filter(k => !pinned.includes(k)).map(k => moduleItems[k]).filter(Boolean);
+  const pinnedNav  = pinned.map(k => moduleItems[k]).filter(Boolean);
   const utilityNav = [calendarItem, insightsItem, reviewItem];
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
     return location.pathname.startsWith(path);
-  };
-
-  const handleLogout = () => {
-    setAuthenticated(false);
-    navigate('/');
   };
 
   const navItemClass = (active: boolean) =>
@@ -163,7 +160,7 @@ export function AppSidebar() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={handleLogout}
+              onClick={logout}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/50 hover:bg-destructive/15 hover:text-red-400 transition-all duration-150 cursor-pointer w-full"
             >
               <LogOut className="h-4 w-4 shrink-0" />

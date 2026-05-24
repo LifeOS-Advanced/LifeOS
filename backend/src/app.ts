@@ -23,7 +23,7 @@ const app = express();
 app.use(helmet());
 
 // ── CORS ────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_URL ?? 'http://localhost:5173')
+const allowedOrigins = (process.env.CLIENT_URL ?? 'http://localhost:8080')
   .split(',')
   .map((o) => o.trim());
 
