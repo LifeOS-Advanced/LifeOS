@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
+import type { EventClickArg, EventDropArg, EventInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -21,7 +22,7 @@ export default function CalendarPage() {
   const toggle = (k: FilterKey) => setFilters(f => ({ ...f, [k]: !f[k] }));
 
   const events = useMemo(() => {
-    const ev: any[] = [];
+    const ev: EventInput[] = [];
     if (filters.tasks) {
       tasks.filter(t => t.dueDate).forEach(t => {
         ev.push({
@@ -66,7 +67,7 @@ export default function CalendarPage() {
     return ev;
   }, [tasks, goals, habits, filters]);
 
-  const handleDrop = (info: any) => {
+  const handleDrop = (info: EventDropArg) => {
     const props = info.event.extendedProps;
     if (props.kind !== 'task') { info.revert(); return; }
     const newDate = info.event.startStr;
@@ -75,7 +76,7 @@ export default function CalendarPage() {
     toast.success('Task rescheduled', { description: newDate });
   };
 
-  const handleClick = (info: any) => {
+  const handleClick = (info: EventClickArg) => {
     const k = info.event.extendedProps.kind;
     if (k === 'task') navigate('/app/tasks');
     if (k === 'goal') navigate('/app/goals');

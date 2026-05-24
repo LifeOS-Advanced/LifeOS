@@ -124,7 +124,6 @@ UserSchema.methods.comparePassword = async function (candidate: string): Promise
 };
 
 // Indexes
-UserSchema.index({ email: 1 });
 UserSchema.index({ provider: 1, providerId: 1 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

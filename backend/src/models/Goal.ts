@@ -48,7 +48,6 @@ const GoalSchema = new Schema<IGoal>(
   }
 );
 
-GoalSchema.index({ userId: 1 });
 GoalSchema.index({ userId: 1, progress: 1 });
 
 export const Goal = mongoose.model<IGoal>('Goal', GoalSchema);

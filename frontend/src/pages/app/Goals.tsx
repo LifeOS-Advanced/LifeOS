@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Target, CheckCircle2, Circle, CheckSquare, Zap, BookOpen } from 'lucide-react';
+import { Plus, Target, CheckCircle2, Circle, CheckSquare, Zap, BookOpen, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
@@ -197,7 +197,7 @@ export default function Goals() {
   );
 }
 
-function LinkedGroup({ icon: Icon, label, items, accent }: { icon: any; label: string; items: string[]; accent: string }) {
+function LinkedGroup({ icon: Icon, label, items, accent }: { icon: LucideIcon; label: string; items: string[]; accent: string }) {
   return (
     <div className="rounded-lg bg-secondary/40 p-3">
       <div className={`flex items-center gap-1.5 text-xs font-semibold mb-2 ${accent}`}>

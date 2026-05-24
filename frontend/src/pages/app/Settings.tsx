@@ -33,10 +33,11 @@ const focusPresets = [15, 25, 45, 50, 90];
 
 function getTimezones(): string[] {
   try {
-    // @ts-ignore
-    const supported = Intl.supportedValuesOf?.('timeZone');
+    const supported = typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : [];
     if (Array.isArray(supported) && supported.length) return supported;
-  } catch {}
+  } catch {
+    // Older runtimes may not expose the timezone list.
+  }
   return ['UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Asia/Singapore', 'Australia/Sydney'];
 }
 

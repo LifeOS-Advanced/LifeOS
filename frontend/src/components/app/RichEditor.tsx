@@ -4,7 +4,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Link from '@tiptap/extension-link';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import { useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Bold, Italic, List, ListOrdered, Quote, Code, Heading1, Heading2, CheckSquare, Link as LinkIcon, Undo, Redo } from 'lucide-react';
 
 interface Props {
@@ -12,6 +12,13 @@ interface Props {
   onChange: (html: string) => void;
   placeholder?: string;
   minHeight?: number;
+}
+
+interface ToolbarButtonProps {
+  onClick: () => void;
+  active?: boolean;
+  children: ReactNode;
+  title: string;
 }
 
 export function RichEditor({ value, onChange, placeholder = 'Start writing...', minHeight = 220 }: Props) {
@@ -40,7 +47,7 @@ export function RichEditor({ value, onChange, placeholder = 'Start writing...', 
 
   if (!editor) return null;
 
-  const Btn = ({ onClick, active, children, title }: any) => (
+  const Btn = ({ onClick, active, children, title }: ToolbarButtonProps) => (
     <button
       type="button"
       onClick={onClick}

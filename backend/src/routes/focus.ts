@@ -149,7 +149,11 @@ profileRouter.put('/', [
   try {
     if (!v(req, next)) return;
     // Don't allow overwriting email/password/provider via this route
-    const { email: _e, password: _p, provider: _pr, refreshTokens: _rt, ...safeBody } = req.body;
+    const safeBody = { ...req.body };
+    delete safeBody.email;
+    delete safeBody.password;
+    delete safeBody.provider;
+    delete safeBody.refreshTokens;
     const user = await User.findByIdAndUpdate(
       req.userId,
       { $set: safeBody },

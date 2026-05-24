@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Timer, Play, Pause, RotateCcw, Clock, CheckSquare, Maximize2, Minimize2, AlertTriangle, TrendingUp, Target } from 'lucide-react';
+import { Timer, Play, Pause, RotateCcw, Clock, CheckSquare, Maximize2, Minimize2, AlertTriangle, TrendingUp, Target, type LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EmptyState } from '@/components/app/EmptyState';
 import { toast } from 'sonner';
@@ -303,7 +303,7 @@ function DistractionForm({ onLog, onSkip }: { onLog: (n?: string) => void; onSki
   );
 }
 
-function StatCard({ icon: Icon, label, value, hint }: { icon: any; label: string; value: string; hint?: string }) {
+function StatCard({ icon: Icon, label, value, hint }: { icon: LucideIcon; label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-card">
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">

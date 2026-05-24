@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getTasks, getHabits, getGoals, getNotes, getFocusSessions, getProfile, getCheckIns } from '@/lib/store';
-import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart } from 'lucide-react';
+import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TodayEngine } from '@/components/app/TodayEngine';
@@ -222,7 +222,7 @@ export default function Dashboard() {
   );
 }
 
-function ConnectedColumn({ icon: Icon, label, accent, items }: { icon: any; label: string; accent: string; items: { id: string; title: string; meta?: string }[] }) {
+function ConnectedColumn({ icon: Icon, label, accent, items }: { icon: LucideIcon; label: string; accent: string; items: { id: string; title: string; meta?: string }[] }) {
   return (
     <div className="rounded-lg surface-sunken p-3">
       <div className={`flex items-center gap-1.5 text-xs font-semibold mb-2 ${accent}`}>

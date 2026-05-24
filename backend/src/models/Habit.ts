@@ -30,7 +30,6 @@ const HabitSchema = new Schema<IHabit>(
   }
 );
 
-HabitSchema.index({ userId: 1 });
 HabitSchema.index({ userId: 1, goalId: 1 });
 
 export const Habit = mongoose.model<IHabit>('Habit', HabitSchema);
