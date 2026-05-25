@@ -192,8 +192,14 @@ export function recordLocalProgressEvent(input: RewardEventInput): UserProgress 
   progress.events = [event, ...progress.events].slice(0, 250);
 
   const last = progress.lastActivityDate;
-  if (!last) progress.dailyStreak = 1;
-  else {
+  if (!last) {
+    progress.dailyStreak = 1;
+    const starterFreezeKey = `starter_freeze:${date}`;
+    if (!progress.eventKeys.includes(starterFreezeKey) && input.type !== 'quest_bonus' && input.type !== 'daily_quests_complete') {
+      progress.streakFreezes = Math.max(progress.streakFreezes, 1);
+      progress.eventKeys.push(starterFreezeKey);
+    }
+  } else {
     const gap = dateDiff(date, last);
     if (gap === 1) progress.dailyStreak += 1;
     if (gap > 1) {

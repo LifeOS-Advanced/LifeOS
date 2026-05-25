@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Flame } from 'lucide-react';
 import type { UserProgress } from '@/lib/types';
-import { isStreakAtRisk } from '@/lib/daily-loop';
+import { isStreakAtRisk, questRoute } from '@/lib/daily-loop';
+import { trackLoopEventOnce } from '@/lib/analytics';
 
 interface StreakAtRiskBannerProps {
   progress?: UserProgress;
@@ -9,7 +11,18 @@ interface StreakAtRiskBannerProps {
 }
 
 export function StreakAtRiskBanner({ progress, timezone }: StreakAtRiskBannerProps) {
-  if (!isStreakAtRisk(progress, timezone)) return null;
+  const atRisk = isStreakAtRisk(progress, timezone);
+
+  useEffect(() => {
+    if (!atRisk) return;
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: timezone });
+    trackLoopEventOnce(`streak_at_risk_${today}`, 'streak_at_risk_shown', {
+      streak: progress?.dailyStreak,
+      freezes: progress?.streakFreezes,
+    });
+  }, [atRisk, progress?.dailyStreak, progress?.streakFreezes, timezone]);
+
+  if (!atRisk) return null;
 
   const easiest = progress?.quests.find(q => !q.completed && (q.id === 'habits_2' || q.id === 'daily_start_1'))
     ?? progress?.quests.find(q => !q.completed);
@@ -24,7 +37,7 @@ export function StreakAtRiskBanner({ progress, timezone }: StreakAtRiskBannerPro
       </div>
       {easiest && (
         <Link
-          to={easiest.id === 'daily_start_1' ? '/app/daily-start' : easiest.id === 'habits_2' ? '/app/habits' : '/app/tasks'}
+          to={questRoute(easiest)}
           className="text-xs font-medium text-primary hover:underline shrink-0"
         >
           {easiest.label} →

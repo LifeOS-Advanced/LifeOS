@@ -232,7 +232,12 @@ export default function Tasks() {
                 description: prev.title,
                 metadata: { goalId: prev.goalId, lifeArea: prev.lifeArea },
               });
-              emitRewardMoment(progress);
+              emitRewardMoment(progress, {
+                eventType: 'task_completed',
+                profile,
+                lifeArea: prev.lifeArea,
+                goalTitle: goals.find(goal => goal.id === prev.goalId)?.title,
+              });
             } catch {
               // Reward feedback is non-critical; the task update already succeeded.
             }

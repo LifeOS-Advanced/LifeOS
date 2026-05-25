@@ -13,11 +13,13 @@ import { DailyLoopHeroCard } from '@/components/app/DailyLoopHero';
 import { MorningEntryBanner } from '@/components/app/MorningEntryBanner';
 import { StreakAtRiskBanner } from '@/components/app/StreakAtRiskBanner';
 import { FirstWeekCard } from '@/components/app/FirstWeekCard';
-import { computeConsistency } from '@/lib/insights';
+import { BecomingCard } from '@/components/app/BecomingCard';
+import { buildIdentitySignal } from '@/lib/identity';
+import { computeConsistency, startOfWeek, ymd } from '@/lib/insights';
 import { DEFAULT_PREFERENCES, DashboardWidgetKey } from '@/lib/types';
 import { getDailyLoopProgress, isNewUserSession, shouldShowFirstWeekCard } from '@/lib/daily-loop';
 import { useDailyLoopState } from '@/lib/useDailyLoopState';
-import { useDailyStart, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useTasks } from '@/lib/queries';
+import { useDailyStart, useEveningShutdown, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useTasks, useWeeklyNarrative } from '@/lib/queries';
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 10 },
@@ -36,6 +38,10 @@ export default function Dashboard() {
   const { data: sessions = [] } = useFocusSessions();
   const { data: momentum, isLoading: momentumLoading } = useLifeMomentum();
   const { data: dailyStart } = useDailyStart(today);
+  const { data: eveningShutdown } = useEveningShutdown(today);
+  const weekStart = ymd(startOfWeek());
+  const { data: weeklyNarrative } = useWeeklyNarrative(weekStart);
+  const { data: profile } = useProfile();
   const loop = useDailyLoopState();
   const { dailyStartDone, eveningShutdownDone, hero, quests, progress, isLoading: progressLoading } = loop;
   const loopProgress = getDailyLoopProgress({ dailyStartDone, eveningShutdownDone, quests });
@@ -55,7 +61,6 @@ export default function Dashboard() {
 
   if (!ready) return <DashboardSkeleton />;
 
-  const { data: profile } = useProfile();
   const prefs = profile?.preferences ?? DEFAULT_PREFERENCES;
   const timezone = prefs.timezone ?? DEFAULT_PREFERENCES.timezone;
 
@@ -64,6 +69,15 @@ export default function Dashboard() {
   const consistency = computeConsistency(habits, sessions, goals, []);
   const habitCheckedToday = habits.some(h => h.completedDates?.includes(today));
   const focusDoneToday = todaySessions.length > 0;
+  const identitySignal = buildIdentitySignal({
+    tasks,
+    habits,
+    sessions,
+    goals,
+    progressEvents: progress?.recentEvents,
+    dailyStarts: dailyStart ? [dailyStart] : [],
+    eveningShutdowns: eveningShutdown ? [eveningShutdown] : [],
+  });
 
   const order = (prefs.widgetOrder ?? DEFAULT_PREFERENCES.widgetOrder!) as DashboardWidgetKey[];
   const hasSeenMomentumWidget = order.includes('momentum');
@@ -100,6 +114,18 @@ export default function Dashboard() {
   const goalNotes = connectedGoal ? notes.filter(n => connectedGoal.linkedNoteIds.includes(n.id) || n.goalId === connectedGoal.id) : [];
 
   const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening';
+  const remainingQuests = Math.max(0, loopProgress.questsTotal - loopProgress.questsDone);
+  const firstWeekReturning = newUser && loopProgress.questsDone > 0;
+  const loopNudge =
+    loopProgress.percent >= 100
+      ? 'Loop closed. Tomorrow gets easier because today is visible.'
+      : loopProgress.percent >= 80
+        ? 'You are close to closing the loop. One focused move can finish the day.'
+        : remainingQuests === 1
+          ? 'One quest left. Finish it and close the loop cleanly.'
+          : firstWeekReturning
+            ? 'Good to see you back. Keep yesterday’s momentum alive.'
+            : null;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -110,7 +136,9 @@ export default function Dashboard() {
           {greeting}, {profile?.name?.split(' ')[0] || 'there'}.
         </h1>
         <p className="text-sm text-muted-foreground">
-          {loopProgress.questsDone > 0 ? (
+          {loopNudge ? (
+            <>{loopNudge}</>
+          ) : loopProgress.questsDone > 0 ? (
             <>Today&apos;s win: <span className="text-foreground font-medium">{loopProgress.questsDone} quest{loopProgress.questsDone === 1 ? '' : 's'} done</span> — keep the loop going.</>
           ) : dailyStartDone && dailyStart?.mainPriority ? (
             <>Today&apos;s priority: <span className="text-foreground font-medium">{dailyStart.mainPriority}</span></>
@@ -151,6 +179,14 @@ export default function Dashboard() {
       {/* Row 1 — Today's progress */}
       <motion.section {...fadeIn(0.03)}>
         <TodayProgressCard progress={progress} loading={progressLoading || loop.isLoading} />
+      </motion.section>
+
+      <motion.section {...fadeIn(0.04)}>
+        <BecomingCard
+          signal={identitySignal}
+          closedLoopDays={weeklyNarrative?.stats.closedLoopDays ?? 0}
+          loopClosureRate={weeklyNarrative?.stats.loopClosureRate ?? 0}
+        />
       </motion.section>
 
       {show('today') && (

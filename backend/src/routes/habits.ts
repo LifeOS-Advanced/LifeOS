@@ -88,7 +88,12 @@ router.patch('/:id/toggle', [
         date,
         title: 'Habit checked',
         description: habit.title,
-        metadata: { streak: habit.streak, goalId: habit.goalId ? String(habit.goalId) : undefined, lifeArea: habit.lifeArea },
+        metadata: {
+          key: `habit_checked:${habit._id}:${date}`,
+          streak: habit.streak,
+          goalId: habit.goalId ? String(habit.goalId) : undefined,
+          lifeArea: habit.lifeArea,
+        },
       });
     }
     ok(res, habit);

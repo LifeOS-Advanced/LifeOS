@@ -1,13 +1,22 @@
 import { Award, CheckCircle2, Flame, History, Shield, Trophy, type LucideIcon } from 'lucide-react';
 import { TodayProgressCard } from '@/components/app/TodayProgressCard';
+import { WeeklyStoryCard } from '@/components/app/WeeklyStoryCard';
 import { Progress as ProgressBar } from '@/components/ui/progress';
-import { useProgress } from '@/lib/queries';
+import { useProgress, useWeeklyNarrative } from '@/lib/queries';
 
 export default function ProgressPage() {
   const { data: progress, isLoading } = useProgress();
   const unlocked = progress?.achievements ?? [];
   const events = progress?.recentEvents ?? [];
   const questDone = progress?.quests.filter(quest => quest.completed).length ?? 0;
+  const weekStart = startOfWeek(new Date().toISOString().split('T')[0]);
+  const { data: weeklyNarrative, isLoading: narrativeLoading } = useWeeklyNarrative(weekStart);
+  const weekEvents = events.filter(event => event.date >= weekStart);
+  const weeklyBadges = [
+    { title: 'Bronze Week', description: 'Five meaningful actions this week.', unlocked: weekEvents.filter(event => event.xp > 0).length >= 5 },
+    { title: 'Silver Week', description: 'Ten meaningful actions this week.', unlocked: weekEvents.filter(event => event.xp > 0).length >= 10 },
+    { title: 'Gold Week', description: 'Closed every quest on at least one day.', unlocked: weekEvents.some(event => event.type === 'daily_quests_complete') },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -18,6 +27,8 @@ export default function ProgressPage() {
       </div>
 
       <TodayProgressCard progress={progress} loading={isLoading} />
+
+      <WeeklyStoryCard recap={weeklyNarrative} loading={narrativeLoading} />
 
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat icon={Trophy} label="Total XP" value={String(progress?.totalXp ?? 0)} />
@@ -44,6 +55,27 @@ export default function ProgressPage() {
                 <p className="text-xs text-muted-foreground mt-1">{achievement.description}</p>
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-3">
                   {new Date(achievement.unlockedAt).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card shadow-card">
+          <div className="px-5 py-4 border-b border-subtle flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            <h2 className="text-h3 text-foreground">Weekly Momentum</h2>
+          </div>
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {weeklyBadges.map(badge => (
+              <div key={badge.title} className={`rounded-lg p-3 border ${badge.unlocked ? 'border-primary/25 bg-primary/5' : 'border-subtle surface-sunken opacity-70'}`}>
+                <div className="flex items-center gap-2">
+                  <Award className={`h-4 w-4 ${badge.unlocked ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <h3 className="text-sm font-semibold text-foreground">{badge.title}</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{badge.description}</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-3">
+                  {badge.unlocked ? 'Unlocked' : 'In progress'}
                 </p>
               </div>
             ))}
@@ -101,4 +133,11 @@ function Stat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; v
       <div className="text-xl font-semibold text-foreground tabular-nums">{value}</div>
     </div>
   );
+}
+
+function startOfWeek(date: string) {
+  const d = new Date(`${date}T00:00:00.000Z`);
+  const day = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - day);
+  return d.toISOString().split('T')[0];
 }

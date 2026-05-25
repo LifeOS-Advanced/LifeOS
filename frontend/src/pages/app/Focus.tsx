@@ -9,12 +9,14 @@ import { Timer, Play, Pause, RotateCcw, Clock, CheckSquare, Maximize2, Minimize2
 import { motion } from 'framer-motion';
 import { EmptyState } from '@/components/app/EmptyState';
 import { toast } from 'sonner';
-import { useCreateFocusSession, useFocusSessions, useTasks } from '@/lib/queries';
+import { useCreateFocusSession, useFocusSessions, useGoals, useProfile, useTasks } from '@/lib/queries';
 import { emitRewardMoment } from '@/lib/reward-feedback';
 
 export default function Focus() {
   const createSession = useCreateFocusSession();
   const { data: tasks = [] } = useTasks();
+  const { data: goals = [] } = useGoals();
+  const { data: profile } = useProfile();
   const { data: sessions = [] } = useFocusSessions();
   const [label, setLabel] = useState('Deep work');
   const [sessionGoal, setSessionGoal] = useState('');
@@ -91,7 +93,12 @@ export default function Focus() {
       });
       if (progress) {
         setCompletionReward(progress);
-        emitRewardMoment(progress, { eventType: 'focus_completed' });
+        emitRewardMoment(progress, {
+          eventType: 'focus_completed',
+          profile,
+          lifeArea: linkedTask?.lifeArea,
+          goalTitle: goals.find(goal => goal.id === linkedTask?.goalId)?.title,
+        });
       }
     } catch {
       // Reward feedback is non-critical; the session may still be saved locally.

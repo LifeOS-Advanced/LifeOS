@@ -16,7 +16,7 @@ import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { useNewParam } from '@/hooks/use-new-param';
 import { habitFormSchema, validateOrToast } from '@/lib/schemas';
-import { useCreateHabit, useGoals, useHabits, useRecordProgressEvent, useToggleHabit } from '@/lib/queries';
+import { useCreateHabit, useGoals, useHabits, useProfile, useRecordProgressEvent, useToggleHabit } from '@/lib/queries';
 import { emitRewardMoment } from '@/lib/reward-feedback';
 import { getFirstWinFlow, setFirstWinFlow } from '@/lib/first-win';
 
@@ -25,6 +25,7 @@ export default function Habits() {
   const firstWinMode = searchParams.get('firstWin') === '1';
   const goalFilter = searchParams.get('goalId');
   const { data: goals = [] } = useGoals();
+  const { data: profile } = useProfile();
   const { data: habits = [], isLoading } = useHabits();
   const createHabitMutation = useCreateHabit();
   const toggleHabitMutation = useToggleHabit();
@@ -62,9 +63,14 @@ export default function Habits() {
               entityId: id,
               title: 'Habit checked',
               description: habit?.title,
-              metadata: { streak: updated.streak, goalId: updated.goalId, lifeArea: updated.lifeArea },
+              metadata: { key: `habit_checked:${id}:${today}`, streak: updated.streak, goalId: updated.goalId, lifeArea: updated.lifeArea },
             });
-            emitRewardMoment(progress);
+            emitRewardMoment(progress, {
+              eventType: 'habit_checked',
+              profile,
+              lifeArea: updated.lifeArea,
+              goalTitle: goals.find(goal => goal.id === updated.goalId)?.title,
+            });
             if (getFirstWinFlow() === 'habit_check') {
               setFirstWinFlow('done');
             }

@@ -45,7 +45,14 @@ function getTimezones(): string[] {
 
 function buildInitialProfile(source?: UserProfile | null): UserProfile {
   const initial = source || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[], theme: 'light' as const };
-  const initialPreferences = { ...DEFAULT_PREFERENCES, ...(initial.preferences || {}) };
+  const initialPreferences = {
+    ...DEFAULT_PREFERENCES,
+    ...(initial.preferences || {}),
+    notifications: {
+      ...DEFAULT_PREFERENCES.notifications,
+      ...(initial.preferences?.notifications ?? {}),
+    },
+  };
   if (!(initialPreferences.widgetOrder ?? []).includes('momentum')) {
     initialPreferences.dashboardWidgets = [...new Set<DashboardWidgetKey>(['momentum', ...initialPreferences.dashboardWidgets])];
     initialPreferences.widgetOrder = [...new Set<DashboardWidgetKey>(['today', 'momentum', ...(initialPreferences.widgetOrder ?? [])])];
@@ -125,6 +132,26 @@ export default function SettingsPage() {
       setProfile(profile);
       toast.error(error instanceof Error ? error.message : 'Could not save settings');
     }
+  };
+
+  const enableBrowserNotifications = async (enabled: boolean) => {
+    if (!enabled) {
+      updatePrefs({ notifications: { ...prefs.notifications, browserEnabled: false } });
+      return;
+    }
+    if (!('Notification' in window)) {
+      toast.error('This browser does not support notifications');
+      return;
+    }
+    const permission = Notification.permission === 'granted'
+      ? 'granted'
+      : await Notification.requestPermission();
+    if (permission !== 'granted') {
+      toast.error('Notifications were not enabled');
+      return;
+    }
+    updatePrefs({ notifications: { ...prefs.notifications, browserEnabled: true } });
+    toast.success('Browser reminders enabled');
   };
 
   if (isLoading && !loadedProfile) {
@@ -286,15 +313,41 @@ export default function SettingsPage() {
 
       {/* Notifications */}
       <section className="rounded-xl border border-border bg-card p-6 shadow-card">
-        <SectionHeader icon={Bell} title="Notifications" />
-        <div className="space-y-2">
+        <SectionHeader icon={Bell} title="Notifications" description="Gentle local browser reminders. Off until you enable them." />
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-foreground">Browser reminders</span>
+            <Switch checked={Boolean(prefs.notifications.browserEnabled)} onCheckedChange={enableBrowserNotifications} />
+          </div>
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-foreground">Daily reminders</span>
             <Switch checked={prefs.notifications.dailyReminders} onCheckedChange={(v) => updatePrefs({ notifications: { ...prefs.notifications, dailyReminders: v } })} />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="mb-1.5 block text-xs">Daily Start</Label>
+              <Input
+                type="time"
+                value={prefs.notifications.morningReminderTime ?? '08:30'}
+                onChange={(e) => updatePrefs({ notifications: { ...prefs.notifications, morningReminderTime: e.target.value } })}
+              />
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-xs">Evening Shutdown</Label>
+              <Input
+                type="time"
+                value={prefs.notifications.eveningReminderTime ?? '20:30'}
+                onChange={(e) => updatePrefs({ notifications: { ...prefs.notifications, eveningReminderTime: e.target.value } })}
+              />
+            </div>
+          </div>
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-foreground">Habit streak alerts</span>
             <Switch checked={prefs.notifications.habitStreakAlerts} onCheckedChange={(v) => updatePrefs({ notifications: { ...prefs.notifications, habitStreakAlerts: v } })} />
+          </div>
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-sm text-foreground">Sunday Weekly Review</span>
+            <Switch checked={prefs.notifications.weeklyReviewReminder ?? true} onCheckedChange={(v) => updatePrefs({ notifications: { ...prefs.notifications, weeklyReviewReminder: v } })} />
           </div>
           <div className="flex items-center justify-between py-1.5">
             <span className="text-sm text-foreground">Goal deadline warnings</span>
@@ -302,7 +355,7 @@ export default function SettingsPage() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          Phase 1 uses in-app banners and prompts. Phase 2 will enable browser push via the service worker and <code className="text-[10px]">/api/notifications</code>.
+          These reminders run locally while LifeOS is open. Server push remains behind <code className="text-[10px]">/api/notifications</code>.
         </p>
       </section>
 

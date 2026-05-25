@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
+import { WeeklyStoryCard } from '@/components/app/WeeklyStoryCard';
 import { toast } from 'sonner';
-import { useFocusSessions, useGoals, useHabits, useSaveWeeklyReview, useTasks } from '@/lib/queries';
+import { useFocusSessions, useGoals, useHabits, useProfile, useSaveWeeklyReview, useTasks, useWeeklyNarrative } from '@/lib/queries';
 import { emitRewardMoment } from '@/lib/reward-feedback';
 import { useQuery } from '@tanstack/react-query';
 import { dataLayer } from '@/lib/data-layer';
@@ -20,8 +21,10 @@ export default function Review() {
   const { data: habits = [] } = useHabits();
   const { data: goals = [] } = useGoals();
   const { data: sessions = [] } = useFocusSessions();
+  const { data: profile } = useProfile();
   const { data: reviews = [] } = useQuery({ queryKey: ['weekly-reviews'], queryFn: () => dataLayer.listWeeklyReviews() });
   const stats = useMemo(() => computeWeeklyStats(tasks, habits, goals, sessions), [tasks, habits, goals, sessions]);
+  const { data: weeklyNarrative, isLoading: narrativeLoading } = useWeeklyNarrative(stats.weekStart);
   const existing = reviews.find(r => r.weekStart === stats.weekStart);
   const [wentWell, setWentWell] = useState(existing?.wentWell ?? '');
   const [gotIgnored, setGotIgnored] = useState(existing?.gotIgnored ?? '');
@@ -39,7 +42,7 @@ export default function Review() {
         improveNext: improveNext.trim(),
       });
       toast.success('Review saved', { description: 'Reflection captured for this week.' });
-      if (progress) emitRewardMoment(progress, { eventType: 'weekly_review' });
+      if (progress) emitRewardMoment(progress, { eventType: 'weekly_review', profile });
     } catch {
       toast.error('Could not save review');
     }
@@ -67,6 +70,10 @@ export default function Review() {
             <p className="text-sm text-muted-foreground">{c.label}</p>
           </div>
         ))}
+      </motion.div>
+
+      <motion.div {...fadeIn(0.16)}>
+        <WeeklyStoryCard recap={weeklyNarrative} loading={narrativeLoading} />
       </motion.div>
 
       <motion.div {...fadeIn(0.2)} className="rounded-xl border border-border bg-card p-5 shadow-card">

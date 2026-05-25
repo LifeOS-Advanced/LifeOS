@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { EnergyLevel, Mood } from '@/lib/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { useDailyStart, useHabits, useSaveDailyStart, useTasks, queryKeys } from '@/lib/queries';
+import { useDailyStart, useHabits, useProfile, useSaveDailyStart, useTasks, queryKeys } from '@/lib/queries';
 import { dailyStartSchema, validateOrToast } from '@/lib/schemas';
 import { emitRewardMoment } from '@/lib/reward-feedback';
 import { getFirstWinFlow, setFirstWinFlow } from '@/lib/first-win';
@@ -21,6 +21,7 @@ export default function DailyStartPage() {
   const date = today();
   const { data: tasks = [] } = useTasks();
   const { data: habits = [] } = useHabits();
+  const { data: profile } = useProfile();
   const { data: existing } = useDailyStart(date);
   const saveDailyStart = useSaveDailyStart();
   const qc = useQueryClient();
@@ -62,7 +63,7 @@ export default function DailyStartPage() {
       toast.success('Day started', { description: 'Your plan is on the dashboard.' });
       if (progress) {
         qc.setQueryData(queryKeys.progress, progress);
-        emitRewardMoment(progress, { eventType: 'daily_start' });
+        emitRewardMoment(progress, { eventType: 'daily_start', profile, mainPriority });
       }
       const flow = getFirstWinFlow();
       if (flow === 'daily_start' && isNewUserSession()) {

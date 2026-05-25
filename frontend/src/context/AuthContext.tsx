@@ -1,6 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, storeToken, clearToken } from '@/lib/api';
+import { trackLoopEvent } from '@/lib/analytics';
 import { setAuthenticated, setProfile, isOnboarded, setOnboarded } from '@/lib/store';
 import { DEFAULT_PREFERENCES, type UserProfile } from '@/lib/types';
 
@@ -39,13 +40,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthenticated(true);
 
     if (data.user) {
+      const preferences = {
+        ...DEFAULT_PREFERENCES,
+        ...(data.user.preferences ?? {}),
+        notifications: {
+          ...DEFAULT_PREFERENCES.notifications,
+          ...(data.user.preferences?.notifications ?? {}),
+        },
+      };
       setProfile({
         name:            data.user.name,
         email:           data.user.email,
         lifestyleMode:   data.user.lifestyleMode  ?? 'personal-growth',
         enabledModules:  data.user.enabledModules ?? ['tasks', 'habits', 'goals', 'notes', 'focus'],
         theme:           data.user.theme          ?? 'light',
-        preferences:     data.user.preferences    ?? DEFAULT_PREFERENCES,
+        preferences,
       });
     }
 
@@ -62,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await api.post<AuthResponse>('/api/auth/register', { name, email, password });
     setOnboarded(false);
     handleSuccess(data);
+    trackLoopEvent('signup_completed', { method: 'email' });
   }
 
   async function loginWithGoogle(accessToken: string) {

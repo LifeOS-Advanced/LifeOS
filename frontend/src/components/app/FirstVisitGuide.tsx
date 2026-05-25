@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { markFirstVisitGuideSeen, shouldShowFirstVisitGuide } from '@/lib/daily-loop';
 import { setFirstWinFlow, shouldShowFirstVisitGuideNow } from '@/lib/first-win';
+import { trackLoopEvent, trackLoopEventOnce } from '@/lib/analytics';
 
 const STEPS = [
   'Start your day',
@@ -27,13 +28,17 @@ export function FirstVisitGuide() {
   useEffect(() => {
     const show = shouldShowFirstVisitGuideNow() || shouldShowFirstVisitGuide();
     if (!show) return;
-    const t = setTimeout(() => setOpen(true), 400);
+    const t = setTimeout(() => {
+      setOpen(true);
+      trackLoopEventOnce('first_visit_guide_shown', 'first_visit_guide_shown');
+    }, 400);
     return () => clearTimeout(t);
   }, []);
 
   const startFirstWin = () => {
     markFirstVisitGuideSeen();
     setFirstWinFlow('daily_start');
+    trackLoopEvent('first_visit_guide_completed', { action: 'start_first_win' });
     setOpen(false);
     navigate('/app/daily-start');
   };

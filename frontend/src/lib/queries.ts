@@ -17,6 +17,7 @@ export const queryKeys = {
   eveningShutdown: (date: string) => ['evening-shutdown', date] as QueryKey,
   search: (query: string) => ['search', query] as QueryKey,
   momentum: (periodDays: number) => ['momentum', periodDays] as QueryKey,
+  weeklyNarrative: (weekStart: string) => ['weekly-narrative', weekStart] as QueryKey,
   progress: ['progress'] as QueryKey,
 };
 
@@ -125,6 +126,7 @@ export const useSaveDailyStart = () => {
       if (progress) qc.setQueryData(queryKeys.progress, progress);
       qc.invalidateQueries({ queryKey: ['momentum'] });
       qc.invalidateQueries({ queryKey: queryKeys.progress });
+      qc.invalidateQueries({ queryKey: ['weekly-narrative'] });
     },
   });
 };
@@ -141,6 +143,7 @@ export const useSaveEveningShutdown = () => {
       if (progress) qc.setQueryData(queryKeys.progress, progress);
       qc.invalidateQueries({ queryKey: ['momentum'] });
       qc.invalidateQueries({ queryKey: queryKeys.progress });
+      qc.invalidateQueries({ queryKey: ['weekly-narrative'] });
     },
   });
 };
@@ -155,6 +158,9 @@ export const useUniversalSearch = (query: string) =>
 
 export const useLifeMomentum = (periodDays = 30) =>
   useQuery({ queryKey: queryKeys.momentum(periodDays), queryFn: () => dataLayer.getMomentum(periodDays) });
+
+export const useWeeklyNarrative = (weekStart: string) =>
+  useQuery({ queryKey: queryKeys.weeklyNarrative(weekStart), queryFn: () => dataLayer.getWeeklyNarrative(weekStart) });
 
 export const useProgress = () =>
   useQuery({ queryKey: queryKeys.progress, queryFn: dataLayer.getProgress });
@@ -400,6 +406,7 @@ export const useCreateFocusSession = () => {
       if (progress) qc.setQueryData(queryKeys.progress, progress);
       qc.invalidateQueries({ queryKey: ['momentum'] });
       qc.invalidateQueries({ queryKey: queryKeys.progress });
+      qc.invalidateQueries({ queryKey: ['weekly-narrative'] });
     },
   });
 };
@@ -416,6 +423,7 @@ export const useSaveWeeklyReview = () => {
       qc.invalidateQueries({ queryKey: ['weekly-reviews'] });
       qc.invalidateQueries({ queryKey: ['momentum'] });
       qc.invalidateQueries({ queryKey: queryKeys.progress });
+      qc.invalidateQueries({ queryKey: ['weekly-narrative'] });
     },
   });
 };

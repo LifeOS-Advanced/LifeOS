@@ -186,6 +186,11 @@ export async function recordProgressEvent(input: RewardEventInput) {
     const last = progress.lastActivityDate;
     if (!last) {
       progress.dailyStreak = 1;
+      const starterFreezeKey = `starter_freeze:${date}`;
+      if (!progress.eventKeys.includes(starterFreezeKey) && input.type !== 'quest_bonus' && input.type !== 'daily_quests_complete') {
+        progress.streakFreezes = Math.max(progress.streakFreezes, 1);
+        progress.eventKeys.push(starterFreezeKey);
+      }
     } else {
       const gap = dateDiff(date, last);
       if (gap === 1) progress.dailyStreak += 1;
@@ -219,7 +224,6 @@ export async function recordProgressEvent(input: RewardEventInput) {
   const canReplayRecentAward = existingEvent
     ? Date.now() - new Date(existingEvent.createdAt).getTime() < 10000
     : false;
-  const bonusXp = questBonuses.reduce((sum, b) => sum + b.xp, 0) + (allQuestsComplete ? ALL_QUESTS_BONUS_XP : 0);
   return {
     ...snapshot,
     awarded: {

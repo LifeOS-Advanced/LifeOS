@@ -6,6 +6,7 @@ import { FocusSession, DailyCheckIn, WeeklyReview } from '../models/Index'; // f
 import { User } from '../models/User';
 import { ok, created, noContent, AppError } from '../utils/response';
 import { recordProgressEvent } from '../services/progress';
+import { trackAnalyticsEventSafe } from '../services/analytics';
 
 // ── Focus Sessions ────────────────────────────────────────────
 export const focusRouter = Router();
@@ -141,6 +142,12 @@ reviewRouter.post('/', [
       title: 'Weekly Reset completed',
       description: 'You closed the week and earned a streak freeze.',
       metadata: { key: `weekly_review:${req.body.weekStart}` },
+    });
+    await trackAnalyticsEventSafe({
+      userId: req.userId,
+      type: 'weekly_review_completed',
+      dateKey: req.body.weekStart,
+      source: 'backend',
     });
     ok(res, { review, progress });
   } catch (err) { next(err); }

@@ -217,6 +217,50 @@ export interface LifeMomentum {
   suggestions: MomentumSuggestion[];
 }
 
+export interface WeeklyNarrativeArea {
+  area: LifeArea;
+  label: string;
+  count: number;
+}
+
+export interface WeeklyNarrativeFocusArea {
+  area: LifeArea;
+  label: string;
+  minutes: number;
+}
+
+export interface WeeklyNarrativeRecap {
+  weekStart: string;
+  weekEnd: string;
+  weekLabel: string;
+  summary: string;
+  identityReflection: string;
+  unfinishedThread: string;
+  strongestArea: WeeklyNarrativeArea | null;
+  neglectedArea: WeeklyNarrativeArea | null;
+  focusDistribution: WeeklyNarrativeFocusArea[];
+  stats: {
+    tasksCompleted: number;
+    habitChecks: number;
+    focusMinutes: number;
+    focusSessions: number;
+    goalsMoved: number;
+    dailyStarts: number;
+    eveningShutdowns: number;
+    closedLoopDays: number;
+    meaningfulActionDays: number;
+    loopClosureRate: number;
+  };
+  review?: WeeklyReview | null;
+}
+
+export interface IdentitySignal {
+  title: string;
+  description: string;
+  detail?: string;
+  tone: 'focus' | 'consistency' | 'balance' | 'follow-through' | 'start';
+}
+
 export type RewardEventType =
   | 'task_completed'
   | 'habit_checked'
@@ -292,6 +336,29 @@ export interface UserProgress {
   awarded?: ProgressAward;
 }
 
+export type AnalyticsEventType =
+  | 'signup_completed'
+  | 'onboarding_completed'
+  | 'first_visit_guide_shown'
+  | 'first_visit_guide_completed'
+  | 'daily_start_completed'
+  | 'first_xp_earned'
+  | 'quest_completed'
+  | 'all_daily_quests_completed'
+  | 'evening_shutdown_completed'
+  | 'daily_loop_closed'
+  | 'streak_at_risk_shown'
+  | 'weekly_review_completed';
+
+export interface AnalyticsEventInput {
+  type: AnalyticsEventType;
+  occurredAt?: string;
+  dateKey?: string;
+  sessionId?: string;
+  source?: 'frontend' | 'backend';
+  metadata?: Record<string, unknown>;
+}
+
 export interface RewardEventInput {
   type: RewardEventType;
   date?: string;
@@ -321,6 +388,10 @@ export interface UserPreferences {
     dailyReminders: boolean;
     habitStreakAlerts: boolean;
     goalDeadlineWarnings: boolean;
+    browserEnabled?: boolean;
+    morningReminderTime?: string;
+    eveningReminderTime?: string;
+    weeklyReviewReminder?: boolean;
   };
   /** Tasks page UI state */
   tasksView?: {
@@ -354,6 +425,10 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
     dailyReminders: true,
     habitStreakAlerts: true,
     goalDeadlineWarnings: true,
+    browserEnabled: false,
+    morningReminderTime: '08:30',
+    eveningReminderTime: '20:30',
+    weeklyReviewReminder: true,
   },
 };
 

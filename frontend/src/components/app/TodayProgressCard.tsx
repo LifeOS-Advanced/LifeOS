@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ChevronRight, Flame, Shield, Trophy } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Flame, Info, Shield, Trophy } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { questMeta, questRoute } from '@/lib/daily-loop';
 import type { UserProgress } from '@/lib/types';
 
 interface TodayProgressCardProps {
@@ -43,22 +45,42 @@ export function TodayProgressCard({ progress, loading }: TodayProgressCardProps)
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {progress.quests.map(quest => (
-            <motion.div
-              key={quest.id}
-              layout
-              initial={false}
-              animate={quest.completed ? { scale: [1, 1.02, 1] } : { scale: 1 }}
-              transition={{ duration: 0.2 }}
-              className={`flex items-center justify-between gap-3 rounded-lg surface-sunken px-3 py-2 ${quest.completed ? 'ring-1 ring-success/20' : ''}`}
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <CheckCircle2 className={`h-4 w-4 shrink-0 ${quest.completed ? 'text-success' : 'text-muted-foreground'}`} />
-                <span className="text-xs font-medium text-foreground truncate">{quest.label}</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground tabular-nums">{Math.min(quest.current, quest.target)}/{quest.target}</span>
-            </motion.div>
-          ))}
+          {progress.quests.map(quest => {
+            const meta = questMeta(quest);
+            const almostDone = !quest.completed && quest.current >= Math.max(1, quest.target - 1);
+            return (
+              <Tooltip key={quest.id}>
+                <TooltipTrigger asChild>
+                  <motion.div
+                    layout
+                    initial={false}
+                    animate={quest.completed ? { scale: [1, 1.02, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      to={questRoute(quest)}
+                      className={`flex items-center justify-between gap-3 rounded-lg surface-sunken px-3 py-2 transition-colors hover:bg-secondary/70 ${quest.completed ? 'ring-1 ring-success/20' : almostDone ? 'ring-1 ring-primary/20 bg-primary/5' : ''}`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <CheckCircle2 className={`h-4 w-4 shrink-0 ${quest.completed ? 'text-success' : almostDone ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <div className="min-w-0">
+                          <span className="block text-xs font-medium text-foreground truncate">{meta.action}</span>
+                          <span className="block text-[10px] text-muted-foreground truncate">{quest.completed ? 'Done' : almostDone ? 'Almost done' : `+${meta.xp} XP`}</span>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
+                        {Math.min(quest.current, quest.target)}/{quest.target}
+                        <Info className="h-3 w-3" />
+                      </span>
+                    </Link>
+                  </motion.div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-56 text-xs">
+                  {meta.tooltip}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </div>
 
         <div className="flex lg:flex-col gap-2 justify-between">

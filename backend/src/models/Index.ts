@@ -208,6 +208,71 @@ EveningShutdownSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 export const EveningShutdown = mongoose.model<IEveningShutdown>('EveningShutdown', EveningShutdownSchema);
 
+export type AnalyticsEventType =
+  | 'signup_completed'
+  | 'onboarding_completed'
+  | 'first_visit_guide_shown'
+  | 'first_visit_guide_completed'
+  | 'daily_start_completed'
+  | 'first_xp_earned'
+  | 'quest_completed'
+  | 'all_daily_quests_completed'
+  | 'evening_shutdown_completed'
+  | 'daily_loop_closed'
+  | 'streak_at_risk_shown'
+  | 'weekly_review_completed';
+
+export interface IAnalyticsEvent extends Document {
+  userId: Types.ObjectId;
+  type: AnalyticsEventType;
+  occurredAt: Date;
+  dateKey: string;
+  sessionId?: string;
+  source: 'frontend' | 'backend';
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    type: {
+      type: String,
+      required: true,
+      enum: [
+        'signup_completed',
+        'onboarding_completed',
+        'first_visit_guide_shown',
+        'first_visit_guide_completed',
+        'daily_start_completed',
+        'first_xp_earned',
+        'quest_completed',
+        'all_daily_quests_completed',
+        'evening_shutdown_completed',
+        'daily_loop_closed',
+        'streak_at_risk_shown',
+        'weekly_review_completed',
+      ],
+      index: true,
+    },
+    occurredAt: { type: Date, default: Date.now, index: true },
+    dateKey: { type: String, required: true, match: /^\d{4}-\d{2}-\d{2}$/, index: true },
+    sessionId: { type: String, trim: true, maxlength: 120 },
+    source: { type: String, enum: ['frontend', 'backend'], default: 'frontend' },
+    metadata: { type: Schema.Types.Mixed },
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+  }
+);
+
+AnalyticsEventSchema.index({ userId: 1, type: 1, occurredAt: -1 });
+AnalyticsEventSchema.index({ userId: 1, dateKey: -1 });
+
+export const AnalyticsEvent = mongoose.model<IAnalyticsEvent>('AnalyticsEvent', AnalyticsEventSchema);
+
 export type RewardEventType =
   | 'task_completed'
   | 'habit_checked'

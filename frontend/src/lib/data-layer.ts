@@ -8,10 +8,11 @@ import { api, getToken } from './api';
 import type {
   Task, Habit, Goal, Note, FocusSession, UserProfile, Subtask, Milestone,
   DailyStart, EveningShutdown, SearchResults, LifeMomentum, UserProgress, RewardEventInput,
-  WeeklyReview,
+  WeeklyReview, WeeklyNarrativeRecap,
 } from './types';
 import { DEFAULT_PREFERENCES } from './types';
 import { computeLifeMomentum } from './insights';
+import { buildWeeklyNarrative } from './identity';
 import { getLocalProgress, recordLocalProgressEvent } from './progress';
 
 const delay = <T,>(v: T) => Promise.resolve(v);
@@ -193,6 +194,14 @@ function serializeNote(note: Partial<Note>): Partial<ApiNote> {
 }
 
 function normalizeProfileFromApi(user: ApiUser): UserProfile {
+  const preferences = {
+    ...DEFAULT_PREFERENCES,
+    ...user.preferences,
+    notifications: {
+      ...DEFAULT_PREFERENCES.notifications,
+      ...(user.preferences?.notifications ?? {}),
+    },
+  };
   return {
     name: user.name,
     email: user.email,
@@ -202,7 +211,7 @@ function normalizeProfileFromApi(user: ApiUser): UserProfile {
     improvementFocus: user.improvementFocus,
     dayIntensity: user.dayIntensity,
     dashboardPriority: user.dashboardPriority,
-    preferences: { ...DEFAULT_PREFERENCES, ...user.preferences },
+    preferences,
   };
 }
 
@@ -635,6 +644,21 @@ export const dataLayer = {
       dailyStart: getFlowMap<DailyStart>(flowKeys.dailyStart)[today] ?? null,
       eveningShutdown: getFlowMap<EveningShutdown>(flowKeys.eveningShutdown)[today] ?? null,
       periodDays,
+    }));
+  },
+  getWeeklyNarrative: async (weekStart: string): Promise<WeeklyNarrativeRecap> => {
+    if (hasApiToken()) return api.get<WeeklyNarrativeRecap>(`/api/narrative/weekly?weekStart=${encodeURIComponent(weekStart)}`);
+    return delay(buildWeeklyNarrative({
+      tasks: store.getTasks(),
+      habits: store.getHabits(),
+      goals: store.getGoals(),
+      notes: store.getNotes(),
+      sessions: store.getFocusSessions(),
+      dailyStarts: Object.values(getFlowMap<DailyStart>(flowKeys.dailyStart)),
+      eveningShutdowns: Object.values(getFlowMap<EveningShutdown>(flowKeys.eveningShutdown)),
+      reviews: store.getWeeklyReviews(),
+      weekStart,
+      progressEvents: getLocalProgress().recentEvents,
     }));
   },
   getProgress: async (): Promise<UserProgress> => {
