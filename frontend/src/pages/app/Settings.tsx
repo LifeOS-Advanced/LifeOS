@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon, Palette, Pin, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
+import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon, Palette, Pin, ArrowUp, ArrowDown, Eye, EyeOff, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionHeader, Chip } from '@/components/app/patterns';
+import { playRewardSound } from '@/lib/reward-sounds';
 
 const moduleList: { key: ModuleKey; label: string; icon: typeof CheckSquare }[] = [
   { key: 'tasks', label: 'Tasks', icon: CheckSquare },
@@ -52,6 +54,10 @@ function buildInitialProfile(source?: UserProfile | null): UserProfile {
       ...DEFAULT_PREFERENCES.notifications,
       ...(initial.preferences?.notifications ?? {}),
     },
+    sensory: {
+      ...DEFAULT_PREFERENCES.sensory,
+      ...(initial.preferences?.sensory ?? {}),
+    },
   };
   if (!(initialPreferences.widgetOrder ?? []).includes('momentum')) {
     initialPreferences.dashboardWidgets = [...new Set<DashboardWidgetKey>(['momentum', ...initialPreferences.dashboardWidgets])];
@@ -91,6 +97,10 @@ export default function SettingsPage() {
 
   const updatePrefs = (changes: Partial<UserPreferences>) => {
     update({ preferences: { ...prefs, ...changes } });
+  };
+
+  const updateSensory = (changes: Partial<UserPreferences['sensory']>) => {
+    updatePrefs({ sensory: { ...prefs.sensory, ...changes } });
   };
 
   const toggleModule = (key: ModuleKey) => {
@@ -357,6 +367,42 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground mt-3">
           These reminders run locally while LifeOS is open. Server push remains behind <code className="text-[10px]">/api/notifications</code>.
         </p>
+      </section>
+
+      {/* Sensory feedback */}
+      <section className="rounded-xl border border-border bg-card p-6 shadow-card">
+        <SectionHeader icon={Volume2} title="Sensory feedback" description="Optional reward sounds for meaningful loop moments. Off by default." />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3 py-1.5">
+            <div>
+              <span className="text-sm text-foreground">Reward sounds</span>
+              <p className="text-xs text-muted-foreground">Short Web Audio tones for XP, quests, focus, closure, and level-ups.</p>
+            </div>
+            <Switch checked={prefs.sensory.rewardSounds} onCheckedChange={(v) => updateSensory({ rewardSounds: v })} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-xs">Sound volume</Label>
+              <span className="text-xs tabular-nums text-muted-foreground">{Math.round((prefs.sensory.soundVolume ?? 0.35) * 100)}%</span>
+            </div>
+            <Slider
+              value={[prefs.sensory.soundVolume ?? 0.35]}
+              min={0}
+              max={1}
+              step={0.05}
+              onValueChange={([value]) => updateSensory({ soundVolume: value })}
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              void playRewardSound('quest_complete', prefs.sensory.soundVolume, true);
+            }}
+          >
+            Test reward sound
+          </Button>
+        </div>
       </section>
 
       <div className="flex justify-end">

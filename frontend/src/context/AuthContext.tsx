@@ -47,6 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...DEFAULT_PREFERENCES.notifications,
           ...(data.user.preferences?.notifications ?? {}),
         },
+        sensory: {
+          ...DEFAULT_PREFERENCES.sensory,
+          ...(data.user.preferences?.sensory ?? {}),
+        },
       };
       setProfile({
         name:            data.user.name,

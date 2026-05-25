@@ -18,6 +18,14 @@ export interface IUserPreferences {
     dailyReminders: boolean;
     habitStreakAlerts: boolean;
     goalDeadlineWarnings: boolean;
+    browserEnabled?: boolean;
+    morningReminderTime?: string;
+    eveningReminderTime?: string;
+    weeklyReviewReminder?: boolean;
+  };
+  sensory: {
+    rewardSounds: boolean;
+    soundVolume: number;
   };
 }
 
@@ -60,6 +68,14 @@ const PreferencesSchema = new Schema<IUserPreferences>(
       dailyReminders: { type: Boolean, default: true },
       habitStreakAlerts: { type: Boolean, default: true },
       goalDeadlineWarnings: { type: Boolean, default: true },
+      browserEnabled: { type: Boolean, default: false },
+      morningReminderTime: { type: String, default: '08:30' },
+      eveningReminderTime: { type: String, default: '20:30' },
+      weeklyReviewReminder: { type: Boolean, default: true },
+    },
+    sensory: {
+      rewardSounds: { type: Boolean, default: false },
+      soundVolume: { type: Number, default: 0.35, min: 0, max: 1 },
     },
   },
   { _id: false }

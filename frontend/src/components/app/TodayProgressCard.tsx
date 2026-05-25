@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { CheckCircle2, ChevronRight, Flame, Info, Shield, Trophy } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { questMeta, questRoute } from '@/lib/daily-loop';
+import { getNextQuestActionPreview, questEstimate, questMeta, questRoute } from '@/lib/daily-loop';
 import type { UserProgress } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +21,7 @@ export function TodayProgressCard({ progress, loading }: TodayProgressCardProps)
   const totalQuests = progress?.quests.length ?? 0;
   const allQuestsComplete = totalQuests > 0 && completedQuests === totalQuests;
   const oneQuestLeft = totalQuests > 0 && totalQuests - completedQuests === 1;
+  const nextAction = progress ? getNextQuestActionPreview(progress.quests) : undefined;
   const previousXpPercent = useRef<number | null>(null);
   const previousCompletedQuests = useRef<number | null>(null);
   const [xpFlash, setXpFlash] = useState(false);
@@ -103,7 +104,7 @@ export function TodayProgressCard({ progress, loading }: TodayProgressCardProps)
                     <Link
                       to={questRoute(quest)}
                       className={cn(
-                        'relative flex items-center justify-between gap-3 overflow-hidden rounded-lg surface-sunken px-3 py-2 transition-colors hover:bg-secondary/70',
+                        'group relative flex items-center justify-between gap-3 overflow-hidden rounded-lg surface-sunken px-3 py-2 transition-colors hover:bg-secondary/70 hover:ring-1 hover:ring-primary/20',
                         quest.completed && 'reward-quest-complete ring-1 ring-success/25',
                         almostDone && 'reward-quest-almost ring-1 ring-primary/20 bg-primary/5',
                       )}
@@ -131,7 +132,11 @@ export function TodayProgressCard({ progress, loading }: TodayProgressCardProps)
                         <div className="min-w-0">
                           <span className="block text-xs font-medium text-foreground truncate">{meta.action}</span>
                           <span className="block text-[10px] text-muted-foreground truncate">
-                            {quest.completed ? 'Done' : almostDone ? 'Almost done' : `+${meta.xp} XP`}
+                            {quest.completed
+                              ? 'Done'
+                              : almostDone
+                                ? `Almost done - +${meta.xp} XP`
+                                : `+${meta.xp} XP - ${questEstimate(quest)}`}
                           </span>
                         </div>
                       </div>
@@ -170,9 +175,12 @@ export function TodayProgressCard({ progress, loading }: TodayProgressCardProps)
 
       <Link to="/app/progress" className="flex items-center justify-between gap-3 border-t border-subtle bg-secondary/35 px-5 py-3 text-xs text-muted-foreground hover:text-foreground transition-colors">
         <span>
-          {completedQuests}/{progress.quests.length} quests complete today - {progress.achievements.length} achievements unlocked
-          {oneQuestLeft && ' - one quest left'}
-          {allQuestsComplete && ' - loop closed'}
+          {allQuestsComplete
+            ? `${completedQuests}/${progress.quests.length} quests complete today - loop closed`
+            : nextAction
+              ? `Next: ${nextAction.label} - ${nextAction.xp ? `+${nextAction.xp} XP - ` : ''}${nextAction.estimate}`
+              : `${completedQuests}/${progress.quests.length} quests complete today - ${progress.achievements.length} achievements unlocked`}
+          {oneQuestLeft && !allQuestsComplete && ' - one quest left'}
         </span>
         <span className="inline-flex items-center gap-1 text-primary font-medium">Progress <ChevronRight className="h-3.5 w-3.5" /></span>
       </Link>

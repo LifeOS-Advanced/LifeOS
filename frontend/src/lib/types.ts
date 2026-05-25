@@ -407,6 +407,10 @@ export interface UserPreferences {
     eveningReminderTime?: string;
     weeklyReviewReminder?: boolean;
   };
+  sensory: {
+    rewardSounds: boolean;
+    soundVolume: number;
+  };
   /** Tasks page UI state */
   tasksView?: {
     viewMode: 'list' | 'board';
@@ -443,6 +447,10 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
     morningReminderTime: '08:30',
     eveningReminderTime: '20:30',
     weeklyReviewReminder: true,
+  },
+  sensory: {
+    rewardSounds: false,
+    soundVolume: 0.35,
   },
 };
 

@@ -19,7 +19,7 @@ import { CarryForwardCard } from '@/components/app/CarryForwardCard';
 import { buildIdentitySignal } from '@/lib/identity';
 import { computeConsistency, startOfWeek, ymd } from '@/lib/insights';
 import { DEFAULT_PREFERENCES, DashboardWidgetKey } from '@/lib/types';
-import { getDailyLoopProgress, isNewUserSession, shouldShowFirstWeekCard } from '@/lib/daily-loop';
+import { getDailyLoopProgress, getNextLoopActionPreview, isNewUserSession, shouldShowFirstWeekCard } from '@/lib/daily-loop';
 import { useDailyLoopState } from '@/lib/useDailyLoopState';
 import { getLatestOpenCarryForward, updateCarryForwardStatus } from '@/lib/continuity';
 import { useDailyStart, useEveningShutdown, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useSaveWeeklyReview, useTasks, useWeeklyNarrative, useWeeklyReviews } from '@/lib/queries';
@@ -50,6 +50,7 @@ export default function Dashboard() {
   const loop = useDailyLoopState();
   const { dailyStartDone, eveningShutdownDone, hero, quests, progress, isLoading: progressLoading } = loop;
   const loopProgress = getDailyLoopProgress({ dailyStartDone, eveningShutdownDone, quests });
+  const nextAction = getNextLoopActionPreview(hero, quests);
   const newUser = isNewUserSession();
 
   useEffect(() => {
@@ -192,6 +193,7 @@ export default function Dashboard() {
           questsTotal={loopProgress.questsTotal}
           improvementFocus={profile?.improvementFocus}
           isNewUser={newUser}
+          nextAction={nextAction}
         />
       </motion.section>
 

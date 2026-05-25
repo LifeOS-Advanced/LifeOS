@@ -9,11 +9,18 @@ export type DailyLoopPhase =
 export interface DailyLoopHero {
   phase: DailyLoopPhase;
   title: string;
-  /** Lowercase action line shown as "Next: …" */
+  /** Lowercase action line shown as "Next: ..." */
   nextLine: string;
   description: string;
   ctaLabel: string;
   route: string;
+}
+
+export interface LoopActionPreview {
+  label: string;
+  route: string;
+  xp?: number;
+  estimate: string;
 }
 
 const QUEST_ROUTES: Record<string, string> = {
@@ -53,9 +60,18 @@ const QUEST_META: Record<string, { action: string; tooltip: string; xp: number }
   },
   shutdown_1: {
     action: 'Close the day',
-    tooltip: 'Reflect, park delayed tasks, and choose tomorrow’s first move.',
+    tooltip: "Reflect, park delayed tasks, and choose tomorrow's first move.",
     xp: 30,
   },
+};
+
+const QUEST_ESTIMATES: Record<string, string> = {
+  daily_start_1: '2 min',
+  tasks_3: '10-30 min',
+  focus_1: '5-25 min',
+  habits_2: '1-3 min',
+  area_1: 'one small move',
+  shutdown_1: '3 min',
 };
 
 export function questRoute(quest: DailyQuest): string {
@@ -70,8 +86,59 @@ export function questMeta(quest: DailyQuest) {
   };
 }
 
+export function questEstimate(quest: DailyQuest): string {
+  return QUEST_ESTIMATES[quest.id] ?? 'one meaningful move';
+}
+
+export function getQuestActionPreview(quest: DailyQuest): LoopActionPreview {
+  const meta = questMeta(quest);
+  return {
+    label: meta.action,
+    route: questRoute(quest),
+    xp: meta.xp,
+    estimate: questEstimate(quest),
+  };
+}
+
 export function getNextIncompleteQuest(quests: DailyQuest[]): DailyQuest | undefined {
   return quests.find(q => !q.completed);
+}
+
+export function getNextQuestActionPreview(quests: DailyQuest[]): LoopActionPreview | undefined {
+  const next = getNextIncompleteQuest(quests);
+  return next ? getQuestActionPreview(next) : undefined;
+}
+
+export function getNextLoopActionPreview(
+  hero: DailyLoopHero,
+  quests: DailyQuest[],
+): LoopActionPreview {
+  const nextQuest = getNextQuestActionPreview(quests);
+  if (nextQuest) return nextQuest;
+
+  if (hero.phase === 'start_day') {
+    return {
+      label: 'Plan your day',
+      route: '/app/daily-start',
+      xp: QUEST_META.daily_start_1.xp,
+      estimate: QUEST_ESTIMATES.daily_start_1,
+    };
+  }
+
+  if (hero.phase === 'close_day') {
+    return {
+      label: 'Close the day',
+      route: '/app/evening-shutdown',
+      xp: QUEST_META.shutdown_1.xp,
+      estimate: QUEST_ESTIMATES.shutdown_1,
+    };
+  }
+
+  return {
+    label: hero.ctaLabel,
+    route: hero.route,
+    estimate: hero.phase === 'complete' ? '2 min' : 'one small move',
+  };
 }
 
 export function buildDailyLoopHero(opts: {
@@ -88,7 +155,7 @@ export function buildDailyLoopHero(opts: {
       phase: 'start_day',
       title: 'Start your day',
       nextLine: 'start your day',
-      description: 'Set your priority in under two minutes — your first XP is one tap away.',
+      description: 'Set your priority in under two minutes - your first XP is one tap away.',
       ctaLabel: 'Daily Start',
       route: '/app/daily-start',
     };
@@ -122,7 +189,7 @@ export function buildDailyLoopHero(opts: {
       phase: 'close_day',
       title: 'Close the day',
       nextLine: 'close the day',
-      description: 'Quests are done. Reflect and park tomorrow’s first move.',
+      description: "Quests are done. Reflect and park tomorrow's first move.",
       ctaLabel: 'Evening Shutdown',
       route: '/app/evening-shutdown',
     };
@@ -133,7 +200,7 @@ export function buildDailyLoopHero(opts: {
       phase: 'close_day',
       title: 'Wind down',
       nextLine: 'close the day',
-      description: 'Review what moved and set tomorrow’s first task.',
+      description: "Review what moved and set tomorrow's first task.",
       ctaLabel: 'Evening Shutdown',
       route: '/app/evening-shutdown',
     };
@@ -238,7 +305,7 @@ export function markFirstVisitGuideSeen() {
   localStorage.removeItem('lifeos_pending_first_visit_guide');
 }
 
-/** 0–100: daily loop closure weighted by start, quests, shutdown */
+/** 0-100: daily loop closure weighted by start, quests, shutdown */
 export function getDailyLoopProgress(opts: {
   dailyStartDone: boolean;
   eveningShutdownDone: boolean;

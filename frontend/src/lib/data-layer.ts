@@ -201,6 +201,10 @@ function normalizeProfileFromApi(user: ApiUser): UserProfile {
       ...DEFAULT_PREFERENCES.notifications,
       ...(user.preferences?.notifications ?? {}),
     },
+    sensory: {
+      ...DEFAULT_PREFERENCES.sensory,
+      ...(user.preferences?.sensory ?? {}),
+    },
   };
   return {
     name: user.name,
@@ -684,4 +688,5 @@ export const dataLayerTestUtils = {
   normalizeGoal,
   normalizeNote,
   normalizeHabit,
+  normalizeProfileFromApi,
 };
