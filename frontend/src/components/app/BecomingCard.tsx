@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Compass, Shield, Sparkles, Target } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import type { IdentitySignal } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 interface BecomingCardProps {
   signal: IdentitySignal;
@@ -18,12 +20,17 @@ const toneIcon = {
 
 export function BecomingCard({ signal, closedLoopDays = 0, loopClosureRate = 0 }: BecomingCardProps) {
   const Icon = toneIcon[signal.tone] ?? Sparkles;
+  const hasEvidence = closedLoopDays > 0 || loopClosureRate > 0;
 
   return (
-    <section className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
-      <div className="p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className={cn(
+      'relative overflow-hidden rounded-xl border border-border bg-card shadow-card',
+      hasEvidence && 'reward-surface-near',
+    )}>
+      <div className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/8 blur-3xl" />
+      <div className="relative p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="h-11 w-11 rounded-lg bg-secondary text-primary flex items-center justify-center">
+          <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center ring-1 ring-primary/15">
             <Icon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -37,14 +44,17 @@ export function BecomingCard({ signal, closedLoopDays = 0, loopClosureRate = 0 }
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 lg:w-56">
-          <div className="rounded-lg surface-sunken px-3 py-2">
+        <div className="grid grid-cols-2 gap-2 lg:w-60">
+          <div className="rounded-lg surface-sunken px-3 py-2 ring-1 ring-border/60">
             <p className="text-lg font-semibold text-foreground tabular-nums">{closedLoopDays}</p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">closed days</p>
           </div>
-          <div className="rounded-lg surface-sunken px-3 py-2">
+          <div className="rounded-lg surface-sunken px-3 py-2 ring-1 ring-border/60">
             <p className="text-lg font-semibold text-foreground tabular-nums">{loopClosureRate}%</p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">loop rate</p>
+          </div>
+          <div className="col-span-2">
+            <Progress value={loopClosureRate} className="reward-progress h-1.5" />
           </div>
         </div>
       </div>

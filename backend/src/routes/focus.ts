@@ -126,29 +126,64 @@ reviewRouter.post('/', [
   body('wentWell').optional().isString().isLength({ max: 2000 }),
   body('gotIgnored').optional().isString().isLength({ max: 2000 }),
   body('improveNext').optional().isString().isLength({ max: 2000 }),
+  body('reward').optional().isBoolean(),
+  body('carryForward').optional({ nullable: true }).isObject(),
+  body('carryForward.text').optional().trim().isLength({ max: 300 }),
+  body('carryForward.source').optional().isIn(['paused_goal', 'neglected_area', 'incomplete_loop', 'review', 'manual']),
+  body('carryForward.sourceId').optional().isString(),
+  body('carryForward.sourceArea').optional().isString(),
+  body('carryForward.status').optional().isIn(['open', 'done', 'dismissed']),
+  body('carryForward.createdFromWeekStart').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
+  body('carryForward.targetWeekStart').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
 ], async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!v(req, next)) return;
+    const carryForward = req.body.carryForward && typeof req.body.carryForward.text === 'string' && req.body.carryForward.text.trim()
+      ? {
+        text: req.body.carryForward.text.trim(),
+        source: req.body.carryForward.source ?? 'manual',
+        sourceId: req.body.carryForward.sourceId,
+        sourceArea: req.body.carryForward.sourceArea,
+        status: req.body.carryForward.status ?? 'open',
+        createdFromWeekStart: req.body.carryForward.createdFromWeekStart ?? req.body.weekStart,
+        targetWeekStart: req.body.carryForward.targetWeekStart ?? req.body.weekStart,
+      }
+      : undefined;
     const review = await WeeklyReview.findOneAndUpdate(
       { userId: req.userId, weekStart: req.body.weekStart },
-      { $set: { ...req.body, userId: req.userId } },
+      {
+        $set: {
+          weekStart: req.body.weekStart,
+          wentWell: req.body.wentWell,
+          gotIgnored: req.body.gotIgnored,
+          improveNext: req.body.improveNext,
+          userId: req.userId,
+          ...(carryForward ? { carryForward } : {}),
+        },
+        ...(!carryForward ? { $unset: { carryForward: '' } } : {}),
+      },
       { new: true, upsert: true, runValidators: true }
     );
-    const progress = await recordProgressEvent({
-      userId: req.userId,
-      type: 'weekly_review',
-      entityId: req.body.weekStart,
-      date: req.body.weekStart,
-      title: 'Weekly Reset completed',
-      description: 'You closed the week and earned a streak freeze.',
-      metadata: { key: `weekly_review:${req.body.weekStart}` },
-    });
-    await trackAnalyticsEventSafe({
-      userId: req.userId,
-      type: 'weekly_review_completed',
-      dateKey: req.body.weekStart,
-      source: 'backend',
-    });
+    const shouldReward = req.body.reward !== false;
+    const progress = shouldReward
+      ? await recordProgressEvent({
+        userId: req.userId,
+        type: 'weekly_review',
+        entityId: req.body.weekStart,
+        date: req.body.weekStart,
+        title: 'Weekly Reset completed',
+        description: 'You closed the week and earned a streak freeze.',
+        metadata: { key: `weekly_review:${req.body.weekStart}` },
+      })
+      : undefined;
+    if (shouldReward) {
+      await trackAnalyticsEventSafe({
+        userId: req.userId,
+        type: 'weekly_review_completed',
+        dateKey: req.body.weekStart,
+        source: 'backend',
+      });
+    }
     ok(res, { review, progress });
   } catch (err) { next(err); }
 });

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckSquare, Zap, Timer, Target, TrendingUp, AlertCircle, Sparkles } from 'lucide-react';
 import { computeWeeklyStats } from '@/lib/insights';
@@ -12,6 +12,7 @@ import { useFocusSessions, useGoals, useHabits, useProfile, useSaveWeeklyReview,
 import { emitRewardMoment } from '@/lib/reward-feedback';
 import { useQuery } from '@tanstack/react-query';
 import { dataLayer } from '@/lib/data-layer';
+import { buildCarryForwardFromNarrative, nextWeekStart } from '@/lib/continuity';
 
 const fadeIn = (delay: number) => ({ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { delay, duration: 0.4 } });
 
@@ -29,6 +30,17 @@ export default function Review() {
   const [wentWell, setWentWell] = useState(existing?.wentWell ?? '');
   const [gotIgnored, setGotIgnored] = useState(existing?.gotIgnored ?? '');
   const [improveNext, setImproveNext] = useState(existing?.improveNext ?? '');
+  const suggestedCarryForward = useMemo(
+    () => weeklyNarrative ? buildCarryForwardFromNarrative(weeklyNarrative) : undefined,
+    [weeklyNarrative],
+  );
+  const [carryForwardText, setCarryForwardText] = useState(existing?.carryForward?.text ?? suggestedCarryForward?.text ?? '');
+  const [carryForwardTouched, setCarryForwardTouched] = useState(false);
+
+  useEffect(() => {
+    if (carryForwardTouched) return;
+    setCarryForwardText(existing?.carryForward?.text ?? suggestedCarryForward?.text ?? '');
+  }, [existing?.carryForward?.text, suggestedCarryForward?.text, carryForwardTouched]);
 
   const maxDay = Math.max(1, ...stats.byDay.map(d => d.tasks + d.habits + Math.round(d.focus / 25)));
 
@@ -40,6 +52,16 @@ export default function Review() {
         wentWell: wentWell.trim(),
         gotIgnored: gotIgnored.trim(),
         improveNext: improveNext.trim(),
+        carryForward: carryForwardText.trim()
+          ? {
+            ...(existing?.carryForward ?? suggestedCarryForward),
+            text: carryForwardText.trim(),
+            source: existing?.carryForward?.source ?? suggestedCarryForward?.source ?? 'manual',
+            status: 'open',
+            createdFromWeekStart: existing?.carryForward?.createdFromWeekStart ?? stats.weekStart,
+            targetWeekStart: existing?.carryForward?.targetWeekStart ?? nextWeekStart(stats.weekStart),
+          }
+          : undefined,
       });
       toast.success('Review saved', { description: 'Reflection captured for this week.' });
       if (progress) emitRewardMoment(progress, { eventType: 'weekly_review', profile });
@@ -147,6 +169,19 @@ export default function Review() {
         <div>
           <Label className="text-xs text-muted-foreground uppercase tracking-wide">What should improve next week?</Label>
           <Textarea value={improveNext} onChange={e => setImproveNext(e.target.value)} placeholder="One thing you'll change…" className="mt-2 min-h-[80px]" />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground uppercase tracking-wide">Carry forward</Label>
+          <Textarea
+            value={carryForwardText}
+            onChange={e => {
+              setCarryForwardTouched(true);
+              setCarryForwardText(e.target.value);
+            }}
+            placeholder="One thread to continue next week..."
+            className="mt-2 min-h-[72px]"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">This appears on next week&apos;s dashboard and Daily Start until marked done or dismissed.</p>
         </div>
 
         <div className="flex flex-wrap justify-end gap-2 pt-2">

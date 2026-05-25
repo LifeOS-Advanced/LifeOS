@@ -513,7 +513,7 @@ export const dataLayer = {
     const rows = await api.get<ApiReview[]>('/api/reviews');
     return rows.map(r => ({ ...r, id: r.id ?? r._id ?? crypto.randomUUID() }));
   },
-  saveWeeklyReview: async (review: Omit<WeeklyReview, 'id' | 'createdAt'> & { id?: string }): Promise<{ review: WeeklyReview; progress?: UserProgress }> => {
+  saveWeeklyReview: async (review: Omit<WeeklyReview, 'id' | 'createdAt'> & { id?: string; reward?: boolean }): Promise<{ review: WeeklyReview; progress?: UserProgress }> => {
     if (!hasApiToken()) {
       const saved: WeeklyReview = {
         ...review,
@@ -522,12 +522,14 @@ export const dataLayer = {
       };
       const reviews = store.getWeeklyReviews().filter(r => r.weekStart !== review.weekStart);
       store.setWeeklyReviews([saved, ...reviews]);
-      const progress = recordLocalProgressEvent({
-        type: 'weekly_review',
-        date: review.weekStart,
-        entityId: review.weekStart,
-        metadata: { key: `weekly_review:${review.weekStart}` },
-      });
+      const progress = review.reward === false
+        ? undefined
+        : recordLocalProgressEvent({
+          type: 'weekly_review',
+          date: review.weekStart,
+          entityId: review.weekStart,
+          metadata: { key: `weekly_review:${review.weekStart}` },
+        });
       return delay({ review: saved, progress });
     }
     const res = await api.post<{ review?: WeeklyReview & { _id?: string }; progress?: UserProgress } & WeeklyReview>('/api/reviews', {
@@ -535,15 +537,18 @@ export const dataLayer = {
       wentWell: review.wentWell,
       gotIgnored: review.gotIgnored,
       improveNext: review.improveNext,
+      carryForward: review.carryForward,
+      reward: review.reward,
     });
     const raw = 'review' in res && res.review ? res.review : res;
     const saved: WeeklyReview = {
       id: raw.id ?? (raw as { _id?: string })._id ?? crypto.randomUUID(),
       weekStart: review.weekStart,
-      wentWell: review.wentWell,
-      gotIgnored: review.gotIgnored,
-      improveNext: review.improveNext,
-      createdAt: new Date().toISOString(),
+      wentWell: raw.wentWell ?? review.wentWell,
+      gotIgnored: raw.gotIgnored ?? review.gotIgnored,
+      improveNext: raw.improveNext ?? review.improveNext,
+      carryForward: raw.carryForward,
+      createdAt: raw.createdAt ?? new Date().toISOString(),
     };
     return { review: saved, progress: 'progress' in res ? res.progress : undefined };
   },

@@ -160,7 +160,21 @@ export interface WeeklyReview {
   wentWell: string;
   gotIgnored: string;
   improveNext: string;
+  carryForward?: CarryForwardThread;
   createdAt: string;
+}
+
+export type CarryForwardSource = 'paused_goal' | 'neglected_area' | 'incomplete_loop' | 'review' | 'manual';
+export type CarryForwardStatus = 'open' | 'done' | 'dismissed';
+
+export interface CarryForwardThread {
+  text: string;
+  source: CarryForwardSource;
+  sourceId?: string;
+  sourceArea?: LifeArea;
+  status: CarryForwardStatus;
+  createdFromWeekStart: string;
+  targetWeekStart: string;
 }
 
 export interface MomentumComponentScores {

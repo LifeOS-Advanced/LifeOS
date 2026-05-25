@@ -3,6 +3,7 @@ import { AlertTriangle, ArrowRight, CheckCircle2, Circle, Compass, Flame, Target
 import { Progress } from '@/components/ui/progress';
 import { LifeMomentum } from '@/lib/types';
 import { getLifeArea } from '@/lib/life-areas';
+import { cn } from '@/lib/utils';
 
 interface LifeMomentumCardProps {
   momentum?: LifeMomentum;
@@ -36,8 +37,9 @@ export function LifeMomentumCard({ momentum, loading }: LifeMomentumCardProps) {
   const watchAreas = momentum.areas.filter(area => area.status !== 'active').slice(0, 3);
 
   return (
-    <section className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
-      <div className="p-5 border-b border-subtle flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="relative overflow-hidden rounded-xl border border-border bg-card shadow-card">
+      <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-primary/8 blur-3xl" />
+      <div className="relative p-5 border-b border-subtle flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3">
           <div className="h-11 w-11 rounded-lg gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
             <Flame className="h-5 w-5" />
@@ -59,12 +61,12 @@ export function LifeMomentumCard({ momentum, loading }: LifeMomentumCardProps) {
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">score</p>
           </div>
           <div className="w-28">
-            <Progress value={momentum.score} className="h-2" />
+            <Progress value={momentum.score} className="reward-progress h-2" />
           </div>
         </div>
       </div>
 
-      <div className="p-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="relative p-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <TrendingUp className="h-4 w-4 text-primary" />
@@ -96,14 +98,15 @@ export function LifeMomentumCard({ momentum, loading }: LifeMomentumCardProps) {
                 const meta = getLifeArea(area.area);
                 const Icon = meta?.icon ?? Target;
                 return (
-                  <div key={area.area} className="flex items-center justify-between gap-3 rounded-lg surface-sunken px-3 py-2">
+                  <div key={area.area} className="flex items-center justify-between gap-3 rounded-lg surface-sunken px-3 py-2 ring-1 ring-border/50">
                     <div className="flex items-center gap-2 min-w-0">
                       <Icon className={`h-3.5 w-3.5 shrink-0 ${meta?.color ?? 'text-primary'}`} />
                       <span className="text-xs font-medium text-foreground truncate">{area.label}</span>
                     </div>
-                    <span className={`text-[10px] uppercase tracking-wider font-semibold ${
-                      area.status === 'neglected' ? 'text-destructive' : area.status === 'watch' ? 'text-warning' : 'text-success'
-                    }`}>
+                    <span className={cn(
+                      'text-[10px] uppercase tracking-wider font-semibold',
+                      area.status === 'neglected' ? 'text-destructive' : area.status === 'watch' ? 'text-warning' : 'text-success',
+                    )}>
                       {area.status === 'active' ? `${area.activityCount} moves` : `${area.daysSinceActivity ?? 0}d`}
                     </span>
                   </div>
@@ -128,7 +131,7 @@ export function LifeMomentumCard({ momentum, loading }: LifeMomentumCardProps) {
               <Link
                 key={`${suggestion.route}-${suggestion.title}`}
                 to={suggestion.route}
-                className="group flex items-start justify-between gap-3 rounded-lg surface-sunken px-3 py-2 hover:bg-secondary transition-colors"
+                className="group flex items-start justify-between gap-3 rounded-lg surface-sunken px-3 py-2 ring-1 ring-border/50 hover:bg-secondary transition-colors"
               >
                 <span className="min-w-0">
                   <span className="block text-xs font-medium text-foreground">{suggestion.title}</span>

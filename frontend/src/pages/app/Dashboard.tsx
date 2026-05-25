@@ -3,6 +3,7 @@ import { useProfile } from '@/lib/queries';
 import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart, Sunrise, Moon, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { TodayEngine } from '@/components/app/TodayEngine';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { ConsistencyCard } from '@/components/app/ConsistencyCard';
@@ -14,12 +15,14 @@ import { MorningEntryBanner } from '@/components/app/MorningEntryBanner';
 import { StreakAtRiskBanner } from '@/components/app/StreakAtRiskBanner';
 import { FirstWeekCard } from '@/components/app/FirstWeekCard';
 import { BecomingCard } from '@/components/app/BecomingCard';
+import { CarryForwardCard } from '@/components/app/CarryForwardCard';
 import { buildIdentitySignal } from '@/lib/identity';
 import { computeConsistency, startOfWeek, ymd } from '@/lib/insights';
 import { DEFAULT_PREFERENCES, DashboardWidgetKey } from '@/lib/types';
 import { getDailyLoopProgress, isNewUserSession, shouldShowFirstWeekCard } from '@/lib/daily-loop';
 import { useDailyLoopState } from '@/lib/useDailyLoopState';
-import { useDailyStart, useEveningShutdown, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useTasks, useWeeklyNarrative } from '@/lib/queries';
+import { getLatestOpenCarryForward, updateCarryForwardStatus } from '@/lib/continuity';
+import { useDailyStart, useEveningShutdown, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useSaveWeeklyReview, useTasks, useWeeklyNarrative, useWeeklyReviews } from '@/lib/queries';
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 10 },
@@ -41,6 +44,8 @@ export default function Dashboard() {
   const { data: eveningShutdown } = useEveningShutdown(today);
   const weekStart = ymd(startOfWeek());
   const { data: weeklyNarrative } = useWeeklyNarrative(weekStart);
+  const { data: reviews = [] } = useWeeklyReviews();
+  const saveReview = useSaveWeeklyReview();
   const { data: profile } = useProfile();
   const loop = useDailyLoopState();
   const { dailyStartDone, eveningShutdownDone, hero, quests, progress, isLoading: progressLoading } = loop;
@@ -69,6 +74,7 @@ export default function Dashboard() {
   const consistency = computeConsistency(habits, sessions, goals, []);
   const habitCheckedToday = habits.some(h => h.completedDates?.includes(today));
   const focusDoneToday = todaySessions.length > 0;
+  const carryForwardReview = getLatestOpenCarryForward(reviews, today);
   const identitySignal = buildIdentitySignal({
     tasks,
     habits,
@@ -114,6 +120,24 @@ export default function Dashboard() {
   const goalNotes = connectedGoal ? notes.filter(n => connectedGoal.linkedNoteIds.includes(n.id) || n.goalId === connectedGoal.id) : [];
 
   const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening';
+  const updateCarryForward = async (status: 'done' | 'dismissed') => {
+    if (!carryForwardReview?.carryForward) return;
+    try {
+      const next = updateCarryForwardStatus(carryForwardReview, status);
+      await saveReview.mutateAsync({
+        id: next.id,
+        weekStart: next.weekStart,
+        wentWell: next.wentWell,
+        gotIgnored: next.gotIgnored,
+        improveNext: next.improveNext,
+        carryForward: next.carryForward,
+        reward: false,
+      });
+      toast.success(status === 'done' ? 'Carry-forward marked done' : 'Carry-forward dismissed');
+    } catch {
+      toast.error('Could not update carry-forward');
+    }
+  };
   const remainingQuests = Math.max(0, loopProgress.questsTotal - loopProgress.questsDone);
   const firstWeekReturning = newUser && loopProgress.questsDone > 0;
   const loopNudge =
@@ -151,6 +175,13 @@ export default function Dashboard() {
       <motion.section {...fadeIn(0.02)} className="space-y-3">
         <MorningEntryBanner dailyStartDone={dailyStartDone} />
         <StreakAtRiskBanner progress={progress} timezone={timezone} />
+        {carryForwardReview && (
+          <CarryForwardCard
+            review={carryForwardReview}
+            onDone={() => updateCarryForward('done')}
+            onDismiss={() => updateCarryForward('dismissed')}
+          />
+        )}
       </motion.section>
 
       <motion.section {...fadeIn(0.025)}>

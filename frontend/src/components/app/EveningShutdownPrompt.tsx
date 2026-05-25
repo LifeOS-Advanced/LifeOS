@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Moon } from 'lucide-react';
+import { ArrowRight, Moon } from 'lucide-react';
 import { useProfile } from '@/lib/queries';
 import { DEFAULT_PREFERENCES } from '@/lib/types';
 
@@ -50,19 +50,22 @@ export function EveningShutdownPrompt({ dailyStartDone, eveningShutdownDone }: E
 
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : dismiss())}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="overflow-hidden sm:max-w-md">
+        <div className="pointer-events-none absolute inset-x-12 -top-28 h-44 rounded-full bg-warning/15 blur-3xl" />
         <DialogHeader>
-          <div className="h-10 w-10 rounded-lg bg-secondary text-primary flex items-center justify-center mb-2">
+          <div className="relative h-12 w-12 rounded-xl bg-warning/10 text-warning flex items-center justify-center mb-2 ring-1 ring-warning/20">
             <Moon className="h-5 w-5" />
           </div>
           <DialogTitle>Close your day?</DialogTitle>
           <DialogDescription>
-            You started strong this morning. A quick Evening Shutdown locks in progress and sets tomorrow’s first move.
+            You started strong this morning. A quick Evening Shutdown locks in progress and sets tomorrow's first move.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
           <Button variant="ghost" onClick={dismiss}>Later</Button>
-          <Button onClick={go}>Evening Shutdown</Button>
+          <Button className="gradient-primary text-primary-foreground" onClick={go}>
+            Evening Shutdown <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -113,9 +113,31 @@ export interface IWeeklyReview extends Document {
   wentWell: string;
   gotIgnored: string;
   improveNext: string;
+  carryForward?: {
+    text: string;
+    source: 'paused_goal' | 'neglected_area' | 'incomplete_loop' | 'review' | 'manual';
+    sourceId?: string;
+    sourceArea?: string;
+    status: 'open' | 'done' | 'dismissed';
+    createdFromWeekStart: string;
+    targetWeekStart: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
+
+const CarryForwardSchema = new Schema(
+  {
+    text: { type: String, required: true, trim: true, maxlength: 300 },
+    source: { type: String, enum: ['paused_goal', 'neglected_area', 'incomplete_loop', 'review', 'manual'], default: 'manual' },
+    sourceId: { type: String },
+    sourceArea: { type: String },
+    status: { type: String, enum: ['open', 'done', 'dismissed'], default: 'open' },
+    createdFromWeekStart: { type: String, required: true, match: /^\d{4}-\d{2}-\d{2}$/ },
+    targetWeekStart: { type: String, required: true, match: /^\d{4}-\d{2}-\d{2}$/ },
+  },
+  { _id: false }
+);
 
 const WeeklyReviewSchema = new Schema<IWeeklyReview>(
   {
@@ -124,6 +146,7 @@ const WeeklyReviewSchema = new Schema<IWeeklyReview>(
     wentWell: { type: String, default: '', maxlength: 2000 },
     gotIgnored: { type: String, default: '', maxlength: 2000 },
     improveNext: { type: String, default: '', maxlength: 2000 },
+    carryForward: { type: CarryForwardSchema },
   },
   {
     timestamps: true,

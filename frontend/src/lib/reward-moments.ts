@@ -1,4 +1,8 @@
-import { toast } from 'sonner';
+import {
+  showRewardToast,
+  type RewardToastIntensity,
+  type RewardToastVariant,
+} from './reward-toast';
 import type { LifeArea, RewardEventType, UserProfile, UserProgress } from './types';
 import { pickRewardQuote } from './motivational-quotes';
 import {
@@ -22,29 +26,69 @@ export type RewardMomentContext = {
   lifeArea?: LifeArea | string;
   mainPriority?: string;
   evidenceLabel?: string;
+  intensity?: RewardToastIntensity;
+  variant?: RewardToastVariant;
 };
 
-let levelUpHandler: ((level: number) => void) | null = null;
+export type LevelUpMoment = {
+  level: number;
+  xpToNextLevel?: number;
+  totalXp?: number;
+};
+
+let levelUpHandler: ((moment: LevelUpMoment) => void) | null = null;
 
 /** Register UI handler for level-up dialog (RewardMomentProvider). */
-export function setLevelUpHandler(handler: ((level: number) => void) | null) {
+export function setLevelUpHandler(handler: ((moment: LevelUpMoment) => void) | null) {
   levelUpHandler = handler;
 }
 
+function intensityForEvent(eventType?: string): RewardToastIntensity {
+  if (
+    eventType === 'focus_completed' ||
+    eventType === 'daily_start' ||
+    eventType === 'evening_shutdown' ||
+    eventType === 'weekly_review'
+  ) {
+    return 'medium';
+  }
+  return 'low';
+}
+
+function variantForEvent(eventType?: string): RewardToastVariant {
+  if (eventType === 'focus_completed') return 'focus';
+  if (
+    eventType === 'daily_start' ||
+    eventType === 'evening_shutdown' ||
+    eventType === 'weekly_review'
+  ) {
+    return 'loop';
+  }
+  if (eventType === 'quest_bonus') return 'quest';
+  return 'xp';
+}
+
+function questBonusXp(progress: UserProgress): number {
+  return progress.awarded?.questBonuses?.reduce((sum, bonus) => sum + Math.max(0, bonus.xp), 0) ?? 0;
+}
+
 /**
- * Subtle reward feedback: identity first, XP second, only for meaningful work.
+ * Premium reward feedback: visual polish for meaningful work, with XP secondary.
  */
 export function emitRewardMoment(progress?: UserProgress, context?: RewardMomentContext) {
   const award = progress?.awarded;
-  if (!award) return;
+  if (!award || !progress) return;
 
   if (context?.eventType === 'daily_start') trackLoopEvent('daily_start_completed');
   if (context?.eventType === 'evening_shutdown') trackLoopEvent('evening_shutdown_completed');
   if (context?.eventType === 'weekly_review') trackLoopEvent('weekly_review_completed');
 
   if (award.streakFreezeUsed && award.streakAfter > 0) {
-    toast('Streak freeze used', {
-      description: `Your ${award.streakAfter}-day streak is still alive.`,
+    showRewardToast({
+      title: 'Streak freeze used',
+      description: `Your ${award.streakAfter}-day streak stayed intact.`,
+      intensity: 'medium',
+      variant: 'freeze',
     });
   }
 
@@ -54,8 +98,11 @@ export function emitRewardMoment(progress?: UserProgress, context?: RewardMoment
   for (const m of milestones) {
     if (localStorage.getItem(milestoneKey(m))) continue;
     localStorage.setItem(milestoneKey(m), '1');
-    toast.success(`For ${m} days, you’ve shown up.`, {
+    showRewardToast({
+      title: `For ${m} days, you've shown up.`,
       description: `${m} recorded days in a row.`,
+      intensity: 'high',
+      variant: 'streak',
     });
   }
 
@@ -76,15 +123,23 @@ export function emitRewardMoment(progress?: UserProgress, context?: RewardMoment
     });
     const elapsed = formatFirstXpElapsed(firstXpResult.elapsedMs);
     const onTarget = isUnderThreeMinuteTarget(firstXpResult.elapsedMs);
-    toast.success('First XP earned', {
+    showRewardToast({
+      title: 'First XP earned',
       description: onTarget
-        ? `You did it in ${elapsed} — under 3 minutes.`
+        ? `You did it in ${elapsed}, under 3 minutes.`
         : `Your first win took ${elapsed}. Keep the loop going.`,
+      xp: award.xp > 0 ? award.xp : questBonusXp(progress),
+      intensity: 'high',
+      variant: 'level',
     });
   }
 
   if (award.leveledUp && award.levelAfter > award.levelBefore) {
-    levelUpHandler?.(award.levelAfter);
+    levelUpHandler?.({
+      level: award.levelAfter,
+      xpToNextLevel: progress.xpToNextLevel,
+      totalXp: progress.totalXp,
+    });
   } else if (award.xp > 0 && !award.duplicate && !firstXpResult.firstXp) {
     const quoteLine = Math.random() < 0.15 ? pickRewardQuote() : null;
     const why = buildWhyThisMatters({
@@ -95,28 +150,34 @@ export function emitRewardMoment(progress?: UserProgress, context?: RewardMoment
       mainPriority: context?.mainPriority,
       dailyStartDone: context?.dailyStartDone,
     });
-    toast.success(buildIdentityMessage(context?.eventType), {
-      description: context?.evidenceLabel
-        ? `+${award.xp} XP · ${context.evidenceLabel}`
-        : why
-          ? `+${award.xp} XP · ${why}`
-          : quoteLine
-            ? `+${award.xp} XP · ${quoteLine}`
-            : `+${award.xp} XP`,
+    showRewardToast({
+      title: buildIdentityMessage(context?.eventType),
+      description: context?.evidenceLabel ?? why ?? quoteLine ?? undefined,
+      xp: award.xp,
+      intensity: context?.intensity ?? intensityForEvent(context?.eventType),
+      variant: context?.variant ?? variantForEvent(context?.eventType),
     });
   }
 
   award.questBonuses?.forEach(bonus => {
     trackLoopEvent('quest_completed', { questId: bonus.questId, xp: bonus.xp });
-    toast.success('Quest complete', {
-      description: `+${bonus.xp} XP · This made today’s loop more complete.`,
+    showRewardToast({
+      title: 'Quest complete',
+      description: "This made today's loop more complete.",
+      xp: bonus.xp,
+      intensity: 'medium',
+      variant: 'quest',
     });
   });
 
   if (award.allQuestsComplete) {
     trackLoopEvent('all_daily_quests_completed');
-    toast.success('All daily quests done', {
-      description: '+25 XP · You closed the loop today.',
+    showRewardToast({
+      title: 'All daily quests done',
+      description: 'You closed the loop today.',
+      xp: 25,
+      intensity: 'high',
+      variant: 'loop',
     });
   }
 
@@ -125,14 +186,20 @@ export function emitRewardMoment(progress?: UserProgress, context?: RewardMoment
     (context.dailyStartDone ?? false)
   ) {
     trackLoopEvent('daily_loop_closed');
-    toast.success('Day closed', {
+    showRewardToast({
+      title: 'Day closed',
       description: 'Daily Start, meaningful work, and Evening Shutdown are complete.',
+      intensity: 'high',
+      variant: 'loop',
     });
   }
 
   award.achievementsUnlocked.forEach(achievement => {
-    toast.success(achievement.title, {
+    showRewardToast({
+      title: achievement.title,
       description: achievement.description,
+      intensity: 'high',
+      variant: 'achievement',
     });
   });
 }
