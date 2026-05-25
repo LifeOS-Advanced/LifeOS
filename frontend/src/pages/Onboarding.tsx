@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { setOnboarded, getProfile, setProfile } from '@/lib/store';
 import { markFirstWeekStarted } from '@/lib/daily-loop';
 import { defaultFirstHabitTitle, setPendingFirstHabit, setPendingFirstVisitGuide } from '@/lib/first-win';
+import { trackLoopEvent } from '@/lib/analytics';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LifestyleMode, ModuleKey, ImprovementArea, DayIntensity } from '@/lib/types';
@@ -85,6 +86,13 @@ export default function Onboarding() {
     const habitTitle = firstHabitTitle.trim() || defaultFirstHabitTitle(selectedImprovements);
     setPendingFirstHabit(habitTitle);
     setPendingFirstVisitGuide();
+    trackLoopEvent('onboarding_completed', {
+      lifestyleMode: selectedMode,
+      improvementFocus: selectedImprovements,
+      priority,
+      moduleCount: selectedModules.length,
+      firstHabitProvided: Boolean(firstHabitTitle.trim()),
+    });
     navigate('/app');
   };
 

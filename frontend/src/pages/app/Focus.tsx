@@ -5,16 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Timer, Play, Pause, RotateCcw, Clock, CheckSquare, Maximize2, Minimize2, AlertTriangle, TrendingUp, Target, type LucideIcon } from 'lucide-react';
+import { Timer, Play, Pause, RotateCcw, Clock, CheckSquare, Maximize2, Minimize2, AlertTriangle, TrendingUp, Target, Sparkles, type LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EmptyState } from '@/components/app/EmptyState';
 import { toast } from 'sonner';
-import { useCreateFocusSession, useFocusSessions, useTasks } from '@/lib/queries';
+import { useCreateFocusSession, useFocusSessions, useGoals, useProfile, useTasks } from '@/lib/queries';
 import { emitRewardMoment } from '@/lib/reward-feedback';
 
 export default function Focus() {
   const createSession = useCreateFocusSession();
   const { data: tasks = [] } = useTasks();
+  const { data: goals = [] } = useGoals();
+  const { data: profile } = useProfile();
   const { data: sessions = [] } = useFocusSessions();
   const [label, setLabel] = useState('Deep work');
   const [sessionGoal, setSessionGoal] = useState('');
@@ -91,7 +93,15 @@ export default function Focus() {
       });
       if (progress) {
         setCompletionReward(progress);
-        emitRewardMoment(progress, { eventType: 'focus_completed' });
+        emitRewardMoment(progress, {
+          eventType: 'focus_completed',
+          profile,
+          lifeArea: linkedTask?.lifeArea,
+          goalTitle: goals.find(goal => goal.id === linkedTask?.goalId)?.title,
+          evidenceLabel: `${duration} minutes focused`,
+          intensity: 'medium',
+          variant: 'focus',
+        });
       }
     } catch {
       // Reward feedback is non-critical; the session may still be saved locally.
@@ -247,11 +257,19 @@ export default function Focus() {
 
           {completionReward?.awarded && completionReward.awarded.xp > 0 && !isFullscreen && (
             <motion.div
-              className="mt-6 max-w-md mx-auto rounded-xl border border-primary/30 bg-primary/5 p-4 text-left"
+              className="reward-surface-complete texture-noise mt-6 max-w-md mx-auto overflow-hidden rounded-xl border border-primary/20 bg-card p-4 text-left shadow-card"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <p className="text-sm font-semibold text-foreground">Sprint reward</p>
+              <div className="relative flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Sprint reward</p>
+                  <p className="text-xs text-muted-foreground">A focused session was saved.</p>
+                </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent text-accent-foreground shadow-glow">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+              </div>
               <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-lg bg-secondary p-2">
                   <p className="text-lg font-semibold text-primary">+{completionReward.awarded.xp}</p>

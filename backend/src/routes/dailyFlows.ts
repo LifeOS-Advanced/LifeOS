@@ -4,6 +4,7 @@ import { protect } from '../middleware/auth';
 import { DailyCheckIn, DailyStart, EveningShutdown } from '../models/Index';
 import { ok, AppError } from '../utils/response';
 import { recordProgressEvent } from '../services/progress';
+import { trackAnalyticsEventSafe } from '../services/analytics';
 
 const router = Router();
 router.use(protect);
@@ -71,6 +72,13 @@ router.post('/start', [
       description: req.body.mainPriority,
       metadata: { key: `daily_start:${req.body.date}` },
     });
+    await trackAnalyticsEventSafe({
+      userId: req.userId,
+      type: 'daily_start_completed',
+      dateKey: req.body.date,
+      source: 'backend',
+      metadata: { mainPriority: req.body.mainPriority },
+    });
     ok(res, { flow: doc, progress });
   } catch (err) { next(err); }
 });
@@ -129,6 +137,21 @@ router.post('/shutdown', [
       description: req.body.tomorrowFirstTask || 'Day closed',
       metadata: { key: `evening_shutdown:${req.body.date}` },
     });
+    await trackAnalyticsEventSafe({
+      userId: req.userId,
+      type: 'evening_shutdown_completed',
+      dateKey: req.body.date,
+      source: 'backend',
+    });
+    const dailyStart = await DailyStart.exists({ userId: req.userId, date: req.body.date });
+    if (dailyStart) {
+      await trackAnalyticsEventSafe({
+        userId: req.userId,
+        type: 'daily_loop_closed',
+        dateKey: req.body.date,
+        source: 'backend',
+      });
+    }
 
     ok(res, { flow: doc, progress });
   } catch (err) { next(err); }

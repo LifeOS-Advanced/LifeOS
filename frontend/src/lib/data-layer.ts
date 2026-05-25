@@ -8,10 +8,11 @@ import { api, getToken } from './api';
 import type {
   Task, Habit, Goal, Note, FocusSession, UserProfile, Subtask, Milestone,
   DailyStart, EveningShutdown, SearchResults, LifeMomentum, UserProgress, RewardEventInput,
-  WeeklyReview,
+  WeeklyReview, WeeklyNarrativeRecap,
 } from './types';
 import { DEFAULT_PREFERENCES } from './types';
 import { computeLifeMomentum } from './insights';
+import { buildWeeklyNarrative } from './identity';
 import { getLocalProgress, recordLocalProgressEvent } from './progress';
 
 const delay = <T,>(v: T) => Promise.resolve(v);
@@ -193,6 +194,14 @@ function serializeNote(note: Partial<Note>): Partial<ApiNote> {
 }
 
 function normalizeProfileFromApi(user: ApiUser): UserProfile {
+  const preferences = {
+    ...DEFAULT_PREFERENCES,
+    ...user.preferences,
+    notifications: {
+      ...DEFAULT_PREFERENCES.notifications,
+      ...(user.preferences?.notifications ?? {}),
+    },
+  };
   return {
     name: user.name,
     email: user.email,
@@ -202,7 +211,7 @@ function normalizeProfileFromApi(user: ApiUser): UserProfile {
     improvementFocus: user.improvementFocus,
     dayIntensity: user.dayIntensity,
     dashboardPriority: user.dashboardPriority,
-    preferences: { ...DEFAULT_PREFERENCES, ...user.preferences },
+    preferences,
   };
 }
 
@@ -504,7 +513,7 @@ export const dataLayer = {
     const rows = await api.get<ApiReview[]>('/api/reviews');
     return rows.map(r => ({ ...r, id: r.id ?? r._id ?? crypto.randomUUID() }));
   },
-  saveWeeklyReview: async (review: Omit<WeeklyReview, 'id' | 'createdAt'> & { id?: string }): Promise<{ review: WeeklyReview; progress?: UserProgress }> => {
+  saveWeeklyReview: async (review: Omit<WeeklyReview, 'id' | 'createdAt'> & { id?: string; reward?: boolean }): Promise<{ review: WeeklyReview; progress?: UserProgress }> => {
     if (!hasApiToken()) {
       const saved: WeeklyReview = {
         ...review,
@@ -513,12 +522,14 @@ export const dataLayer = {
       };
       const reviews = store.getWeeklyReviews().filter(r => r.weekStart !== review.weekStart);
       store.setWeeklyReviews([saved, ...reviews]);
-      const progress = recordLocalProgressEvent({
-        type: 'weekly_review',
-        date: review.weekStart,
-        entityId: review.weekStart,
-        metadata: { key: `weekly_review:${review.weekStart}` },
-      });
+      const progress = review.reward === false
+        ? undefined
+        : recordLocalProgressEvent({
+          type: 'weekly_review',
+          date: review.weekStart,
+          entityId: review.weekStart,
+          metadata: { key: `weekly_review:${review.weekStart}` },
+        });
       return delay({ review: saved, progress });
     }
     const res = await api.post<{ review?: WeeklyReview & { _id?: string }; progress?: UserProgress } & WeeklyReview>('/api/reviews', {
@@ -526,15 +537,18 @@ export const dataLayer = {
       wentWell: review.wentWell,
       gotIgnored: review.gotIgnored,
       improveNext: review.improveNext,
+      carryForward: review.carryForward,
+      reward: review.reward,
     });
     const raw = 'review' in res && res.review ? res.review : res;
     const saved: WeeklyReview = {
       id: raw.id ?? (raw as { _id?: string })._id ?? crypto.randomUUID(),
       weekStart: review.weekStart,
-      wentWell: review.wentWell,
-      gotIgnored: review.gotIgnored,
-      improveNext: review.improveNext,
-      createdAt: new Date().toISOString(),
+      wentWell: raw.wentWell ?? review.wentWell,
+      gotIgnored: raw.gotIgnored ?? review.gotIgnored,
+      improveNext: raw.improveNext ?? review.improveNext,
+      carryForward: raw.carryForward,
+      createdAt: raw.createdAt ?? new Date().toISOString(),
     };
     return { review: saved, progress: 'progress' in res ? res.progress : undefined };
   },
@@ -635,6 +649,21 @@ export const dataLayer = {
       dailyStart: getFlowMap<DailyStart>(flowKeys.dailyStart)[today] ?? null,
       eveningShutdown: getFlowMap<EveningShutdown>(flowKeys.eveningShutdown)[today] ?? null,
       periodDays,
+    }));
+  },
+  getWeeklyNarrative: async (weekStart: string): Promise<WeeklyNarrativeRecap> => {
+    if (hasApiToken()) return api.get<WeeklyNarrativeRecap>(`/api/narrative/weekly?weekStart=${encodeURIComponent(weekStart)}`);
+    return delay(buildWeeklyNarrative({
+      tasks: store.getTasks(),
+      habits: store.getHabits(),
+      goals: store.getGoals(),
+      notes: store.getNotes(),
+      sessions: store.getFocusSessions(),
+      dailyStarts: Object.values(getFlowMap<DailyStart>(flowKeys.dailyStart)),
+      eveningShutdowns: Object.values(getFlowMap<EveningShutdown>(flowKeys.eveningShutdown)),
+      reviews: store.getWeeklyReviews(),
+      weekStart,
+      progressEvents: getLocalProgress().recentEvents,
     }));
   },
   getProgress: async (): Promise<UserProgress> => {

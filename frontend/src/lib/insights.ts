@@ -174,7 +174,7 @@ export function computeConsistency(
   const focusPart = (focusDays / 7) * 100;
   const weeklyScore = Math.round(habitPart * 0.6 + focusPart * 0.4);
 
-  const bestHabitStreak = habits.reduce((m, h) => Math.max(m, h.streak || 0, consecutiveHabitStreak(h.completedDates ?? [])), 0);
+  const bestHabitStreak = habits.reduce((m, h) => Math.max(m, consecutiveHabitStreak(h.completedDates ?? [])), 0);
 
   let focusStreak = 0;
   for (let i = 0; i < 365; i++) {

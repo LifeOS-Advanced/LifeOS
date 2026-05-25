@@ -3,6 +3,7 @@ import { useProfile } from '@/lib/queries';
 import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart, Sunrise, Moon, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { TodayEngine } from '@/components/app/TodayEngine';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { ConsistencyCard } from '@/components/app/ConsistencyCard';
@@ -13,11 +14,15 @@ import { DailyLoopHeroCard } from '@/components/app/DailyLoopHero';
 import { MorningEntryBanner } from '@/components/app/MorningEntryBanner';
 import { StreakAtRiskBanner } from '@/components/app/StreakAtRiskBanner';
 import { FirstWeekCard } from '@/components/app/FirstWeekCard';
-import { computeConsistency } from '@/lib/insights';
+import { BecomingCard } from '@/components/app/BecomingCard';
+import { CarryForwardCard } from '@/components/app/CarryForwardCard';
+import { buildIdentitySignal } from '@/lib/identity';
+import { computeConsistency, startOfWeek, ymd } from '@/lib/insights';
 import { DEFAULT_PREFERENCES, DashboardWidgetKey } from '@/lib/types';
 import { getDailyLoopProgress, isNewUserSession, shouldShowFirstWeekCard } from '@/lib/daily-loop';
 import { useDailyLoopState } from '@/lib/useDailyLoopState';
-import { useDailyStart, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useTasks } from '@/lib/queries';
+import { getLatestOpenCarryForward, updateCarryForwardStatus } from '@/lib/continuity';
+import { useDailyStart, useEveningShutdown, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useSaveWeeklyReview, useTasks, useWeeklyNarrative, useWeeklyReviews } from '@/lib/queries';
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 10 },
@@ -36,6 +41,12 @@ export default function Dashboard() {
   const { data: sessions = [] } = useFocusSessions();
   const { data: momentum, isLoading: momentumLoading } = useLifeMomentum();
   const { data: dailyStart } = useDailyStart(today);
+  const { data: eveningShutdown } = useEveningShutdown(today);
+  const weekStart = ymd(startOfWeek());
+  const { data: weeklyNarrative } = useWeeklyNarrative(weekStart);
+  const { data: reviews = [] } = useWeeklyReviews();
+  const saveReview = useSaveWeeklyReview();
+  const { data: profile } = useProfile();
   const loop = useDailyLoopState();
   const { dailyStartDone, eveningShutdownDone, hero, quests, progress, isLoading: progressLoading } = loop;
   const loopProgress = getDailyLoopProgress({ dailyStartDone, eveningShutdownDone, quests });
@@ -55,7 +66,6 @@ export default function Dashboard() {
 
   if (!ready) return <DashboardSkeleton />;
 
-  const { data: profile } = useProfile();
   const prefs = profile?.preferences ?? DEFAULT_PREFERENCES;
   const timezone = prefs.timezone ?? DEFAULT_PREFERENCES.timezone;
 
@@ -64,6 +74,16 @@ export default function Dashboard() {
   const consistency = computeConsistency(habits, sessions, goals, []);
   const habitCheckedToday = habits.some(h => h.completedDates?.includes(today));
   const focusDoneToday = todaySessions.length > 0;
+  const carryForwardReview = getLatestOpenCarryForward(reviews, today);
+  const identitySignal = buildIdentitySignal({
+    tasks,
+    habits,
+    sessions,
+    goals,
+    progressEvents: progress?.recentEvents,
+    dailyStarts: dailyStart ? [dailyStart] : [],
+    eveningShutdowns: eveningShutdown ? [eveningShutdown] : [],
+  });
 
   const order = (prefs.widgetOrder ?? DEFAULT_PREFERENCES.widgetOrder!) as DashboardWidgetKey[];
   const hasSeenMomentumWidget = order.includes('momentum');
@@ -100,6 +120,36 @@ export default function Dashboard() {
   const goalNotes = connectedGoal ? notes.filter(n => connectedGoal.linkedNoteIds.includes(n.id) || n.goalId === connectedGoal.id) : [];
 
   const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening';
+  const updateCarryForward = async (status: 'done' | 'dismissed') => {
+    if (!carryForwardReview?.carryForward) return;
+    try {
+      const next = updateCarryForwardStatus(carryForwardReview, status);
+      await saveReview.mutateAsync({
+        id: next.id,
+        weekStart: next.weekStart,
+        wentWell: next.wentWell,
+        gotIgnored: next.gotIgnored,
+        improveNext: next.improveNext,
+        carryForward: next.carryForward,
+        reward: false,
+      });
+      toast.success(status === 'done' ? 'Carry-forward marked done' : 'Carry-forward dismissed');
+    } catch {
+      toast.error('Could not update carry-forward');
+    }
+  };
+  const remainingQuests = Math.max(0, loopProgress.questsTotal - loopProgress.questsDone);
+  const firstWeekReturning = newUser && loopProgress.questsDone > 0;
+  const loopNudge =
+    loopProgress.percent >= 100
+      ? 'Loop closed. Tomorrow gets easier because today is visible.'
+      : loopProgress.percent >= 80
+        ? 'You are close to closing the loop. One focused move can finish the day.'
+        : remainingQuests === 1
+          ? 'One quest left. Finish it and close the loop cleanly.'
+          : firstWeekReturning
+            ? 'Good to see you back. Keep yesterday’s momentum alive.'
+            : null;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -110,7 +160,9 @@ export default function Dashboard() {
           {greeting}, {profile?.name?.split(' ')[0] || 'there'}.
         </h1>
         <p className="text-sm text-muted-foreground">
-          {loopProgress.questsDone > 0 ? (
+          {loopNudge ? (
+            <>{loopNudge}</>
+          ) : loopProgress.questsDone > 0 ? (
             <>Today&apos;s win: <span className="text-foreground font-medium">{loopProgress.questsDone} quest{loopProgress.questsDone === 1 ? '' : 's'} done</span> — keep the loop going.</>
           ) : dailyStartDone && dailyStart?.mainPriority ? (
             <>Today&apos;s priority: <span className="text-foreground font-medium">{dailyStart.mainPriority}</span></>
@@ -123,6 +175,13 @@ export default function Dashboard() {
       <motion.section {...fadeIn(0.02)} className="space-y-3">
         <MorningEntryBanner dailyStartDone={dailyStartDone} />
         <StreakAtRiskBanner progress={progress} timezone={timezone} />
+        {carryForwardReview && (
+          <CarryForwardCard
+            review={carryForwardReview}
+            onDone={() => updateCarryForward('done')}
+            onDismiss={() => updateCarryForward('dismissed')}
+          />
+        )}
       </motion.section>
 
       <motion.section {...fadeIn(0.025)}>
@@ -151,6 +210,14 @@ export default function Dashboard() {
       {/* Row 1 — Today's progress */}
       <motion.section {...fadeIn(0.03)}>
         <TodayProgressCard progress={progress} loading={progressLoading || loop.isLoading} />
+      </motion.section>
+
+      <motion.section {...fadeIn(0.04)}>
+        <BecomingCard
+          signal={identitySignal}
+          closedLoopDays={weeklyNarrative?.stats.closedLoopDays ?? 0}
+          loopClosureRate={weeklyNarrative?.stats.loopClosureRate ?? 0}
+        />
       </motion.section>
 
       {show('today') && (

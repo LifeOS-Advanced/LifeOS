@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CarryForwardCard } from '@/components/app/CarryForwardCard';
 import type { EnergyLevel, Mood } from '@/lib/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { useDailyStart, useHabits, useSaveDailyStart, useTasks, queryKeys } from '@/lib/queries';
+import { useDailyStart, useHabits, useProfile, useSaveDailyStart, useSaveWeeklyReview, useTasks, useWeeklyReviews, queryKeys } from '@/lib/queries';
 import { dailyStartSchema, validateOrToast } from '@/lib/schemas';
 import { emitRewardMoment } from '@/lib/reward-feedback';
 import { getFirstWinFlow, setFirstWinFlow } from '@/lib/first-win';
 import { isNewUserSession } from '@/lib/daily-loop';
+import { getLatestOpenCarryForward, updateCarryForwardStatus } from '@/lib/continuity';
 
 const today = () => new Date().toISOString().split('T')[0];
 
@@ -21,8 +23,11 @@ export default function DailyStartPage() {
   const date = today();
   const { data: tasks = [] } = useTasks();
   const { data: habits = [] } = useHabits();
+  const { data: profile } = useProfile();
   const { data: existing } = useDailyStart(date);
+  const { data: reviews = [] } = useWeeklyReviews();
   const saveDailyStart = useSaveDailyStart();
+  const saveReview = useSaveWeeklyReview();
   const qc = useQueryClient();
   const [mood, setMood] = useState<Mood>(existing?.mood ?? 4);
   const [energy, setEnergy] = useState<EnergyLevel>(existing?.energy ?? 'medium');
@@ -30,6 +35,7 @@ export default function DailyStartPage() {
   const [topTaskIds, setTopTaskIds] = useState<string[]>(existing?.topTaskIds ?? []);
   const [habitIds, setHabitIds] = useState<string[]>(existing?.habitIds ?? []);
   const [focusDuration, setFocusDuration] = useState(existing?.suggestedFocusDuration ?? 25);
+  const carryForwardReview = getLatestOpenCarryForward(reviews, date);
 
   const openTasks = useMemo(() => tasks.filter(t => t.status !== 'done').slice(0, 12), [tasks]);
   const habitsDue = useMemo(() => {
@@ -43,6 +49,25 @@ export default function DailyStartPage() {
 
   const toggleHabit = (id: string) => {
     setHabitIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const updateCarryForward = async (status: 'done' | 'dismissed') => {
+    if (!carryForwardReview?.carryForward) return;
+    try {
+      const next = updateCarryForwardStatus(carryForwardReview, status);
+      await saveReview.mutateAsync({
+        id: next.id,
+        weekStart: next.weekStart,
+        wentWell: next.wentWell,
+        gotIgnored: next.gotIgnored,
+        improveNext: next.improveNext,
+        carryForward: next.carryForward,
+        reward: false,
+      });
+      toast.success(status === 'done' ? 'Carry-forward marked done' : 'Carry-forward dismissed');
+    } catch {
+      toast.error('Could not update carry-forward');
+    }
   };
 
   const submit = async () => {
@@ -62,7 +87,7 @@ export default function DailyStartPage() {
       toast.success('Day started', { description: 'Your plan is on the dashboard.' });
       if (progress) {
         qc.setQueryData(queryKeys.progress, progress);
-        emitRewardMoment(progress, { eventType: 'daily_start' });
+        emitRewardMoment(progress, { eventType: 'daily_start', profile, mainPriority });
       }
       const flow = getFirstWinFlow();
       if (flow === 'daily_start' && isNewUserSession()) {
@@ -121,6 +146,16 @@ export default function DailyStartPage() {
           <Label>Today’s main priority</Label>
           <Input value={mainPriority} onChange={(e) => setMainPriority(e.target.value)} placeholder="What must move forward today?" />
         </div>
+
+        {carryForwardReview && (
+          <CarryForwardCard
+            review={carryForwardReview}
+            compact
+            onUse={() => setMainPriority(carryForwardReview.carryForward?.text ?? '')}
+            onDone={() => updateCarryForward('done')}
+            onDismiss={() => updateCarryForward('dismissed')}
+          />
+        )}
       </section>
 
       <section className="grid lg:grid-cols-2 gap-4">

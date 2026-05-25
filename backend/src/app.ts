@@ -20,6 +20,8 @@ import searchRoutes from './routes/search';
 import momentumRoutes from './routes/momentum';
 import progressRoutes from './routes/progress';
 import notificationRoutes from './routes/notifications';
+import analyticsRoutes from './routes/analytics';
+import narrativeRoutes from './routes/narrative';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 const app = express();
@@ -97,6 +99,8 @@ app.use('/api/search', searchRoutes);
 app.use('/api/momentum', momentumRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/narrative', narrativeRoutes);
 
 // ── Error handling ───────────────────────────────────────────
 app.use(notFound);

@@ -23,10 +23,10 @@ const GENERAL: Record<QuoteContext, string[]> = {
     'Park one task for tomorrow — then let go.',
   ],
   loop: [
-    'A closed loop today is a stronger you tomorrow.',
+    'A closed loop today gives tomorrow a clearer start.',
     'Consistency is the compound interest of self-respect.',
-    'You’re building a rhythm, not chasing a mood.',
-    'Each quest finished is a vote for who you’re becoming.',
+    'A repeated rhythm beats chasing a mood.',
+    'Each quest finished leaves a clearer record.',
   ],
   reward: [
     'That counted. Stack another small win.',

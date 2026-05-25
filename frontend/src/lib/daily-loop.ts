@@ -25,8 +25,49 @@ const QUEST_ROUTES: Record<string, string> = {
   shutdown_1: '/app/evening-shutdown',
 };
 
+const QUEST_META: Record<string, { action: string; tooltip: string; xp: number }> = {
+  daily_start_1: {
+    action: 'Plan your day',
+    tooltip: 'Set your priority, top tasks, habits, and focus block.',
+    xp: 25,
+  },
+  tasks_3: {
+    action: 'Finish tasks',
+    tooltip: 'Complete three real tasks. Reopening a task will not farm XP.',
+    xp: 20,
+  },
+  focus_1: {
+    action: 'Run a focus sprint',
+    tooltip: 'Save one completed focus session. A 5-minute sprint counts.',
+    xp: 20,
+  },
+  habits_2: {
+    action: 'Check habits',
+    tooltip: 'Check two habits for today. Each habit only counts once per date.',
+    xp: 15,
+  },
+  area_1: {
+    action: 'Move one area',
+    tooltip: 'Complete work linked to a life area so balance stays visible.',
+    xp: 5,
+  },
+  shutdown_1: {
+    action: 'Close the day',
+    tooltip: 'Reflect, park delayed tasks, and choose tomorrow’s first move.',
+    xp: 30,
+  },
+};
+
 export function questRoute(quest: DailyQuest): string {
   return QUEST_ROUTES[quest.id] ?? '/app';
+}
+
+export function questMeta(quest: DailyQuest) {
+  return QUEST_META[quest.id] ?? {
+    action: quest.label,
+    tooltip: 'Open the matching section and make one meaningful move.',
+    xp: 5,
+  };
 }
 
 export function getNextIncompleteQuest(quests: DailyQuest[]): DailyQuest | undefined {

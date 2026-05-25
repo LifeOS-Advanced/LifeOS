@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import type { EnergyLevel, Mood } from '@/lib/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { useDailyStart, useEveningShutdown, useSaveEveningShutdown, useTasks, queryKeys } from '@/lib/queries';
+import { useDailyStart, useEveningShutdown, useProfile, useSaveEveningShutdown, useTasks, queryKeys } from '@/lib/queries';
 import { eveningShutdownSchema, validateOrToast } from '@/lib/schemas';
 import { emitRewardMoment } from '@/lib/reward-feedback';
 
@@ -21,6 +21,7 @@ export default function EveningShutdownPage() {
   const { data: tasks = [] } = useTasks();
   const { data: existing } = useEveningShutdown(date);
   const { data: dailyStart } = useDailyStart(date);
+  const { data: profile } = useProfile();
   const saveShutdown = useSaveEveningShutdown();
   const qc = useQueryClient();
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>(existing?.completedTaskIds ?? tasks.filter(t => t.status === 'done').map(t => t.id));
@@ -65,7 +66,12 @@ export default function EveningShutdownPage() {
       const dailyStartDone = Boolean(dailyStart?.confirmedAt ?? dailyStart?.id);
       if (progress) {
         qc.setQueryData(queryKeys.progress, progress);
-        emitRewardMoment(progress, { eventType: 'evening_shutdown', dailyStartDone });
+        emitRewardMoment(progress, {
+          eventType: 'evening_shutdown',
+          dailyStartDone,
+          profile,
+          mainPriority: dailyStart?.mainPriority,
+        });
       }
       navigate('/app');
     } catch (error) {

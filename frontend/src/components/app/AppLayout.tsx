@@ -8,6 +8,7 @@ import { FirstVisitGuide } from './FirstVisitGuide';
 import { PendingFirstHabit } from './PendingFirstHabit';
 import { RewardMomentProvider } from './RewardMoment';
 import { QuickCapture } from './QuickCapture';
+import { LocalReminderProvider } from './LocalReminderProvider';
 import { useDailyLoopState } from '@/lib/useDailyLoopState';
 import { useProfile } from '@/lib/queries';
 import { generateRecurringInstances } from '@/lib/recurrence';
@@ -93,6 +94,7 @@ export function AppLayout() {
         <PendingFirstHabit />
         <FirstVisitGuide />
         <EngagementPrompts />
+        <LocalReminderProvider profile={profile} />
         <QuickCapture />
       </div>
     </SidebarProvider>
