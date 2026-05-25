@@ -5,6 +5,7 @@ import { User } from '../models/User';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { ok, created, AppError } from '../utils/response';
 import { protect } from '../middleware/auth';
+import { debugLog } from '../utils/debugLog';
 
 const router = Router();
 
@@ -155,6 +156,178 @@ router.post(
       next(err);
     }
   }
+);
+
+// ── POST /api/auth/github ────────────────────────────────────
+// Exchanges GitHub OAuth authorization code for app tokens
+router.post(
+  '/github',
+  authLimiter,
+  [
+    body('code').trim().notEmpty().withMessage('GitHub authorization code required'),
+    body('redirectUri').optional().isString().isLength({ max: 500 }),
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!validate(req, next)) return;
+      const { code, redirectUri: bodyRedirectUri } = req.body as { code: string; redirectUri?: string };
+
+      debugLog({
+        runId: 'post-fix',
+        hypothesisId: 'B',
+        location: 'auth.ts:github:entry',
+        message: 'github exchange requested',
+        data: {
+          hasCode: !!code,
+          redirectUri: bodyRedirectUri ?? null,
+          origin: req.headers.origin ?? null,
+        },
+      });
+
+      const clientId = process.env.GITHUB_CLIENT_ID;
+      const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+      if (!clientId || !clientSecret) {
+        throw new AppError('GitHub OAuth is not configured on the server', 503, 'GITHUB_NOT_CONFIGURED');
+      }
+
+      const allowedOrigins = (process.env.CLIENT_URL ?? 'http://localhost:8080,http://localhost:5173,http://127.0.0.1:8080,http://127.0.0.1:5173')
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
+      const defaultOrigin = allowedOrigins[0] ?? 'http://localhost:8080';
+      const redirectUri =
+        bodyRedirectUri ??
+        process.env.GITHUB_REDIRECT_URI ??
+        `${defaultOrigin}/auth/github/callback`;
+
+      let redirectOrigin: string;
+      try {
+        redirectOrigin = new URL(redirectUri).origin;
+      } catch {
+        throw new AppError('Invalid redirect_uri', 400, 'GITHUB_REDIRECT_INVALID');
+      }
+      const originAllowed = allowedOrigins.some((o) => {
+        if (o === redirectOrigin) return true;
+        // localhost vs 127.0.0.1 on same port
+        try {
+          const a = new URL(o);
+          const b = new URL(redirectOrigin);
+          return a.port === b.port && a.protocol === b.protocol
+            && ((a.hostname === 'localhost' && b.hostname === '127.0.0.1')
+              || (a.hostname === '127.0.0.1' && b.hostname === 'localhost'));
+        } catch {
+          return false;
+        }
+      });
+      if (!originAllowed) {
+        throw new AppError('redirect_uri origin is not allowed', 400, 'GITHUB_REDIRECT_INVALID');
+      }
+
+      const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+          redirect_uri: redirectUri,
+        }),
+      });
+
+      const tokenData = (await tokenRes.json()) as {
+        access_token?: string;
+        error?: string;
+        error_description?: string;
+      };
+
+      debugLog({
+        runId: 'post-fix',
+        hypothesisId: 'B',
+        location: 'auth.ts:github-token',
+        message: 'github token exchange',
+        data: { ok: tokenRes.ok, hasToken: !!tokenData.access_token, error: tokenData.error },
+      });
+
+      if (!tokenRes.ok || !tokenData.access_token) {
+        throw new AppError(
+          tokenData.error_description ?? tokenData.error ?? 'GitHub token exchange failed',
+          401,
+          'GITHUB_TOKEN_FAILED',
+        );
+      }
+
+      const ghHeaders = {
+        Authorization: `Bearer ${tokenData.access_token}`,
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'LifeOS',
+      };
+
+      const userRes = await fetch('https://api.github.com/user', { headers: ghHeaders });
+      if (!userRes.ok) throw new AppError('Failed to fetch GitHub profile', 401, 'GITHUB_USER_FAILED');
+      const ghUser = (await userRes.json()) as {
+        id: number;
+        login: string;
+        name: string | null;
+        email: string | null;
+        avatar_url?: string;
+      };
+
+      let email: string | null | undefined = ghUser.email;
+      if (!email) {
+        const emailsRes = await fetch('https://api.github.com/user/emails', { headers: ghHeaders });
+        if (emailsRes.ok) {
+          const emails = (await emailsRes.json()) as { email: string; primary: boolean; verified: boolean }[];
+          const primary = emails.find(e => e.primary && e.verified) ?? emails.find(e => e.verified);
+          email = primary?.email ?? null;
+        }
+      }
+      if (!email) {
+        throw new AppError('GitHub account has no public email. Add a verified email on GitHub.', 400, 'GITHUB_NO_EMAIL');
+      }
+
+      const providerId = String(ghUser.id);
+      let user = await User.findOne({ $or: [{ email }, { provider: 'github', providerId }] });
+      if (!user) {
+        user = await User.create({
+          name: ghUser.name ?? ghUser.login,
+          email,
+          provider: 'github',
+          providerId,
+          avatar: ghUser.avatar_url,
+        });
+      } else {
+        user.provider = 'github';
+        user.providerId = providerId;
+        if (ghUser.avatar_url) user.avatar = ghUser.avatar_url;
+        if (!user.name && ghUser.name) user.name = ghUser.name;
+        await user.save();
+      }
+
+      const accessToken = signAccessToken(user._id, user.email);
+      const refreshToken = signRefreshToken(user._id, user.email);
+      await User.findByIdAndUpdate(user._id, { $push: { refreshTokens: refreshToken } });
+      setRefreshCookie(res, refreshToken);
+
+      debugLog({
+        runId: 'post-fix',
+        hypothesisId: 'B',
+        location: 'auth.ts:github:success',
+        message: 'github user signed in',
+        data: { userId: String(user._id) },
+      });
+
+      ok(res, { accessToken, user });
+    } catch (err) {
+      debugLog({
+        runId: 'post-fix',
+        hypothesisId: 'B',
+        location: 'auth.ts:github:error',
+        message: 'github exchange failed',
+        data: { error: err instanceof Error ? err.message : 'unknown' },
+      });
+      next(err);
+    }
+  },
 );
 
 // ── POST /api/auth/refresh ───────────────────────────────────

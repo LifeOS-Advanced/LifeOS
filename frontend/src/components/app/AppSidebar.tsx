@@ -1,7 +1,7 @@
-import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays, LineChart, Pin } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays, LineChart, Pin, Sunrise, Moon, Trophy } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
-import { getProfile } from '@/lib/store';
+import { useProfile } from '@/lib/queries';
 import { useAuth } from '@/context/AuthContext';
 import { ModuleKey } from '@/lib/types';
 import {
@@ -28,20 +28,23 @@ const moduleItems: Record<ModuleKey, { title: string; url: string; icon: typeof 
 const dashboardItem = { title: 'Dashboard',     url: '/app',             icon: LayoutDashboard };
 const calendarItem  = { title: 'Calendar',       url: '/app/calendar',    icon: CalendarDays };
 const insightsItem  = { title: 'Insights',       url: '/app/insights',    icon: LineChart };
+const progressItem  = { title: 'Progress',       url: '/app/progress',    icon: Trophy };
 const reviewItem    = { title: 'Weekly Review',  url: '/app/review',      icon: Sparkles };
+const dailyStartItem = { title: 'Daily Start', url: '/app/daily-start', icon: Sunrise };
+const shutdownItem = { title: 'Shutdown', url: '/app/evening-shutdown', icon: Moon };
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location  = useLocation();
-  const profile   = getProfile();
+  const { data: profile } = useProfile();
   const { logout } = useAuth();
 
   const enabled    = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[]);
   const pinned     = (profile?.preferences?.pinnedModules ?? []).filter(k => enabled.includes(k));
   const moduleNav  = enabled.filter(k => !pinned.includes(k)).map(k => moduleItems[k]).filter(Boolean);
   const pinnedNav  = pinned.map(k => moduleItems[k]).filter(Boolean);
-  const utilityNav = [calendarItem, insightsItem, reviewItem];
+  const utilityNav = [progressItem, dailyStartItem, shutdownItem, calendarItem, insightsItem, reviewItem];
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';

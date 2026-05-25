@@ -15,6 +15,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/lib/api';
+import { startGitHubOAuth } from '@/lib/github-oauth';
 
 type LoginValues = z.infer<typeof loginSchema>;
 
@@ -66,15 +67,10 @@ export default function Login() {
   });
 
   const handleGitHub = () => {
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    if (!clientId) { setServerError('GitHub OAuth is not configured'); return; }
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: `${window.location.origin}/auth/github/callback`,
-      scope: 'read:user user:email',
-      state: crypto.randomUUID(),
-    });
-    window.location.href = `https://github.com/login/oauth/authorize?${params}`;
+    if (!startGitHubOAuth()) {
+      setServerError('GitHub OAuth is not configured');
+      setOauthLoading(null);
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
 import { Task } from './types';
-import { getTasks, setTasks } from './store';
+import { dataLayer } from './data-layer';
 
 const ymd = (d: Date) => d.toISOString().split('T')[0];
 const parse = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -28,59 +28,61 @@ function nextOccurrence(from: Date, rule: NonNullable<Task['recurrence']>): Date
 }
 
 /**
- * Generates pending recurring task instances up to today.
- * For each template task with a recurrence rule, ensures an occurrence exists
- * for each scheduled date between lastGeneratedDate (or dueDate) and today.
+ * Generates pending recurring task instances up to today (local calendar day).
  */
-export function generateRecurringInstances(): boolean {
-  const tasks = getTasks();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+export async function generateRecurringInstances(): Promise<boolean> {
+  const tasks = await dataLayer.listTasks();
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
   const todayStr = ymd(today);
   let mutated = false;
-  const additions: Task[] = [];
 
   for (const t of tasks) {
     if (!t.recurrence || t.recurrence.frequency === 'none') continue;
-    if (t.recurrenceParentId) continue; // skip instances
+    if (t.recurrenceParentId) continue;
     const anchor = t.lastGeneratedDate || t.dueDate;
     if (!anchor) continue;
+
     let cursor = parse(anchor);
+    cursor.setHours(12, 0, 0, 0);
     let safety = 0;
+    let lastCursorStr = t.lastGeneratedDate || anchor;
+
     while (safety++ < 200) {
       const next = nextOccurrence(cursor, t.recurrence);
       if (!next || next > today) break;
+      next.setHours(12, 0, 0, 0);
       const nextStr = ymd(next);
-      const exists = tasks.some(x => x.recurrenceParentId === t.id && x.dueDate === nextStr)
-        || additions.some(x => x.recurrenceParentId === t.id && x.dueDate === nextStr);
+      const exists = tasks.some(x => x.recurrenceParentId === t.id && x.dueDate === nextStr);
       if (!exists) {
-        additions.push({
-          id: `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
+        await dataLayer.createTask({
           title: t.title,
           description: t.description,
           status: 'todo',
           priority: t.priority,
+          importance: t.importance,
+          urgency: t.urgency,
+          effort: t.effort,
+          energyRequired: t.energyRequired,
           dueDate: nextStr,
-          tags: [...t.tags],
+          tags: [...(t.tags ?? [])],
           goalId: t.goalId,
           lifeArea: t.lifeArea,
-          subtasks: t.subtasks?.map(s => ({ ...s, id: `s${Date.now()}${Math.random().toString(36).slice(2, 5)}`, done: false })),
+          subtasks: t.subtasks?.map(s => ({ title: s.title, done: false })),
+          recurrence: { frequency: 'none' },
           recurrenceParentId: t.id,
-          createdAt: new Date().toISOString(),
         });
         mutated = true;
       }
       cursor = next;
+      lastCursorStr = nextStr;
     }
-    if (cursor && ymd(cursor) !== (t.lastGeneratedDate || '')) {
-      t.lastGeneratedDate = ymd(cursor);
+
+    if (lastCursorStr !== (t.lastGeneratedDate || '')) {
+      await dataLayer.updateTask(t.id, { lastGeneratedDate: lastCursorStr });
       mutated = true;
-    }
-    // If next scheduled is in the future, set lastGeneratedDate to today's anchor
-    if (!t.lastGeneratedDate || t.lastGeneratedDate < todayStr) {
-      // Already updated above for cursor; nothing more
     }
   }
 
-  if (mutated) setTasks([...additions, ...tasks]);
   return mutated;
 }

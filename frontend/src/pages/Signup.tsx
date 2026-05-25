@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { startGitHubOAuth } from '@/lib/github-oauth';
 import { toast } from 'sonner';
 
 type SignupValues = z.infer<typeof signupSchema>;
@@ -68,19 +69,10 @@ export default function Signup() {
   });
 
   const handleGitHub = () => {
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    if (!clientId) {
+    if (!startGitHubOAuth()) {
       setOauthLoading(null);
       toast.error('GitHub signup is not configured yet');
-      return;
     }
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: `${window.location.origin}/auth/github/callback`,
-      scope: 'read:user user:email',
-      state: crypto.randomUUID(),
-    });
-    window.location.href = `https://github.com/login/oauth/authorize?${params}`;
   };
 
   return (

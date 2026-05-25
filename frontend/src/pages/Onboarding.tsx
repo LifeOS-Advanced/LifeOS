@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { setOnboarded, getProfile, setProfile } from '@/lib/store';
+import { markFirstWeekStarted } from '@/lib/daily-loop';
+import { defaultFirstHabitTitle, setPendingFirstHabit, setPendingFirstVisitGuide } from '@/lib/first-win';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { LifestyleMode, ModuleKey, ImprovementArea, DayIntensity } from '@/lib/types';
 import {
   GraduationCap, Briefcase, Building2, Palette, Heart,
@@ -42,7 +46,7 @@ const modules: { key: ModuleKey; label: string; desc: string; icon: typeof Check
   { key: 'focus', label: 'Focus', desc: 'Deep work with pomodoro timer', icon: Timer },
 ];
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -52,6 +56,7 @@ export default function Onboarding() {
   const [intensity, setIntensity] = useState<DayIntensity>('moderate');
   const [priority, setPriority] = useState<ModuleKey>('tasks');
   const [selectedModules, setSelectedModules] = useState<ModuleKey[]>(['tasks', 'habits', 'goals', 'notes', 'focus']);
+  const [firstHabitTitle, setFirstHabitTitle] = useState('');
 
   const toggleModule = (key: ModuleKey) => {
     setSelectedModules(prev => prev.includes(key) ? prev.filter(m => m !== key) : [...prev, key]);
@@ -76,6 +81,10 @@ export default function Onboarding() {
       dashboardPriority: priority,
     });
     setOnboarded(true);
+    markFirstWeekStarted();
+    const habitTitle = firstHabitTitle.trim() || defaultFirstHabitTitle(selectedImprovements);
+    setPendingFirstHabit(habitTitle);
+    setPendingFirstVisitGuide();
     navigate('/app');
   };
 
@@ -177,6 +186,24 @@ export default function Onboarding() {
           )}
 
           {step === 4 && (
+            <StepCard key="s4-habit">
+              <h1 className="text-2xl font-bold text-foreground mb-2">Name one habit to start</h1>
+              <p className="text-muted-foreground mb-6">You&apos;ll check it off for your first XP — no goals or long setup.</p>
+              <div className="space-y-2">
+                <Label htmlFor="first-habit">Daily habit</Label>
+                <Input
+                  id="first-habit"
+                  value={firstHabitTitle}
+                  onChange={e => setFirstHabitTitle(e.target.value)}
+                  placeholder={defaultFirstHabitTitle(selectedImprovements)}
+                  className="h-11"
+                />
+              </div>
+              <NavButtons onBack={back} onNext={next} />
+            </StepCard>
+          )}
+
+          {step === 5 && (
             <StepCard key="s4">
               <h1 className="text-2xl font-bold text-foreground mb-2">Choose your modules</h1>
               <p className="text-muted-foreground mb-8">Select the tools you want in your workspace. You can change this later.</p>

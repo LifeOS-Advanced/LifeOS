@@ -17,6 +17,10 @@ export interface ITask extends Document {
   description?: string;
   status: 'todo' | 'in-progress' | 'done';
   priority: 'low' | 'medium' | 'high';
+  importance: number;
+  urgency: number;
+  effort: number;
+  energyRequired: 'low' | 'medium' | 'high';
   dueDate?: string;
   tags: string[];
   goalId?: Types.ObjectId;
@@ -52,6 +56,10 @@ const TaskSchema = new Schema<ITask>(
     description: { type: String, trim: true, maxlength: 2000 },
     status: { type: String, enum: ['todo', 'in-progress', 'done'], default: 'todo' },
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+    importance: { type: Number, min: 1, max: 5, default: 3 },
+    urgency: { type: Number, min: 1, max: 5, default: 3 },
+    effort: { type: Number, min: 1, max: 5, default: 3 },
+    energyRequired: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     dueDate: { type: String, match: /^\d{4}-\d{2}-\d{2}$/ },
     tags: { type: [String], default: [] },
     goalId: { type: Schema.Types.ObjectId, ref: 'Goal' },
@@ -70,5 +78,6 @@ const TaskSchema = new Schema<ITask>(
 TaskSchema.index({ userId: 1, status: 1 });
 TaskSchema.index({ userId: 1, dueDate: 1 });
 TaskSchema.index({ userId: 1, goalId: 1 });
+TaskSchema.index({ userId: 1, importance: -1, urgency: -1 });
 
 export const Task = mongoose.model<ITask>('Task', TaskSchema);

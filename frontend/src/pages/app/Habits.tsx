@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { getHabits, setHabits, getGoals } from '@/lib/store';
-import { Habit, LifeArea } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { LifeArea } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -8,16 +9,26 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Star, Check, Zap, Target, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { LifeAreaSelect } from '@/components/app/LifeAreaSelect';
 import { LifeAreaFilter } from '@/components/app/LifeAreaFilter';
 import { EmptyState } from '@/components/app/EmptyState';
 import { useNewParam } from '@/hooks/use-new-param';
 import { habitFormSchema, validateOrToast } from '@/lib/schemas';
+import { useCreateHabit, useGoals, useHabits, useRecordProgressEvent, useToggleHabit } from '@/lib/queries';
+import { emitRewardMoment } from '@/lib/reward-feedback';
+import { getFirstWinFlow, setFirstWinFlow } from '@/lib/first-win';
 
 export default function Habits() {
-  const goals = getGoals();
-  const [habits, setLocalHabits] = useState(getHabits());
+  const [searchParams] = useSearchParams();
+  const firstWinMode = searchParams.get('firstWin') === '1';
+  const goalFilter = searchParams.get('goalId');
+  const { data: goals = [] } = useGoals();
+  const { data: habits = [], isLoading } = useHabits();
+  const createHabitMutation = useCreateHabit();
+  const toggleHabitMutation = useToggleHabit();
+  const recordProgress = useRecordProgressEvent();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [areaFilter, setAreaFilter] = useState<LifeArea | 'all'>('all');
   const [form, setForm] = useState<{ title: string; description: string; frequency: 'daily' | 'weekly'; lifeArea?: LifeArea; goalId?: string }>({ title: '', description: '', frequency: 'daily' });
@@ -25,7 +36,10 @@ export default function Habits() {
 
   useNewParam(() => setDialogOpen(true));
 
-  const save = (updated: Habit[]) => { setLocalHabits(updated); setHabits(updated); };
+  useEffect(() => {
+    if (!firstWinMode) return;
+    if (habits.length === 0) setDialogOpen(true);
+  }, [firstWinMode, habits.length]);
 
   const [pulsing, setPulsing] = useState<string | null>(null);
 
@@ -36,24 +50,49 @@ export default function Habits() {
       setPulsing(id);
       setTimeout(() => setPulsing(null), 600);
     }
-    save(habits.map(h => {
-      if (h.id !== id) return h;
-      const done = h.completedDates.includes(today);
-      return {
-        ...h,
-        completedDates: done ? h.completedDates.filter(d => d !== today) : [...h.completedDates, today],
-        streak: done ? Math.max(0, h.streak - 1) : h.streak + 1,
-      };
-    }));
+    toggleHabitMutation.mutate(
+      { id, date: today },
+      {
+        onSuccess: async (updated) => {
+          if (wasDone) return;
+          try {
+            const progress = await recordProgress.mutateAsync({
+              type: 'habit_checked',
+              date: today,
+              entityId: id,
+              title: 'Habit checked',
+              description: habit?.title,
+              metadata: { streak: updated.streak, goalId: updated.goalId, lifeArea: updated.lifeArea },
+            });
+            emitRewardMoment(progress);
+            if (getFirstWinFlow() === 'habit_check') {
+              setFirstWinFlow('done');
+            }
+          } catch {
+            // Reward feedback is non-critical; the habit update already succeeded.
+          }
+        },
+        onError: (error) => toast.error(error instanceof Error ? error.message : 'Could not update habit'),
+      },
+    );
   };
 
-  const createHabit = () => {
+  const createHabit = async () => {
     const valid = validateOrToast(habitFormSchema, { title: form.title, description: form.description, frequency: form.frequency });
     if (!valid) return;
-    const newHabit: Habit = { id: `h${Date.now()}`, title: form.title, description: form.description, frequency: form.frequency, streak: 0, completedDates: [], lifeArea: form.lifeArea, goalId: form.goalId, createdAt: new Date().toISOString() };
-    save([newHabit, ...habits]);
-    setForm({ title: '', description: '', frequency: 'daily' });
-    setDialogOpen(false);
+    try {
+      await createHabitMutation.mutateAsync({
+        title: form.title,
+        description: form.description,
+        frequency: form.frequency,
+        lifeArea: form.lifeArea,
+        goalId: form.goalId,
+      });
+      setForm({ title: '', description: '', frequency: 'daily' });
+      setDialogOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create habit');
+    }
   };
 
   const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -61,10 +100,21 @@ export default function Habits() {
     return d.toISOString().split('T')[0];
   });
 
-  const visible = habits.filter(h => areaFilter === 'all' || h.lifeArea === areaFilter);
+  const visible = habits.filter(h => {
+    if (goalFilter && h.goalId !== goalFilter) return false;
+    return areaFilter === 'all' || h.lifeArea === areaFilter;
+  });
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {firstWinMode && (
+        <div className="rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm">
+          <p className="font-semibold text-foreground">Your first win</p>
+          <p className="text-muted-foreground mt-0.5">
+            Tap your habit for today — you&apos;ll earn XP in seconds.
+          </p>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Habits</h1>
@@ -96,7 +146,7 @@ export default function Habits() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={createHabit} className="w-full gradient-primary text-primary-foreground">Create Habit</Button>
+              <Button onClick={createHabit} disabled={createHabitMutation.isPending} className="w-full gradient-primary text-primary-foreground">Create Habit</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -105,7 +155,9 @@ export default function Habits() {
       <LifeAreaFilter value={areaFilter} onChange={setAreaFilter} />
 
       <div className="space-y-4">
-        {habits.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-xl border border-border bg-card shadow-card text-center py-12 text-muted-foreground">Loading habits...</div>
+        ) : habits.length === 0 ? (
           <EmptyState
             icon={Zap}
             title="No habits yet"

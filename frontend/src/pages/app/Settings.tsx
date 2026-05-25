@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getProfile, setProfile } from '@/lib/store';
+import { setProfile } from '@/lib/store';
+import { useProfile, useSaveProfile } from '@/lib/queries';
 import { applyAccent, ACCENT_OPTIONS } from '@/lib/theme';
 import { UserProfile, ModuleKey, DEFAULT_PREFERENCES, DashboardWidgetKey, UserPreferences, AccentTheme } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -21,13 +22,14 @@ const moduleList: { key: ModuleKey; label: string; icon: typeof CheckSquare }[] 
 
 const widgetMeta: Record<DashboardWidgetKey, string> = {
   today: 'Today engine',
+  momentum: 'Life momentum',
   habits: 'Habits',
   goals: 'Goals',
   focus: 'Focus stats',
   consistency: 'Consistency',
   insights: 'Insights',
 };
-const ALL_WIDGETS: DashboardWidgetKey[] = ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'];
+const ALL_WIDGETS: DashboardWidgetKey[] = ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'];
 
 const focusPresets = [15, 25, 45, 50, 90];
 
@@ -41,12 +43,24 @@ function getTimezones(): string[] {
   return ['UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Asia/Singapore', 'Australia/Sydney'];
 }
 
+function buildInitialProfile(source?: UserProfile | null): UserProfile {
+  const initial = source || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[], theme: 'light' as const };
+  const initialPreferences = { ...DEFAULT_PREFERENCES, ...(initial.preferences || {}) };
+  if (!(initialPreferences.widgetOrder ?? []).includes('momentum')) {
+    initialPreferences.dashboardWidgets = [...new Set<DashboardWidgetKey>(['momentum', ...initialPreferences.dashboardWidgets])];
+    initialPreferences.widgetOrder = [...new Set<DashboardWidgetKey>(['today', 'momentum', ...(initialPreferences.widgetOrder ?? [])])];
+  }
+  return { ...initial, preferences: initialPreferences };
+}
+
 export default function SettingsPage() {
-  const initial = getProfile() || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[], theme: 'light' as const };
-  const [profile, setLocalProfile] = useState<UserProfile>({
-    ...initial,
-    preferences: { ...DEFAULT_PREFERENCES, ...(initial.preferences || {}) },
-  });
+  const { data: loadedProfile, isLoading } = useProfile();
+  const saveProfileMutation = useSaveProfile();
+  const [profile, setLocalProfile] = useState<UserProfile>(() => buildInitialProfile());
+
+  useEffect(() => {
+    if (loadedProfile) setLocalProfile(buildInitialProfile(loadedProfile));
+  }, [loadedProfile]);
 
   const prefs = profile.preferences!;
   const timezones = useMemo(getTimezones, []);
@@ -102,10 +116,20 @@ export default function SettingsPage() {
     applyAccent(a);
   };
 
-  const saveChanges = () => {
-    setProfile(profile);
-    toast.success('Settings saved');
+  const saveChanges = async () => {
+    try {
+      const saved = await saveProfileMutation.mutateAsync(profile);
+      setProfile(saved);
+      toast.success('Settings saved');
+    } catch (error) {
+      setProfile(profile);
+      toast.error(error instanceof Error ? error.message : 'Could not save settings');
+    }
   };
+
+  if (isLoading && !loadedProfile) {
+    return <div className="max-w-2xl mx-auto h-48 rounded-xl bg-secondary/50 animate-pulse" />;
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -277,7 +301,9 @@ export default function SettingsPage() {
             <Switch checked={prefs.notifications.goalDeadlineWarnings} onCheckedChange={(v) => updatePrefs({ notifications: { ...prefs.notifications, goalDeadlineWarnings: v } })} />
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">Notification delivery coming soon.</p>
+        <p className="text-xs text-muted-foreground mt-3">
+          Phase 1 uses in-app banners and prompts. Phase 2 will enable browser push via the service worker and <code className="text-[10px]">/api/notifications</code>.
+        </p>
       </section>
 
       <div className="flex justify-end">

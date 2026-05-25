@@ -4,20 +4,21 @@ import type { EventClickArg, EventDropArg, EventInput } from '@fullcalendar/core
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { getTasks, getGoals, getHabits, setTasks } from '@/lib/store';
-import { CalendarDays, CheckSquare, Target, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { CalendarDays, CheckSquare, Target, Zap, Timer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useFocusSessions, useGoals, useHabits, useTasks, useUpdateTask } from '@/lib/queries';
 
-type FilterKey = 'tasks' | 'goals' | 'habits';
+type FilterKey = 'tasks' | 'goals' | 'habits' | 'focus';
 
 export default function CalendarPage() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<Record<FilterKey, boolean>>({ tasks: true, goals: true, habits: true });
-  const [tasks, setLocalTasks] = useState(getTasks());
-  const goals = getGoals();
-  const habits = getHabits();
+  const { data: tasks = [] } = useTasks();
+  const { data: goals = [] } = useGoals();
+  const { data: habits = [] } = useHabits();
+  const { data: sessions = [] } = useFocusSessions();
+  const updateTask = useUpdateTask();
+  const [filters, setFilters] = useState<Record<FilterKey, boolean>>({ tasks: true, goals: true, habits: true, focus: false });
 
   const toggle = (k: FilterKey) => setFilters(f => ({ ...f, [k]: !f[k] }));
 
@@ -48,9 +49,6 @@ export default function CalendarPage() {
       });
     }
     if (filters.habits) {
-      // Plot habit completions over the visible window — last 60 days for context
-      const today = new Date();
-      const start = new Date(); start.setDate(today.getDate() - 60);
       habits.forEach(h => {
         h.completedDates.forEach(d => {
           ev.push({
@@ -64,16 +62,32 @@ export default function CalendarPage() {
         });
       });
     }
+    if (filters.focus) {
+      sessions.forEach(s => {
+        ev.push({
+          id: `f-${s.id}`,
+          title: `🎯 ${s.label || 'Focus'}`,
+          start: s.completedAt,
+          allDay: true,
+          extendedProps: { kind: 'focus' },
+          classNames: ['fc-evt-focus'],
+        });
+      });
+    }
     return ev;
-  }, [tasks, goals, habits, filters]);
+  }, [tasks, goals, habits, sessions, filters]);
 
-  const handleDrop = (info: EventDropArg) => {
+  const handleDrop = async (info: EventDropArg) => {
     const props = info.event.extendedProps;
     if (props.kind !== 'task') { info.revert(); return; }
     const newDate = info.event.startStr;
-    const updated = tasks.map(t => t.id === props.taskId ? { ...t, dueDate: newDate } : t);
-    setLocalTasks(updated); setTasks(updated);
-    toast.success('Task rescheduled', { description: newDate });
+    try {
+      await updateTask.mutateAsync({ id: props.taskId as string, updates: { dueDate: newDate } });
+      toast.success('Task rescheduled', { description: newDate });
+    } catch {
+      info.revert();
+      toast.error('Could not reschedule task');
+    }
   };
 
   const handleClick = (info: EventClickArg) => {
@@ -81,6 +95,7 @@ export default function CalendarPage() {
     if (k === 'task') navigate('/app/tasks');
     if (k === 'goal') navigate('/app/goals');
     if (k === 'habit') navigate('/app/habits');
+    if (k === 'focus') navigate('/app/focus');
   };
 
   const chipCls = (active: boolean) =>
@@ -91,12 +106,13 @@ export default function CalendarPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><CalendarDays className="h-6 w-6" />Calendar</h1>
-          <p className="text-muted-foreground text-sm">Tasks, goals and habits at a glance.</p>
+          <p className="text-muted-foreground text-sm">Tasks, goals, habits, and focus at a glance.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button className={chipCls(filters.tasks)} onClick={() => toggle('tasks')}><CheckSquare className="h-3.5 w-3.5" />Tasks</button>
           <button className={chipCls(filters.goals)} onClick={() => toggle('goals')}><Target className="h-3.5 w-3.5" />Goals</button>
           <button className={chipCls(filters.habits)} onClick={() => toggle('habits')}><Zap className="h-3.5 w-3.5" />Habits</button>
+          <button className={chipCls(filters.focus)} onClick={() => toggle('focus')}><Timer className="h-3.5 w-3.5" />Focus</button>
         </div>
       </div>
 

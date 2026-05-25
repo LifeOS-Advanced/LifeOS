@@ -1,0 +1,19 @@
+{
+  "name": "LifeOS",
+  "short_name": "LifeOS",
+  "description": "A personal operating system for tasks, habits, goals, notes, focus, and reviews.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fb",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

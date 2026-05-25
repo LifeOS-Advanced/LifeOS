@@ -47,6 +47,10 @@ export const taskFormSchema = z.object({
   description: longText(2000),
   priority: z.enum(['low', 'medium', 'high']),
   status: z.enum(['todo', 'in-progress', 'done']),
+  importance: z.number().min(1).max(5),
+  urgency: z.number().min(1).max(5),
+  effort: z.number().min(1).max(5),
+  energyRequired: z.enum(['low', 'medium', 'high']),
   dueDate: dateStr,
   tags: tagsCsv,
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']),
@@ -68,6 +72,27 @@ export const habitFormSchema = z.object({
   title: title(120),
   description: longText(1000),
   frequency: z.enum(['daily', 'weekly']),
+});
+
+export const dailyStartSchema = z.object({
+  date: dateStr.refine(Boolean, 'Date is required'),
+  mood: z.number().min(1).max(5),
+  energy: z.enum(['low', 'medium', 'high']),
+  mainPriority: z.string().trim().min(1, 'Main priority is required').max(200),
+  topTaskIds: z.array(z.string()).max(3),
+  habitIds: z.array(z.string()),
+  suggestedFocusDuration: z.number().min(5).max(180),
+});
+
+export const eveningShutdownSchema = z.object({
+  date: dateStr.refine(Boolean, 'Date is required'),
+  completedTaskIds: z.array(z.string()),
+  delayedTaskIds: z.array(z.string()),
+  mood: z.number().min(1).max(5),
+  energy: z.enum(['low', 'medium', 'high']),
+  wentWell: z.string().max(2000).optional().or(z.literal('')),
+  improveTomorrow: z.string().max(2000).optional().or(z.literal('')),
+  tomorrowFirstTask: z.string().max(200).optional().or(z.literal('')),
 });
 
 // ---- Notes ----

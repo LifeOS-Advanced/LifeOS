@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from 'recharts';
 import { Activity, Timer, Target, Zap, TrendingUp, Compass, Flame, CheckSquare, Trophy, type LucideIcon } from 'lucide-react';
-import { getTasks, getHabits, getGoals, getFocusSessions, getCheckIns } from '@/lib/store';
+import { useGoals, useHabits, useTasks, useFocusSessions } from '@/lib/queries';
 import { computeWeeklyStats, computeConsistency, lastNDates } from '@/lib/insights';
 import { LIFE_AREAS } from '@/lib/life-areas';
 import { SectionHeader, StatCard } from '@/components/app/patterns';
@@ -18,15 +18,14 @@ const RANGE_DAYS: Record<Range, number> = { week: 7, month: 30, all: 365 };
 const ACCENT = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--info))', 'hsl(var(--success))', 'hsl(var(--destructive))'];
 
 export default function Insights() {
-  const tasks = getTasks();
-  const habits = getHabits();
-  const goals = getGoals();
-  const sessions = getFocusSessions();
-  const checkIns = getCheckIns();
+  const { data: tasks = [] } = useTasks();
+  const { data: habits = [] } = useHabits();
+  const { data: goals = [] } = useGoals();
+  const { data: sessions = [] } = useFocusSessions();
   const [range, setRange] = useState<Range>('month');
 
   const weekly = useMemo(() => computeWeeklyStats(tasks, habits, goals, sessions), [tasks, habits, goals, sessions]);
-  const consistency = useMemo(() => computeConsistency(habits, sessions, goals, checkIns), [habits, sessions, goals, checkIns]);
+  const consistency = useMemo(() => computeConsistency(habits, sessions, goals, []), [habits, sessions, goals]);
 
   // Headline stats (independent of range)
   const bestStreak = useMemo(() => habits.reduce((m, h) => Math.max(m, h.streak || 0), 0), [habits]);

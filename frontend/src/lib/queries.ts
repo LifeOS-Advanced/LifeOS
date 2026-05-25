@@ -4,7 +4,7 @@
  */
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { dataLayer } from './data-layer';
-import type { Task, Habit, Goal, Note, FocusSession } from './types';
+import type { Task, Habit, Goal, Note, FocusSession, DailyStart, EveningShutdown, RewardEventInput, UserProfile } from './types';
 
 export const queryKeys = {
   tasks: ['tasks'] as QueryKey,
@@ -13,6 +13,11 @@ export const queryKeys = {
   notes: ['notes'] as QueryKey,
   focus: ['focus-sessions'] as QueryKey,
   profile: ['profile'] as QueryKey,
+  dailyStart: (date: string) => ['daily-start', date] as QueryKey,
+  eveningShutdown: (date: string) => ['evening-shutdown', date] as QueryKey,
+  search: (query: string) => ['search', query] as QueryKey,
+  momentum: (periodDays: number) => ['momentum', periodDays] as QueryKey,
+  progress: ['progress'] as QueryKey,
 };
 
 // ---- Tasks ----
@@ -43,7 +48,11 @@ export const useCreateTask = () => {
     onSuccess: (created) => {
       qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => [created, ...prev]);
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.tasks });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
   });
 };
 
@@ -54,7 +63,11 @@ export const useUpdateTask = () => {
     onSuccess: (updated) => {
       qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => prev.map(task => task.id === updated.id ? updated : task));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.tasks });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
   });
 };
 
@@ -65,7 +78,11 @@ export const useUpdateTaskStatus = () => {
     onSuccess: (updated) => {
       qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => prev.map(task => task.id === updated.id ? updated : task));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.tasks });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
   });
 };
 
@@ -88,7 +105,68 @@ export const useDeleteTask = () => {
     onSuccess: (id) => {
       qc.setQueryData<Task[]>(queryKeys.tasks, (prev = []) => prev.filter(task => task.id !== id));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.tasks }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.tasks });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
+export const useDailyStart = (date: string) =>
+  useQuery({ queryKey: queryKeys.dailyStart(date), queryFn: () => dataLayer.getDailyStart(date) });
+
+export const useSaveDailyStart = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (flow: Omit<DailyStart, 'id'>) => dataLayer.saveDailyStart(flow),
+    onSuccess: ({ flow, progress }) => {
+      qc.setQueryData(queryKeys.dailyStart(flow.date), flow);
+      if (progress) qc.setQueryData(queryKeys.progress, progress);
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
+export const useEveningShutdown = (date: string) =>
+  useQuery({ queryKey: queryKeys.eveningShutdown(date), queryFn: () => dataLayer.getEveningShutdown(date) });
+
+export const useSaveEveningShutdown = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (flow: Omit<EveningShutdown, 'id'>) => dataLayer.saveEveningShutdown(flow),
+    onSuccess: ({ flow, progress }) => {
+      qc.setQueryData(queryKeys.eveningShutdown(flow.date), flow);
+      if (progress) qc.setQueryData(queryKeys.progress, progress);
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
+export const useUniversalSearch = (query: string) =>
+  useQuery({
+    queryKey: queryKeys.search(query),
+    queryFn: () => dataLayer.search(query),
+    enabled: query.trim().length > 0,
+    initialData: { task: [], habit: [], goal: [], note: [], review: [] },
+  });
+
+export const useLifeMomentum = (periodDays = 30) =>
+  useQuery({ queryKey: queryKeys.momentum(periodDays), queryFn: () => dataLayer.getMomentum(periodDays) });
+
+export const useProgress = () =>
+  useQuery({ queryKey: queryKeys.progress, queryFn: dataLayer.getProgress });
+
+export const useRecordProgressEvent = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (event: RewardEventInput) => dataLayer.recordProgressEvent(event),
+    onSuccess: (progress) => {
+      qc.setQueryData(queryKeys.progress, progress);
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+    },
   });
 };
 
@@ -111,41 +189,186 @@ export const useSaveHabits = () => {
   });
 };
 
+export const useCreateHabit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (habit: Omit<Habit, 'id' | 'createdAt' | 'streak' | 'completedDates'>) => dataLayer.createHabit(habit),
+    onSuccess: (created) => {
+      qc.setQueryData<Habit[]>(queryKeys.habits, (prev = []) => [created, ...prev]);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.habits });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
+export const useUpdateHabit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Habit> }) => dataLayer.updateHabit(id, updates),
+    onSuccess: (updated) => {
+      qc.setQueryData<Habit[]>(queryKeys.habits, (prev = []) => prev.map(habit => habit.id === updated.id ? updated : habit));
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.habits });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
+export const useToggleHabit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, date }: { id: string; date: string }) => dataLayer.toggleHabit(id, date),
+    onSuccess: (updated) => {
+      qc.setQueryData<Habit[]>(queryKeys.habits, (prev = []) => prev.map(habit => habit.id === updated.id ? updated : habit));
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.habits });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
+export const useDeleteHabit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dataLayer.deleteHabit(id),
+    onSuccess: (id) => {
+      qc.setQueryData<Habit[]>(queryKeys.habits, (prev = []) => prev.filter(habit => habit.id !== id));
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.habits });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
 // ---- Goals ----
 export const useGoals = () =>
   useQuery({ queryKey: queryKeys.goals, queryFn: dataLayer.listGoals, initialData: [] as Goal[] });
 
-export const useSaveGoals = () => {
+export const useCreateGoal = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (next: Goal[]) => dataLayer.saveGoals(next),
-    onMutate: async (next) => {
-      await qc.cancelQueries({ queryKey: queryKeys.goals });
-      const prev = qc.getQueryData<Goal[]>(queryKeys.goals);
-      qc.setQueryData(queryKeys.goals, next);
-      return { prev };
+    mutationFn: dataLayer.createGoal,
+    onSuccess: (created) => {
+      qc.setQueryData<Goal[]>(queryKeys.goals, (prev = []) => [created, ...prev]);
     },
-    onError: (_e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(queryKeys.goals, ctx.prev); },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.goals }),
+  });
+};
+
+export const useUpdateGoal = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Goal> }) => dataLayer.updateGoal(id, updates),
+    onSuccess: (updated) => {
+      qc.setQueryData<Goal[]>(queryKeys.goals, (prev = []) => prev.map(g => g.id === updated.id ? updated : g));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.goals }),
+  });
+};
+
+export const useToggleGoalMilestone = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ goalId, milestoneId }: { goalId: string; milestoneId: string }) =>
+      dataLayer.toggleGoalMilestone(goalId, milestoneId),
+    onSuccess: (updated) => {
+      qc.setQueryData<Goal[]>(queryKeys.goals, (prev = []) => prev.map(g => g.id === updated.id ? updated : g));
+    },
+  });
+};
+
+export const useAddGoalMilestone = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ goalId, title }: { goalId: string; title: string }) => dataLayer.addGoalMilestone(goalId, title),
+    onSuccess: (updated) => {
+      qc.setQueryData<Goal[]>(queryKeys.goals, (prev = []) => prev.map(g => g.id === updated.id ? updated : g));
+    },
+  });
+};
+
+export const useDeleteGoal = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dataLayer.deleteGoal(id),
+    onSuccess: (id) => {
+      qc.setQueryData<Goal[]>(queryKeys.goals, (prev = []) => prev.filter(g => g.id !== id));
+    },
     onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.goals }),
   });
 };
 
 // ---- Notes ----
-export const useNotes = () =>
-  useQuery({ queryKey: queryKeys.notes, queryFn: dataLayer.listNotes, initialData: [] as Note[] });
+export const useNotes = (search?: string) =>
+  useQuery({
+    queryKey: search ? [...queryKeys.notes, search] as QueryKey : queryKeys.notes,
+    queryFn: () => dataLayer.listNotes(search),
+    initialData: [] as Note[],
+  });
 
-export const useSaveNotes = () => {
+export const useCreateNote = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (next: Note[]) => dataLayer.saveNotes(next),
-    onMutate: async (next) => {
-      await qc.cancelQueries({ queryKey: queryKeys.notes });
-      const prev = qc.getQueryData<Note[]>(queryKeys.notes);
-      qc.setQueryData(queryKeys.notes, next);
-      return { prev };
+    mutationFn: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => dataLayer.createNote(note),
+    onSuccess: (created) => {
+      qc.setQueryData<Note[]>(queryKeys.notes, (prev = []) => [created, ...prev]);
     },
-    onError: (_e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(queryKeys.notes, ctx.prev); },
     onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.notes }),
+  });
+};
+
+export const useUpdateNote = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Note> }) => dataLayer.updateNote(id, updates),
+    onSuccess: (updated) => {
+      qc.setQueryData<Note[]>(queryKeys.notes, (prev = []) => prev.map(n => n.id === updated.id ? updated : n));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.notes }),
+  });
+};
+
+export const useToggleNotePin = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dataLayer.toggleNotePin(id),
+    onSuccess: (updated) => {
+      qc.setQueryData<Note[]>(queryKeys.notes, (prev = []) => prev.map(n => n.id === updated.id ? updated : n));
+    },
+  });
+};
+
+export const useDeleteNote = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dataLayer.deleteNote(id),
+    onSuccess: (id) => {
+      qc.setQueryData<Note[]>(queryKeys.notes, (prev = []) => prev.filter(n => n.id !== id));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.notes }),
+  });
+};
+
+// ---- Profile ----
+export const useProfile = () =>
+  useQuery({ queryKey: queryKeys.profile, queryFn: dataLayer.getProfile });
+
+export const useSaveProfile = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (profile: UserProfile) => dataLayer.saveProfile(profile),
+    onSuccess: (profile) => {
+      if (profile) qc.setQueryData(queryKeys.profile, profile);
+    },
   });
 };
 
@@ -165,5 +388,34 @@ export const useSaveFocusSessions = () => {
     },
     onError: (_e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(queryKeys.focus, ctx.prev); },
     onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.focus }),
+  });
+};
+
+export const useCreateFocusSession = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (session: Omit<FocusSession, 'id'>) => dataLayer.createFocusSession(session),
+    onSuccess: ({ session, progress }) => {
+      qc.setQueryData<FocusSession[]>(queryKeys.focus, (prev = []) => [session, ...prev]);
+      if (progress) qc.setQueryData(queryKeys.progress, progress);
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
+  });
+};
+
+export const useWeeklyReviews = () =>
+  useQuery({ queryKey: ['weekly-reviews'], queryFn: dataLayer.listWeeklyReviews, initialData: [] });
+
+export const useSaveWeeklyReview = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (review: Parameters<typeof dataLayer.saveWeeklyReview>[0]) => dataLayer.saveWeeklyReview(review),
+    onSuccess: ({ progress }) => {
+      if (progress) qc.setQueryData(queryKeys.progress, progress);
+      qc.invalidateQueries({ queryKey: ['weekly-reviews'] });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+    },
   });
 };

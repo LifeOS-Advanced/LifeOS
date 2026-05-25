@@ -4,6 +4,7 @@ import { body, param, validationResult } from 'express-validator';
 import { protect } from '../middleware/auth';
 import { Habit } from '../models/Habit';
 import { ok, created, noContent, AppError } from '../utils/response';
+import { recordProgressEvent } from '../services/progress';
 
 const router = Router();
 router.use(protect);
@@ -23,6 +24,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
 router.post('/', [
   body('title').trim().notEmpty().isLength({ max: 120 }),
+  body('description').optional().isString().isLength({ max: 1000 }),
   body('frequency').optional().isIn(['daily', 'weekly']),
   body('lifeArea').optional().isString(),
   body('goalId').optional().isMongoId(),
@@ -34,7 +36,16 @@ router.post('/', [
   } catch (err) { next(err); }
 });
 
-router.put('/:id', [param('id').isMongoId()],
+router.put('/:id', [
+  param('id').isMongoId(),
+  body('title').optional().trim().notEmpty().isLength({ max: 120 }),
+  body('description').optional().isString().isLength({ max: 1000 }),
+  body('frequency').optional().isIn(['daily', 'weekly']),
+  body('lifeArea').optional().isString(),
+  body('goalId').optional().isMongoId(),
+  body('streak').optional().isInt({ min: 0 }),
+  body('completedDates').optional().isArray(),
+],
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!v(req, next)) return;
@@ -69,6 +80,17 @@ router.patch('/:id/toggle', [
       habit.streak += 1;
     }
     await habit.save();
+    if (!done) {
+      await recordProgressEvent({
+        userId: req.userId,
+        type: 'habit_checked',
+        entityId: String(habit._id),
+        date,
+        title: 'Habit checked',
+        description: habit.title,
+        metadata: { streak: habit.streak, goalId: habit.goalId ? String(habit.goalId) : undefined, lifeArea: habit.lifeArea },
+      });
+    }
     ok(res, habit);
   } catch (err) { next(err); }
 });

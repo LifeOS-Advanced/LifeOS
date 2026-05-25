@@ -23,6 +23,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<void>;
+  loginWithGitHub: (code: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -68,6 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     handleSuccess(data);
   }
 
+  async function loginWithGitHub(code: string) {
+    const redirectUri = `${window.location.origin}/auth/github/callback`;
+    const data = await api.post<AuthResponse>('/api/auth/github', { code, redirectUri });
+    handleSuccess(data);
+  }
+
   async function logout() {
     // Best-effort server-side revocation (clears the httpOnly refresh cookie).
     try {
@@ -80,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ register, login, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ register, login, loginWithGoogle, loginWithGitHub, logout }}>
       {children}
     </AuthContext.Provider>
   );

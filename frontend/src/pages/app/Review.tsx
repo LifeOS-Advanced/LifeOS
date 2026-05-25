@@ -1,35 +1,48 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckSquare, Zap, Timer, Target, TrendingUp, AlertCircle, Sparkles } from 'lucide-react';
-import { getTasks, getHabits, getGoals, getFocusSessions, getWeeklyReviews, addWeeklyReview } from '@/lib/store';
 import { computeWeeklyStats } from '@/lib/insights';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { toast } from 'sonner';
+import { useFocusSessions, useGoals, useHabits, useSaveWeeklyReview, useTasks } from '@/lib/queries';
+import { emitRewardMoment } from '@/lib/reward-feedback';
+import { useQuery } from '@tanstack/react-query';
+import { dataLayer } from '@/lib/data-layer';
 
 const fadeIn = (delay: number) => ({ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { delay, duration: 0.4 } });
 
 export default function Review() {
-  const stats = useMemo(() => computeWeeklyStats(getTasks(), getHabits(), getGoals(), getFocusSessions()), []);
-  const existing = getWeeklyReviews().find(r => r.weekStart === stats.weekStart);
+  const saveReview = useSaveWeeklyReview();
+  const { data: tasks = [] } = useTasks();
+  const { data: habits = [] } = useHabits();
+  const { data: goals = [] } = useGoals();
+  const { data: sessions = [] } = useFocusSessions();
+  const { data: reviews = [] } = useQuery({ queryKey: ['weekly-reviews'], queryFn: () => dataLayer.listWeeklyReviews() });
+  const stats = useMemo(() => computeWeeklyStats(tasks, habits, goals, sessions), [tasks, habits, goals, sessions]);
+  const existing = reviews.find(r => r.weekStart === stats.weekStart);
   const [wentWell, setWentWell] = useState(existing?.wentWell ?? '');
   const [gotIgnored, setGotIgnored] = useState(existing?.gotIgnored ?? '');
   const [improveNext, setImproveNext] = useState(existing?.improveNext ?? '');
 
   const maxDay = Math.max(1, ...stats.byDay.map(d => d.tasks + d.habits + Math.round(d.focus / 25)));
 
-  const handleSave = () => {
-    addWeeklyReview({
-      id: existing?.id ?? crypto.randomUUID(),
-      weekStart: stats.weekStart,
-      wentWell: wentWell.trim(),
-      gotIgnored: gotIgnored.trim(),
-      improveNext: improveNext.trim(),
-      createdAt: new Date().toISOString(),
-    });
-    toast.success('Review saved', { description: 'Reflection captured for this week.' });
+  const handleSave = async () => {
+    try {
+      const { progress } = await saveReview.mutateAsync({
+        id: existing?.id,
+        weekStart: stats.weekStart,
+        wentWell: wentWell.trim(),
+        gotIgnored: gotIgnored.trim(),
+        improveNext: improveNext.trim(),
+      });
+      toast.success('Review saved', { description: 'Reflection captured for this week.' });
+      if (progress) emitRewardMoment(progress, { eventType: 'weekly_review' });
+    } catch {
+      toast.error('Could not save review');
+    }
   };
 
   const cards = [

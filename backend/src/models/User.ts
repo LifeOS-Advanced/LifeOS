@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 export type LifestyleMode = 'student' | 'freelancer' | 'employee' | 'creator' | 'personal-growth';
 export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus';
 export type AccentTheme = 'indigo' | 'emerald' | 'slate' | 'amber';
-export type DashboardWidgetKey = 'today' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
+export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
 
 export interface IUserPreferences {
   timezone: string;
@@ -48,11 +48,11 @@ const PreferencesSchema = new Schema<IUserPreferences>(
     defaultFocusDuration: { type: Number, default: 25, min: 5, max: 180 },
     dashboardWidgets: {
       type: [String],
-      default: ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
     },
     widgetOrder: {
       type: [String],
-      default: ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
     },
     pinnedModules: { type: [String], default: [] },
     accentTheme: { type: String, enum: ['indigo', 'emerald', 'slate', 'amber'], default: 'indigo' },

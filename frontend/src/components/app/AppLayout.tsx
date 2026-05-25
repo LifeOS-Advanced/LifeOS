@@ -2,19 +2,36 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { CommandBar, useCommandBar } from './CommandBar';
-import { DailyCheckInModal } from './DailyCheckIn';
 import { WeeklyReviewPrompt } from './WeeklyReviewPrompt';
+import { EveningShutdownPrompt } from './EveningShutdownPrompt';
+import { FirstVisitGuide } from './FirstVisitGuide';
+import { PendingFirstHabit } from './PendingFirstHabit';
+import { RewardMomentProvider } from './RewardMoment';
 import { QuickCapture } from './QuickCapture';
-import { getProfile } from '@/lib/store';
+import { useDailyLoopState } from '@/lib/useDailyLoopState';
+import { useProfile } from '@/lib/queries';
 import { generateRecurringInstances } from '@/lib/recurrence';
 import { applyThemeFromProfile } from '@/lib/theme';
 import { Search, Bell } from 'lucide-react';
 import { useEffect } from 'react';
 
+function EngagementPrompts() {
+  const { dailyStartDone, eveningShutdownDone } = useDailyLoopState();
+  return (
+    <>
+      <EveningShutdownPrompt dailyStartDone={dailyStartDone} eveningShutdownDone={eveningShutdownDone} />
+      <WeeklyReviewPrompt />
+    </>
+  );
+}
+
 export function AppLayout() {
-  const profile = getProfile();
+  const { data: profile } = useProfile();
   const { open, setOpen } = useCommandBar();
-  useEffect(() => { generateRecurringInstances(); applyThemeFromProfile(); }, []);
+  useEffect(() => {
+    void generateRecurringInstances();
+    applyThemeFromProfile();
+  }, []);
 
   const initials = (profile?.name || 'U')
     .split(' ')
@@ -72,8 +89,10 @@ export function AppLayout() {
         </div>
 
         <CommandBar open={open} onOpenChange={setOpen} />
-        <DailyCheckInModal />
-        <WeeklyReviewPrompt />
+        <RewardMomentProvider />
+        <PendingFirstHabit />
+        <FirstVisitGuide />
+        <EngagementPrompts />
         <QuickCapture />
       </div>
     </SidebarProvider>
