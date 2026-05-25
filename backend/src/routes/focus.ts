@@ -5,6 +5,7 @@ import { protect } from '../middleware/auth';
 import { FocusSession, DailyCheckIn, WeeklyReview } from '../models/Index'; // fix: capital I to match filename on case-sensitive FS
 import { User } from '../models/User';
 import { ok, created, noContent, AppError } from '../utils/response';
+import { recordProgressEvent } from '../services/progress';
 
 // ── Focus Sessions ────────────────────────────────────────────
 export const focusRouter = Router();
@@ -45,7 +46,16 @@ focusRouter.post('/', [
   try {
     if (!v(req, next)) return;
     const session = await FocusSession.create({ ...req.body, userId: req.userId });
-    created(res, session);
+    const progress = await recordProgressEvent({
+      userId: req.userId,
+      type: 'focus_completed',
+      entityId: String(session._id),
+      date: session.completedAt,
+      title: 'Focus sprint finished',
+      description: `${session.duration} minutes of ${session.label}`,
+      metadata: { duration: session.duration, taskId: session.taskId ? String(session.taskId) : undefined },
+    });
+    created(res, { session, progress });
   } catch (err) { next(err); }
 });
 
@@ -123,7 +133,16 @@ reviewRouter.post('/', [
       { $set: { ...req.body, userId: req.userId } },
       { new: true, upsert: true, runValidators: true }
     );
-    ok(res, review);
+    const progress = await recordProgressEvent({
+      userId: req.userId,
+      type: 'weekly_review',
+      entityId: req.body.weekStart,
+      date: req.body.weekStart,
+      title: 'Weekly Reset completed',
+      description: 'You closed the week and earned a streak freeze.',
+      metadata: { key: `weekly_review:${req.body.weekStart}` },
+    });
+    ok(res, { review, progress });
   } catch (err) { next(err); }
 });
 

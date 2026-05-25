@@ -3,6 +3,7 @@ import { body, param, query, validationResult } from 'express-validator';
 import { protect } from '../middleware/auth';
 import { Task } from '../models/Task';
 import { ok, created, noContent, paginated, AppError } from '../utils/response';
+import { recordProgressEvent, ymd } from '../services/progress';
 
 const router = Router();
 router.use(protect);
@@ -20,6 +21,7 @@ function validate(req: Request, next: NextFunction): boolean {
 router.get('/', [
   query('status').optional().isIn(['todo', 'in-progress', 'done']),
   query('priority').optional().isIn(['low', 'medium', 'high']),
+  query('group').optional().isIn(['do-first', 'quick-wins', 'schedule', 'maybe-later']),
   query('lifeArea').optional().isString(),
   query('goalId').optional().isMongoId(),
   query('search').optional().isString().isLength({ max: 100 }),
@@ -29,13 +31,17 @@ router.get('/', [
 ], async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!validate(req, next)) return;
-    const { status, priority, lifeArea, goalId, search, sort = '-createdAt' } = req.query;
+    const { status, priority, group, lifeArea, goalId, search, sort = '-createdAt' } = req.query;
     const page = Number(req.query.page ?? 1);
     const limit = Number(req.query.limit ?? 50);
 
     const filter: Record<string, unknown> = { userId: req.userId };
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
+    if (group === 'do-first') Object.assign(filter, { importance: { $gte: 4 }, urgency: { $gte: 4 } });
+    if (group === 'quick-wins') Object.assign(filter, { importance: { $gte: 4 }, effort: { $lte: 2 } });
+    if (group === 'schedule') Object.assign(filter, { importance: { $gte: 4 }, urgency: { $lte: 2 } });
+    if (group === 'maybe-later') Object.assign(filter, { importance: { $lte: 2 } });
     if (lifeArea) filter.lifeArea = lifeArea;
     if (goalId) filter.goalId = goalId;
     if (search) filter.title = { $regex: String(search), $options: 'i' };
@@ -67,6 +73,10 @@ router.post('/', [
   body('description').optional().isString().isLength({ max: 2000 }),
   body('priority').optional().isIn(['low', 'medium', 'high']),
   body('status').optional().isIn(['todo', 'in-progress', 'done']),
+  body('importance').optional().isInt({ min: 1, max: 5 }),
+  body('urgency').optional().isInt({ min: 1, max: 5 }),
+  body('effort').optional().isInt({ min: 1, max: 5 }),
+  body('energyRequired').optional().isIn(['low', 'medium', 'high']),
   body('dueDate').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
   body('tags').optional().isArray(),
   body('goalId').optional().isMongoId(),
@@ -82,16 +92,45 @@ router.post('/', [
 });
 
 // ── PUT /api/tasks/:id ───────────────────────────────────────
-router.put('/:id', [param('id').isMongoId()],
+router.put('/:id', [
+  param('id').isMongoId(),
+  body('title').optional().trim().notEmpty().isLength({ max: 120 }),
+  body('description').optional().isString().isLength({ max: 2000 }),
+  body('priority').optional().isIn(['low', 'medium', 'high']),
+  body('status').optional().isIn(['todo', 'in-progress', 'done']),
+  body('importance').optional().isInt({ min: 1, max: 5 }),
+  body('urgency').optional().isInt({ min: 1, max: 5 }),
+  body('effort').optional().isInt({ min: 1, max: 5 }),
+  body('energyRequired').optional().isIn(['low', 'medium', 'high']),
+  body('dueDate').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
+  body('tags').optional().isArray(),
+  body('goalId').optional().isMongoId(),
+  body('lifeArea').optional().isString(),
+  body('subtasks').optional().isArray(),
+  body('recurrence').optional().isObject(),
+],
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!validate(req, next)) return;
+      const previous = await Task.findOne({ _id: req.params.id, userId: req.userId });
+      if (!previous) throw new AppError('Task not found', 404);
       const task = await Task.findOneAndUpdate(
         { _id: req.params.id, userId: req.userId },
         { $set: req.body },
         { new: true, runValidators: true }
       );
       if (!task) throw new AppError('Task not found', 404);
+      if (req.body.status === 'done' && previous.status !== 'done') {
+        await recordProgressEvent({
+          userId: req.userId,
+          type: 'task_completed',
+          entityId: String(task._id),
+          date: ymd(),
+          title: 'Task completed',
+          description: task.title,
+          metadata: { goalId: task.goalId ? String(task.goalId) : undefined, lifeArea: task.lifeArea },
+        });
+      }
       ok(res, task);
     } catch (err) { next(err); }
   }
@@ -104,12 +143,22 @@ router.patch('/:id/status', [
 ], async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!validate(req, next)) return;
-    const task = await Task.findOneAndUpdate(
-      { _id: req.params.id, userId: req.userId },
-      { $set: { status: req.body.status } },
-      { new: true }
-    );
+    const task = await Task.findOne({ _id: req.params.id, userId: req.userId });
     if (!task) throw new AppError('Task not found', 404);
+    const previousStatus = task.status;
+    task.status = req.body.status;
+    await task.save();
+    if (task.status === 'done' && previousStatus !== 'done') {
+      await recordProgressEvent({
+        userId: req.userId,
+        type: 'task_completed',
+        entityId: String(task._id),
+        date: ymd(),
+        title: 'Task completed',
+        description: task.title,
+        metadata: { goalId: task.goalId ? String(task.goalId) : undefined, lifeArea: task.lifeArea },
+      });
+    }
     ok(res, task);
   } catch (err) { next(err); }
 });

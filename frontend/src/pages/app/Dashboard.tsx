@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react';
-import { getTasks, getHabits, getGoals, getNotes, getFocusSessions, getProfile, getCheckIns } from '@/lib/store';
-import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart, type LucideIcon } from 'lucide-react';
+import { useProfile } from '@/lib/queries';
+import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart, Sunrise, Moon, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TodayEngine } from '@/components/app/TodayEngine';
 import { LifeAreaBadge } from '@/components/app/LifeAreaBadge';
 import { ConsistencyCard } from '@/components/app/ConsistencyCard';
 import { DashboardSkeleton } from '@/components/app/DashboardSkeleton';
+import { LifeMomentumCard } from '@/components/app/LifeMomentumCard';
+import { TodayProgressCard } from '@/components/app/TodayProgressCard';
+import { DailyLoopHeroCard } from '@/components/app/DailyLoopHero';
+import { MorningEntryBanner } from '@/components/app/MorningEntryBanner';
+import { StreakAtRiskBanner } from '@/components/app/StreakAtRiskBanner';
+import { FirstWeekCard } from '@/components/app/FirstWeekCard';
 import { computeConsistency } from '@/lib/insights';
 import { DEFAULT_PREFERENCES, DashboardWidgetKey } from '@/lib/types';
+import { getDailyLoopProgress, isNewUserSession, shouldShowFirstWeekCard } from '@/lib/daily-loop';
+import { useDailyLoopState } from '@/lib/useDailyLoopState';
+import { useDailyStart, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useTasks } from '@/lib/queries';
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 10 },
@@ -18,6 +27,25 @@ const fadeIn = (delay: number) => ({
 
 export default function Dashboard() {
   const [ready, setReady] = useState(false);
+  const [showFirstWeek, setShowFirstWeek] = useState(shouldShowFirstWeekCard);
+  const today = new Date().toISOString().split('T')[0];
+  const { data: tasks = [] } = useTasks();
+  const { data: habits = [] } = useHabits();
+  const { data: goals = [] } = useGoals();
+  const { data: notes = [] } = useNotes();
+  const { data: sessions = [] } = useFocusSessions();
+  const { data: momentum, isLoading: momentumLoading } = useLifeMomentum();
+  const { data: dailyStart } = useDailyStart(today);
+  const loop = useDailyLoopState();
+  const { dailyStartDone, eveningShutdownDone, hero, quests, progress, isLoading: progressLoading } = loop;
+  const loopProgress = getDailyLoopProgress({ dailyStartDone, eveningShutdownDone, quests });
+  const newUser = isNewUserSession();
+
+  useEffect(() => {
+    const onDismiss = () => setShowFirstWeek(false);
+    window.addEventListener('lifeos-first-week-dismiss', onDismiss);
+    return () => window.removeEventListener('lifeos-first-week-dismiss', onDismiss);
+  }, []);
 
   useEffect(() => {
     // Tiny perceived-loading delay so the skeleton states are felt, then content.
@@ -27,23 +55,20 @@ export default function Dashboard() {
 
   if (!ready) return <DashboardSkeleton />;
 
-  const profile = getProfile();
-  const tasks = getTasks();
-  const habits = getHabits();
-  const goals = getGoals();
-  const notes = getNotes();
-  const sessions = getFocusSessions();
-  const checkIns = getCheckIns();
-  const today = new Date().toISOString().split('T')[0];
+  const { data: profile } = useProfile();
+  const prefs = profile?.preferences ?? DEFAULT_PREFERENCES;
+  const timezone = prefs.timezone ?? DEFAULT_PREFERENCES.timezone;
 
   const completedToday = tasks.filter(t => t.status === 'done').length;
   const todaySessions = sessions.filter(s => s.completedAt === today);
-  const consistency = computeConsistency(habits, sessions, goals, checkIns);
-  const todayCheckIn = checkIns.find(c => c.date === today);
+  const consistency = computeConsistency(habits, sessions, goals, []);
+  const habitCheckedToday = habits.some(h => h.completedDates?.includes(today));
+  const focusDoneToday = todaySessions.length > 0;
 
-  const prefs = profile?.preferences ?? DEFAULT_PREFERENCES;
-  const visible = new Set<DashboardWidgetKey>(prefs.dashboardWidgets ?? DEFAULT_PREFERENCES.dashboardWidgets);
   const order = (prefs.widgetOrder ?? DEFAULT_PREFERENCES.widgetOrder!) as DashboardWidgetKey[];
+  const hasSeenMomentumWidget = order.includes('momentum');
+  const dashboardWidgets = (prefs.dashboardWidgets ?? DEFAULT_PREFERENCES.dashboardWidgets) as DashboardWidgetKey[];
+  const visible = new Set<DashboardWidgetKey>(hasSeenMomentumWidget ? dashboardWidgets : ['momentum', ...dashboardWidgets]);
   const show = (k: DashboardWidgetKey) => visible.has(k);
   const orderIndex = (k: DashboardWidgetKey) => {
     const i = order.indexOf(k);
@@ -84,21 +109,89 @@ export default function Dashboard() {
         <h1 className="text-h1 text-foreground">
           {greeting}, {profile?.name?.split(' ')[0] || 'there'}.
         </h1>
-        {todayCheckIn ? (
-          <p className="text-sm text-muted-foreground">
-            Today's focus: <span className="text-foreground font-medium">{todayCheckIn.mainFocus || todayCheckIn.oneWord || '—'}</span>
-          </p>
-        ) : (
-          <p className="text-sm text-muted-foreground">Here's your life system overview for today.</p>
-        )}
+        <p className="text-sm text-muted-foreground">
+          {loopProgress.questsDone > 0 ? (
+            <>Today&apos;s win: <span className="text-foreground font-medium">{loopProgress.questsDone} quest{loopProgress.questsDone === 1 ? '' : 's'} done</span> — keep the loop going.</>
+          ) : dailyStartDone && dailyStart?.mainPriority ? (
+            <>Today&apos;s priority: <span className="text-foreground font-medium">{dailyStart.mainPriority}</span></>
+          ) : (
+            'Start with Daily Start — one clear next action below.'
+          )}
+        </p>
       </motion.header>
 
-      {/* Row 1 — HERO: Today's plan (gated on 'today') */}
+      <motion.section {...fadeIn(0.02)} className="space-y-3">
+        <MorningEntryBanner dailyStartDone={dailyStartDone} />
+        <StreakAtRiskBanner progress={progress} timezone={timezone} />
+      </motion.section>
+
+      <motion.section {...fadeIn(0.025)}>
+        <DailyLoopHeroCard
+          hero={hero}
+          loopPercent={loopProgress.percent}
+          questsDone={loopProgress.questsDone}
+          questsTotal={loopProgress.questsTotal}
+          improvementFocus={profile?.improvementFocus}
+          isNewUser={newUser}
+        />
+      </motion.section>
+
+      {showFirstWeek && (
+        <motion.section {...fadeIn(0.028)}>
+          <FirstWeekCard
+            dailyStartDone={dailyStartDone}
+            habitChecked={habitCheckedToday}
+            focusDone={focusDoneToday}
+            eveningShutdownDone={eveningShutdownDone}
+            hasHabit={habits.length > 0}
+          />
+        </motion.section>
+      )}
+
+      {/* Row 1 — Today's progress */}
+      <motion.section {...fadeIn(0.03)}>
+        <TodayProgressCard progress={progress} loading={progressLoading || loop.isLoading} />
+      </motion.section>
+
       {show('today') && (
         <motion.section {...fadeIn(0.05)}>
           <TodayEngine tasks={tasks} habits={habits} goals={goals} />
         </motion.section>
       )}
+
+      {show('momentum') && (
+        <motion.section {...fadeIn(0.07)}>
+          <LifeMomentumCard momentum={momentum} loading={momentumLoading} />
+        </motion.section>
+      )}
+
+      <motion.section {...fadeIn(0.08)} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Link to="/app/daily-start" className="rounded-xl border border-border bg-card p-5 shadow-card hover:border-primary/40 hover:shadow-card-hover transition-all">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-lg gradient-primary text-primary-foreground flex items-center justify-center"><Sunrise className="h-5 w-5" /></div>
+              <div>
+                <h2 className="text-h3 text-foreground">Daily Start</h2>
+                <p className="text-xs text-muted-foreground mt-1">{dailyStartDone ? 'Morning plan saved.' : 'Plan priority, top tasks, habits, and focus.'}</p>
+              </div>
+            </div>
+            <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">{dailyStartDone ? 'Done' : 'Start'}</span>
+          </div>
+        </Link>
+
+        <Link to="/app/evening-shutdown" className="rounded-xl border border-border bg-card p-5 shadow-card hover:border-primary/40 hover:shadow-card-hover transition-all">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-lg bg-secondary text-primary flex items-center justify-center"><Moon className="h-5 w-5" /></div>
+              <div>
+                <h2 className="text-h3 text-foreground">Evening Shutdown</h2>
+                <p className="text-xs text-muted-foreground mt-1">{eveningShutdownDone ? 'Day closed.' : 'Review completions and park tomorrow’s first move.'}</p>
+              </div>
+            </div>
+            <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">{eveningShutdownDone ? 'Done' : 'Close'}</span>
+          </div>
+        </Link>
+      </motion.section>
 
       {/* Row 2 — Supporting stats (filtered by widget visibility) */}
       {stats.length > 0 && (
@@ -170,7 +263,11 @@ export default function Dashboard() {
 
           {show('consistency') && (
             <div className={show('goals') ? '' : 'lg:col-span-3'}>
-              <ConsistencyCard stats={consistency} />
+              <ConsistencyCard
+                stats={consistency}
+                dayStreak={progress?.dailyStreak}
+                dailyLoopClosedToday={dailyStartDone && eveningShutdownDone}
+              />
             </div>
           )}
         </motion.section>

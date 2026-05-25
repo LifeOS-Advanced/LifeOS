@@ -74,18 +74,16 @@ The frontend stores the short-lived **access token** in `localStorage` and uses 
 
 All `/app/**` routes are wrapped in a `ProtectedRoute` component that redirects unauthenticated users to `/login`.
 
-> **Note:** The Signup page (`pages/Signup.tsx`) currently bootstraps the session using localStorage directly and does not call the API. It works for local demos. Wiring it to `POST /api/auth/register` is the next migration step.
-
 ---
 
 ## Data Layer
 
-The app has a deliberate two-speed data layer:
+The app uses a unified `dataLayer` abstraction in `src/lib/data-layer.ts` with React Query hooks in `src/lib/queries.ts`:
 
-- **API-backed:** Authentication (login, logout, profile fetch).
-- **localStorage-backed:** Tasks, habits, goals, notes, focus sessions, check-ins, and weekly reviews — via `src/lib/store.ts` and the `dataLayer` abstraction in `src/lib/data-layer.ts`.
+- **When logged in (JWT):** tasks, habits, goals, notes, focus sessions, daily flows, weekly reviews, profile, search, momentum, and progress sync to the API.
+- **Offline / demo:** the same hooks fall back to `localStorage` via `src/lib/store.ts`.
 
-Migrating a module to the API requires only updating the corresponding function in `data-layer.ts`; all React Query call sites remain unchanged.
+Pages should use React Query hooks only—not `store.ts` directly.
 
 ---
 
@@ -225,10 +223,14 @@ VITE_GITHUB_CLIENT_ID=your_github_oauth_client_id   # optional
 
 ---
 
+## Engagement & retention
+
+See **[docs/ENGAGEMENT_AND_RETENTION.md](../docs/ENGAGEMENT_AND_RETENTION.md)** for strategy, gaps, and backlog, and **[docs/LOOP_AND_ENGAGEMENT_REFERENCE.md](../docs/LOOP_AND_ENGAGEMENT_REFERENCE.md)** for the full loop/XP/quest implementation reference.
+
+---
+
 ## Known Limitations / Planned Work
 
-- **Signup** bypasses the API — it seeds localStorage directly. Migrating to `POST /api/auth/register` is the next step.
-- **App data** (tasks, habits, goals, notes, focus) is still stored in localStorage via `data-layer.ts`. Each module can be migrated to the API independently by updating that file.
 - No email verification or password-reset flow yet.
 - Native mobile app planned.
 - Push/browser notifications are UI-only (no delivery mechanism yet).

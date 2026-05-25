@@ -9,6 +9,7 @@ export type LifeArea = 'work' | 'study' | 'health' | 'money' | 'personal' | 'fam
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
+export type EnergyRequired = 'low' | 'medium' | 'high';
 export type RecurrenceFrequency = 'none' | 'daily' | 'weekly' | 'monthly';
 
 export interface RecurrenceRule {
@@ -29,6 +30,10 @@ export interface Task {
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
+  importance: number;
+  urgency: number;
+  effort: number;
+  energyRequired: EnergyRequired;
   dueDate?: string;
   tags: string[];
   goalId?: string;
@@ -111,6 +116,44 @@ export interface DailyCheckIn {
   createdAt: string;
 }
 
+export interface DailyStart {
+  id: string;
+  date: string;
+  mood: Mood;
+  energy: EnergyLevel;
+  mainPriority: string;
+  topTaskIds: string[];
+  habitIds: string[];
+  suggestedFocusDuration: number;
+  confirmedAt?: string;
+  createdAt?: string;
+}
+
+export interface EveningShutdown {
+  id: string;
+  date: string;
+  completedTaskIds: string[];
+  delayedTaskIds: string[];
+  mood: Mood;
+  energy: EnergyLevel;
+  wentWell: string;
+  improveTomorrow: string;
+  tomorrowFirstTask: string;
+  createdAt?: string;
+}
+
+export type SearchResultType = 'task' | 'habit' | 'goal' | 'note' | 'review';
+
+export interface SearchResult {
+  id: string;
+  type: SearchResultType;
+  title: string;
+  snippet?: string;
+  route: string;
+}
+
+export type SearchResults = Record<SearchResultType, SearchResult[]>;
+
 export interface WeeklyReview {
   id: string;
   weekStart: string; // YYYY-MM-DD (Monday)
@@ -120,12 +163,152 @@ export interface WeeklyReview {
   createdAt: string;
 }
 
-export type DashboardWidgetKey = 'today' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
+export interface MomentumComponentScores {
+  tasks: number;
+  habits: number;
+  focus: number;
+  goals: number;
+  checkIns: number;
+  reviews: number;
+  dailyLoop: number;
+}
+
+export interface MomentumArea {
+  area: LifeArea;
+  label: string;
+  activityCount: number;
+  lastActivityDate: string | null;
+  daysSinceActivity: number | null;
+  score: number;
+  status: 'empty' | 'active' | 'watch' | 'neglected';
+}
+
+export interface MomentumWarning {
+  area: LifeArea;
+  label: string;
+  daysSinceActivity: number | null;
+  message: string;
+}
+
+export interface MomentumSuggestion {
+  title: string;
+  description: string;
+  route: string;
+}
+
+export interface LifeMomentum {
+  score: number;
+  label: string;
+  periodDays: number;
+  components: MomentumComponentScores;
+  week: {
+    tasksCompleted: number;
+    habitConsistency: number;
+    focusMinutes: number;
+    checkInDays: number;
+    reviewDone: boolean;
+  };
+  today: {
+    dailyStartDone: boolean;
+    eveningShutdownDone: boolean;
+  };
+  areas: MomentumArea[];
+  warnings: MomentumWarning[];
+  suggestions: MomentumSuggestion[];
+}
+
+export type RewardEventType =
+  | 'task_completed'
+  | 'habit_checked'
+  | 'focus_completed'
+  | 'daily_start'
+  | 'evening_shutdown'
+  | 'weekly_review'
+  | 'quest_bonus'
+  | 'daily_quests_complete';
+
+export interface RewardEvent {
+  id?: string;
+  _id?: string;
+  key: string;
+  type: RewardEventType;
+  xp: number;
+  title: string;
+  description?: string;
+  date: string;
+  entityId?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  unlockedAt: string;
+}
+
+export interface DailyQuest {
+  id: string;
+  label: string;
+  current: number;
+  target: number;
+  completed: boolean;
+}
+
+export interface QuestBonusAward {
+  questId: string;
+  xp: number;
+}
+
+export interface ProgressAward {
+  duplicate: boolean;
+  xp: number;
+  levelBefore: number;
+  levelAfter: number;
+  leveledUp: boolean;
+  streakBefore: number;
+  streakAfter: number;
+  streakFreezeUsed?: boolean;
+  achievementsUnlocked: Achievement[];
+  questBonuses?: QuestBonusAward[];
+  allQuestsComplete?: boolean;
+}
+
+export interface UserProgress {
+  totalXp: number;
+  level: number;
+  xpForCurrentLevel: number;
+  xpForNextLevel: number;
+  xpIntoLevel: number;
+  xpToNextLevel: number;
+  dailyStreak: number;
+  longestStreak: number;
+  lastActivityDate?: string;
+  streakFreezes: number;
+  quests: DailyQuest[];
+  achievements: Achievement[];
+  recentEvents: RewardEvent[];
+  awarded?: ProgressAward;
+}
+
+export interface RewardEventInput {
+  type: RewardEventType;
+  date?: string;
+  entityId?: string;
+  title?: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
 
 export type AccentTheme = 'indigo' | 'emerald' | 'slate' | 'amber';
 
 export interface UserPreferences {
   timezone: string;
+  /** Local hour (0–23) to suggest Evening Shutdown */
+  windDownHour?: number;
   weekStartDay: 0 | 1; // 0=Sun, 1=Mon
   defaultFocusDuration: number; // minutes
   dashboardWidgets: DashboardWidgetKey[];
@@ -138,6 +321,12 @@ export interface UserPreferences {
     dailyReminders: boolean;
     habitStreakAlerts: boolean;
     goalDeadlineWarnings: boolean;
+  };
+  /** Tasks page UI state */
+  tasksView?: {
+    viewMode: 'list' | 'board';
+    filterStatus: string;
+    filterPriority: string;
   };
 }
 
@@ -157,8 +346,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   timezone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
   weekStartDay: 1,
   defaultFocusDuration: 25,
-  dashboardWidgets: ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'],
-  widgetOrder: ['today', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+  dashboardWidgets: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+  widgetOrder: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
   pinnedModules: [],
   accentTheme: 'indigo',
   notifications: {

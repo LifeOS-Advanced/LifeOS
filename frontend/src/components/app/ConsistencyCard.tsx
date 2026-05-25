@@ -3,11 +3,14 @@ import { ConsistencyStats } from '@/lib/insights';
 
 interface Props {
   stats: ConsistencyStats;
+  /** Global engagement streak from progress (canonical). */
+  dayStreak?: number;
+  dailyLoopClosedToday?: boolean;
 }
 
-export function ConsistencyCard({ stats }: Props) {
+export function ConsistencyCard({ stats, dayStreak, dailyLoopClosedToday }: Props) {
   const items = [
-    { label: 'Check-in streak', value: stats.checkInStreak, suffix: 'd', icon: Flame, color: 'text-warning' },
+    { label: 'Day streak', value: dayStreak ?? stats.checkInStreak, suffix: 'd', icon: Flame, color: 'text-warning' },
     { label: 'Weekly score', value: stats.weeklyScore, suffix: '%', icon: TrendingUp, color: 'text-primary' },
     { label: 'Best habit streak', value: stats.bestHabitStreak, suffix: 'd', icon: Activity, color: 'text-accent' },
     { label: 'Focus streak', value: stats.focusStreak, suffix: 'd', icon: Timer, color: 'text-success' },
@@ -19,7 +22,9 @@ export function ConsistencyCard({ stats }: Props) {
       <div className="flex items-center gap-2 mb-4">
         <Flame className="h-4 w-4 text-warning" />
         <h2 className="font-semibold text-foreground">Consistency</h2>
-        <span className="text-xs text-muted-foreground ml-auto">Last 7 days</span>
+        <span className="text-xs text-muted-foreground ml-auto">
+          {dailyLoopClosedToday ? 'Daily loop closed today' : 'Last 7 days'}
+        </span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {items.map(it => (

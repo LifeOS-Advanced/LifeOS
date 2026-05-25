@@ -1,18 +1,9 @@
 import { getTasks, getHabits, getGoals, getNotes } from './store';
-
-export type SearchResultType = 'task' | 'habit' | 'goal' | 'note';
-
-export interface SearchResult {
-  id: string;
-  type: SearchResultType;
-  title: string;
-  snippet?: string;
-  route: string;
-}
+import type { SearchResult, SearchResultType } from './types';
 
 export function searchAll(query: string): Record<SearchResultType, SearchResult[]> {
   const q = query.trim().toLowerCase();
-  const empty = { task: [], habit: [], goal: [], note: [] } as Record<SearchResultType, SearchResult[]>;
+  const empty = { task: [], habit: [], goal: [], note: [], review: [] } as Record<SearchResultType, SearchResult[]>;
   if (!q) return empty;
 
   const match = (s?: string) => !!s && s.toLowerCase().includes(q);
@@ -34,5 +25,6 @@ export function searchAll(query: string): Record<SearchResultType, SearchResult[
       .filter(n => match(n.title) || match(n.content) || n.tags.some(tag => match(tag)))
       .slice(0, 5)
       .map(n => ({ id: n.id, type: 'note', title: n.title, snippet: n.content.slice(0, 80), route: '/app/notes' })),
+    review: [],
   };
 }

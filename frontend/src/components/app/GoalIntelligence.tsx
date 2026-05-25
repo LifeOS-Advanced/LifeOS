@@ -1,17 +1,20 @@
+import { Link } from 'react-router-dom';
 import { Task, Habit, Goal } from '@/lib/types';
-import { TrendingUp, TrendingDown, Activity, Calendar, type LucideIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Calendar, ArrowRight, type LucideIcon } from 'lucide-react';
 
 interface Props {
   goal: Goal;
   linkedTasks: Task[];
   linkedHabits: Habit[];
+  goalId?: string;
 }
 
 function daysBetween(a: Date, b: Date) {
   return Math.round((b.getTime() - a.getTime()) / 86_400_000);
 }
 
-export function GoalIntelligence({ goal, linkedTasks, linkedHabits }: Props) {
+export function GoalIntelligence({ goal, linkedTasks, linkedHabits, goalId }: Props) {
+  const drillHref = goalId ? `/app/tasks?goalId=${goalId}` : '/app/tasks';
   const today = new Date();
   const created = new Date(goal.createdAt);
   const target = goal.targetDate ? new Date(goal.targetDate) : null;
@@ -38,7 +41,8 @@ export function GoalIntelligence({ goal, linkedTasks, linkedHabits }: Props) {
   const consistency = habitMax ? Math.round((habitHits / habitMax) * 100) : null;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+    <div className="space-y-2 mb-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       <Stat
         icon={Calendar}
         label={target ? 'Time' : 'Age'}
@@ -70,6 +74,12 @@ export function GoalIntelligence({ goal, linkedTasks, linkedHabits }: Props) {
           tone={consistency >= 70 ? 'success' : consistency >= 40 ? 'warning' : 'destructive'}
         />
       )}
+    </div>
+    {goalId && (
+      <Link to={drillHref} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+        View linked tasks <ArrowRight className="h-3 w-3" />
+      </Link>
+    )}
     </div>
   );
 }

@@ -15,6 +15,11 @@ import focusRoutes from './routes/focus';
 import checkInRoutes from './routes/checkIns';
 import reviewRoutes from './routes/reviews';
 import profileRoutes from './routes/profile';
+import dailyFlowRoutes from './routes/dailyFlows';
+import searchRoutes from './routes/search';
+import momentumRoutes from './routes/momentum';
+import progressRoutes from './routes/progress';
+import notificationRoutes from './routes/notifications';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 const app = express();
@@ -87,6 +92,11 @@ app.use('/api/focus', focusRoutes);
 app.use('/api/checkins', checkInRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/day-flows', dailyFlowRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/momentum', momentumRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ── Error handling ───────────────────────────────────────────
 app.use(notFound);

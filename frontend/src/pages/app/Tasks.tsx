@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { getGoals } from '@/lib/store';
-import { Task, TaskStatus, TaskPriority, LifeArea, RecurrenceFrequency, Subtask } from '@/lib/types';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Task, TaskStatus, TaskPriority, LifeArea, RecurrenceFrequency, Subtask, EnergyRequired } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,7 +16,9 @@ import { EmptyState } from '@/components/app/EmptyState';
 import { TaskCheckbox } from '@/components/app/TaskCheckbox';
 import { useNewParam } from '@/hooks/use-new-param';
 import { taskFormSchema, validateOrToast } from '@/lib/schemas';
-import { useCreateTask, useDeleteTask, useTasks, useUpdateSubtask, useUpdateTask, useUpdateTaskStatus } from '@/lib/queries';
+import { useCreateTask, useDeleteTask, useGoals, useProfile, useRecordProgressEvent, useSaveProfile, useTasks, useUpdateSubtask, useUpdateTask, useUpdateTaskStatus } from '@/lib/queries';
+import { DEFAULT_PREFERENCES } from '@/lib/types';
+import { emitRewardMoment } from '@/lib/reward-feedback';
 
 const WEEKDAYS = [
   { i: 0, l: 'S' }, { i: 1, l: 'M' }, { i: 2, l: 'T' }, { i: 3, l: 'W' },
@@ -24,31 +26,58 @@ const WEEKDAYS = [
 ];
 
 export default function Tasks() {
-  const goals = getGoals();
+  const [searchParams] = useSearchParams();
+  const goalFilter = searchParams.get('goalId');
+  const { data: goals = [] } = useGoals();
+  const { data: profile } = useProfile();
+  const saveProfile = useSaveProfile();
   const { data: tasks = [], isLoading } = useTasks();
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const updateStatusMutation = useUpdateTaskStatus();
   const updateSubtaskMutation = useUpdateSubtask();
   const deleteTaskMutation = useDeleteTask();
+  const recordProgress = useRecordProgressEvent();
+  const tasksView = profile?.preferences?.tasksView;
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState(tasksView?.filterStatus ?? 'all');
+  const [filterPriority, setFilterPriority] = useState(tasksView?.filterPriority ?? 'all');
   const [areaFilter, setAreaFilter] = useState<LifeArea | 'all'>('all');
-  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'board'>(tasksView?.viewMode ?? 'list');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [form, setForm] = useState<{
     title: string; description: string; priority: TaskPriority; status: TaskStatus;
+    importance: number; urgency: number; effort: number; energyRequired: EnergyRequired;
     dueDate: string; tags: string; goalId?: string; lifeArea?: LifeArea;
     recurrence: RecurrenceFrequency; daysOfWeek: number[]; subtasks: Subtask[];
-  }>({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: [] });
+  }>({
+    title: '', description: '', priority: 'medium', status: 'todo',
+    importance: 3, urgency: 3, effort: 3, energyRequired: 'medium',
+    dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: []
+  });
   const [subtaskDraft, setSubtaskDraft] = useState('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useNewParam(() => setDialogOpen(true));
 
+  useEffect(() => {
+    if (!profile) return;
+    const prefs = profile.preferences ?? DEFAULT_PREFERENCES;
+    const next = { ...prefs, tasksView: { viewMode, filterStatus, filterPriority } };
+    if (
+      prefs.tasksView?.viewMode === viewMode &&
+      prefs.tasksView?.filterStatus === filterStatus &&
+      prefs.tasksView?.filterPriority === filterPriority
+    ) return;
+    saveProfile.mutate({ ...profile, preferences: next });
+  }, [viewMode, filterStatus, filterPriority]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const today = new Date().toISOString().split('T')[0];
+
   const filtered = tasks.filter(t => {
+    if (goalFilter && t.goalId !== goalFilter) return false;
     if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
     if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
@@ -56,11 +85,49 @@ export default function Tasks() {
     return true;
   });
 
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const bulkComplete = () => {
+    selected.forEach(id => {
+      const t = tasks.find(x => x.id === id);
+      if (t && t.status !== 'done') updateStatus(id, 'done');
+    });
+    setSelected(new Set());
+    toast.success('Tasks completed');
+  };
+
+  const bulkDueToday = () => {
+    selected.forEach(id => updateTaskMutation.mutate({ id, updates: { dueDate: today } }));
+    setSelected(new Set());
+    toast.success('Due dates set to today');
+  };
+
+  const smartGroups = useMemo(() => {
+    const open = tasks.filter(t => t.status !== 'done');
+    return [
+      { label: 'Do First', hint: 'High importance + high urgency', items: open.filter(t => t.importance >= 4 && t.urgency >= 4), tone: 'text-destructive' },
+      { label: 'Quick Wins', hint: 'High importance + low effort', items: open.filter(t => t.importance >= 4 && t.effort <= 2), tone: 'text-success' },
+      { label: 'Schedule', hint: 'High importance + low urgency', items: open.filter(t => t.importance >= 4 && t.urgency <= 2), tone: 'text-primary' },
+      { label: 'Maybe Later', hint: 'Low importance', items: open.filter(t => t.importance <= 2), tone: 'text-muted-foreground' },
+    ];
+  }, [tasks]);
+
   const handleSubmit = async () => {
     const valid = validateOrToast(taskFormSchema, {
       title: form.title,
       description: form.description,
       priority: form.priority,
+      importance: form.importance,
+      urgency: form.urgency,
+      effort: form.effort,
+      energyRequired: form.energyRequired,
       status: form.status,
       dueDate: form.dueDate,
       tags: form.tags,
@@ -77,6 +144,10 @@ export default function Tasks() {
       description: form.description,
       status: form.status,
       priority: form.priority,
+      importance: form.importance,
+      urgency: form.urgency,
+      effort: form.effort,
+      energyRequired: form.energyRequired,
       dueDate: form.dueDate,
       tags: tagArr,
       goalId: form.goalId,
@@ -99,7 +170,11 @@ export default function Tasks() {
   };
 
   const resetForm = () => {
-    setForm({ title: '', description: '', priority: 'medium', status: 'todo', dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: [] });
+    setForm({
+      title: '', description: '', priority: 'medium', status: 'todo',
+      importance: 3, urgency: 3, effort: 3, energyRequired: 'medium',
+      dueDate: '', tags: '', recurrence: 'none', daysOfWeek: [], subtasks: []
+    });
     setSubtaskDraft('');
     setEditingTask(null);
     setDialogOpen(false);
@@ -113,6 +188,7 @@ export default function Tasks() {
     setEditingTask(task);
     setForm({
       title: task.title, description: task.description || '', priority: task.priority, status: task.status,
+      importance: task.importance ?? 3, urgency: task.urgency ?? 3, effort: task.effort ?? 3, energyRequired: task.energyRequired ?? 'medium',
       dueDate: task.dueDate || '', tags: task.tags.join(', '), goalId: task.goalId, lifeArea: task.lifeArea,
       recurrence: task.recurrence?.frequency ?? 'none',
       daysOfWeek: task.recurrence?.daysOfWeek ?? [],
@@ -145,9 +221,21 @@ export default function Tasks() {
     updateStatusMutation.mutate(
       { id, status },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           if (status === 'done' && prev?.status !== 'done') {
             toast.success('Task complete', { description: prev?.title });
+            try {
+              const progress = await recordProgress.mutateAsync({
+                type: 'task_completed',
+                entityId: id,
+                title: 'Task completed',
+                description: prev.title,
+                metadata: { goalId: prev.goalId, lifeArea: prev.lifeArea },
+              });
+              emitRewardMoment(progress);
+            } catch {
+              // Reward feedback is non-critical; the task update already succeeded.
+            }
           }
         },
         onError: (error) => toast.error(error instanceof Error ? error.message : 'Could not update task'),
@@ -166,6 +254,9 @@ export default function Tasks() {
     const cls = p === 'high' ? 'bg-destructive/10 text-destructive' : p === 'medium' ? 'bg-warning/10 text-warning' : 'bg-secondary text-muted-foreground';
     return <span className={`text-xs px-2 py-0.5 rounded-full ${cls}`}>{p}</span>;
   };
+  const scoreBadge = (label: string, value: number) => (
+    <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{label}{value}</span>
+  );
 
   const goalChip = (goalId?: string) => {
     if (!goalId) return null;
@@ -180,6 +271,19 @@ export default function Tasks() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {goalFilter && (
+        <p className="text-sm text-muted-foreground">
+          Filtered by goal: <span className="font-medium text-foreground">{goals.find(g => g.id === goalFilter)?.title}</span>
+        </p>
+      )}
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+          <span className="text-sm font-medium">{selected.size} selected</span>
+          <Button size="sm" variant="secondary" onClick={bulkComplete}>Complete</Button>
+          <Button size="sm" variant="secondary" onClick={bulkDueToday}>Due today</Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Tasks</h1>
@@ -207,6 +311,17 @@ export default function Tasks() {
                   <Select value={form.status} onValueChange={v => setForm({ ...form, status: v as TaskStatus })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="todo">To Do</SelectItem><SelectItem value="in-progress">In Progress</SelectItem><SelectItem value="done">Done</SelectItem></SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <ScoreSelect label="Importance" value={form.importance} onChange={(importance) => setForm({ ...form, importance })} />
+                <ScoreSelect label="Urgency" value={form.urgency} onChange={(urgency) => setForm({ ...form, urgency })} />
+                <ScoreSelect label="Effort" value={form.effort} onChange={(effort) => setForm({ ...form, effort })} />
+                <div><Label>Energy</Label>
+                  <Select value={form.energyRequired} onValueChange={v => setForm({ ...form, energyRequired: v as EnergyRequired })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem></SelectContent>
                   </Select>
                 </div>
               </div>
@@ -277,6 +392,23 @@ export default function Tasks() {
 
       <LifeAreaFilter value={areaFilter} onChange={setAreaFilter} />
 
+      {tasks.length > 0 && (
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {smartGroups.map(group => (
+            <div key={group.label} className="rounded-xl border border-border bg-card p-4 shadow-card">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h2 className={`text-sm font-semibold ${group.tone}`}>{group.label}</h2>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{group.hint}</p>
+                </div>
+                <span className="text-lg font-semibold tabular-nums text-foreground">{group.items.length}</span>
+              </div>
+              {group.items[0] && <p className="text-xs text-muted-foreground mt-3 truncate">{group.items[0].title}</p>}
+            </div>
+          ))}
+        </section>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -331,6 +463,13 @@ export default function Tasks() {
                     data-done={task.status === 'done'}
                   >
                     <div className="flex items-center gap-3 px-5 py-3.5">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(task.id)}
+                        onChange={() => toggleSelect(task.id)}
+                        className="h-4 w-4 rounded border-border shrink-0"
+                        aria-label={`Select ${task.title}`}
+                      />
                       <TaskCheckbox checked={task.status === 'done'} onChange={(c) => toggleDone(task, c)} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -352,6 +491,10 @@ export default function Tasks() {
                           {subs.length > 0 && (
                             <span className="text-xs text-muted-foreground">{subDone}/{subs.length} subtasks</span>
                           )}
+                          {scoreBadge('I', task.importance)}
+                          {scoreBadge('U', task.urgency)}
+                          {scoreBadge('E', task.effort)}
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground capitalize">{task.energyRequired} energy</span>
                           {task.tags.map(t => <span key={t} className="text-xs bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{t}</span>)}
                         </div>
                       </div>
@@ -398,6 +541,8 @@ export default function Tasks() {
                     </div>
                     <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                       {priorityBadge(task.priority)}
+                      {scoreBadge('I', task.importance)}
+                      {scoreBadge('U', task.urgency)}
                       <LifeAreaBadge area={task.lifeArea} />
                       {task.dueDate && <span className="text-xs text-muted-foreground">{task.dueDate}</span>}
                     </div>
@@ -408,6 +553,20 @@ export default function Tasks() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ScoreSelect({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
+        <SelectTrigger><SelectValue /></SelectTrigger>
+        <SelectContent>
+          {[1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

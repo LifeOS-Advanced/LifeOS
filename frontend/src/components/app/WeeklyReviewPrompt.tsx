@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { getWeeklyReviews } from '@/lib/store';
+import { useWeeklyReviews } from '@/lib/queries';
 import { startOfWeek, ymd } from '@/lib/insights';
 import { Sparkles } from 'lucide-react';
 
@@ -14,17 +14,17 @@ export function WeeklyReviewPrompt() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const weekStart = ymd(startOfWeek());
+  const { data: reviews = [] } = useWeeklyReviews();
 
   useEffect(() => {
     const isSunday = new Date().getDay() === 0;
     if (!isSunday) return;
-    const reviews = getWeeklyReviews();
     if (reviews.some(r => r.weekStart === weekStart)) return;
     const dismissed = localStorage.getItem(`lifeos_review_prompt_dismissed_${weekStart}`);
     if (dismissed) return;
     const t = setTimeout(() => setOpen(true), 1200);
     return () => clearTimeout(t);
-  }, [weekStart]);
+  }, [weekStart, reviews]);
 
   const dismiss = () => {
     localStorage.setItem(`lifeos_review_prompt_dismissed_${weekStart}`, '1');

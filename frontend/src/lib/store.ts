@@ -37,7 +37,13 @@ export const getProfile = () => get<UserProfile | null>(STORAGE_KEYS.profile, nu
 export const setProfile = (p: UserProfile) => set(STORAGE_KEYS.profile, p);
 
 // Tasks
-export const getTasks = () => get<Task[]>(STORAGE_KEYS.tasks, []);
+export const getTasks = () => get<Task[]>(STORAGE_KEYS.tasks, []).map(t => ({
+  importance: 3,
+  urgency: 3,
+  effort: 3,
+  energyRequired: 'medium',
+  ...t,
+}));
 export const setTasks = (t: Task[]) => set(STORAGE_KEYS.tasks, t);
 
 // Habits

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getFocusSessions, setFocusSessions, getTasks } from '@/lib/store';
-import { FocusSession } from '@/lib/types';
+import { FocusSession, UserProgress } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,10 +9,13 @@ import { Timer, Play, Pause, RotateCcw, Clock, CheckSquare, Maximize2, Minimize2
 import { motion } from 'framer-motion';
 import { EmptyState } from '@/components/app/EmptyState';
 import { toast } from 'sonner';
+import { useCreateFocusSession, useFocusSessions, useTasks } from '@/lib/queries';
+import { emitRewardMoment } from '@/lib/reward-feedback';
 
 export default function Focus() {
-  const tasks = getTasks();
-  const [sessions, setLocalSessions] = useState(getFocusSessions());
+  const createSession = useCreateFocusSession();
+  const { data: tasks = [] } = useTasks();
+  const { data: sessions = [] } = useFocusSessions();
   const [label, setLabel] = useState('Deep work');
   const [sessionGoal, setSessionGoal] = useState('');
   const [taskId, setTaskId] = useState<string | undefined>(undefined);
@@ -24,9 +26,8 @@ export default function Focus() {
   const [interruptions, setInterruptions] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showDistractionPrompt, setShowDistractionPrompt] = useState(false);
+  const [completionReward, setCompletionReward] = useState<UserProgress | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const save = (updated: FocusSession[]) => { setLocalSessions(updated); setFocusSessions(updated); };
 
   const reset = useCallback(() => {
     setIsRunning(false);
@@ -37,7 +38,7 @@ export default function Focus() {
 
   useEffect(() => {
     if (!isRunning) return;
-    if (timeLeft <= 0) { completeSession(); return; }
+    if (timeLeft <= 0) { void completeSession(); return; }
     const t = setInterval(() => setTimeLeft(s => s - 1), 1000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,20 +74,28 @@ export default function Focus() {
     setShowDistractionPrompt(false);
   };
 
-  const completeSession = () => {
+  const completeSession = async () => {
     setIsRunning(false);
-    const session: FocusSession = {
-      id: `f${Date.now()}`,
-      label,
-      sessionGoal: sessionGoal || undefined,
-      duration,
-      completedAt: new Date().toISOString().split('T')[0],
-      distractionNotes: distractionNote || undefined,
-      interruptions: interruptions || undefined,
-      taskId,
-    };
-    save([session, ...sessions]);
+    const completedAt = new Date().toISOString().split('T')[0];
+    const linkedTask = taskOf(taskId);
     toast.success('Focus session complete', { description: `${duration}m of ${label}` });
+    try {
+      const { progress } = await createSession.mutateAsync({
+        label,
+        sessionGoal: sessionGoal || undefined,
+        duration,
+        completedAt,
+        distractionNotes: distractionNote || undefined,
+        interruptions: interruptions || undefined,
+        taskId,
+      });
+      if (progress) {
+        setCompletionReward(progress);
+        emitRewardMoment(progress, { eventType: 'focus_completed' });
+      }
+    } catch {
+      // Reward feedback is non-critical; the session may still be saved locally.
+    }
     setTimeLeft(duration * 60);
     setDistractionNote('');
     setInterruptions(0);
@@ -234,6 +243,33 @@ export default function Focus() {
               <Label className="text-xs text-muted-foreground">Distraction notes</Label>
               <Textarea value={distractionNote} onChange={e => setDistractionNote(e.target.value)} rows={2} className="text-sm" />
             </div>
+          )}
+
+          {completionReward?.awarded && completionReward.awarded.xp > 0 && !isFullscreen && (
+            <motion.div
+              className="mt-6 max-w-md mx-auto rounded-xl border border-primary/30 bg-primary/5 p-4 text-left"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-sm font-semibold text-foreground">Sprint reward</p>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-secondary p-2">
+                  <p className="text-lg font-semibold text-primary">+{completionReward.awarded.xp}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">XP</p>
+                </div>
+                <div className="rounded-lg bg-secondary p-2">
+                  <p className="text-lg font-semibold text-foreground">{completionReward.level}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Level</p>
+                </div>
+                <div className="rounded-lg bg-secondary p-2">
+                  <p className="text-lg font-semibold text-warning">{completionReward.dailyStreak}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Streak</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Next move: finish one daily quest or attach another sprint to a goal.
+              </p>
+            </motion.div>
           )}
         </motion.div>
       </div>
