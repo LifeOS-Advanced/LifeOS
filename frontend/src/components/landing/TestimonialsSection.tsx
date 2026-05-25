@@ -1,52 +1,63 @@
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { CheckCircle2, Compass, LineChart, RefreshCw } from 'lucide-react';
 
-const testimonials = [
-  { name: 'Alex Chen', role: 'Graduate Student', quote: 'LifeOS replaced five different apps for me. Everything is connected and my productivity has doubled.', avatar: 'AC' },
-  { name: 'Sarah Kim', role: 'Freelance Designer', quote: 'The habit tracking linked to goals is genius. I finally feel like I\'m making real progress.', avatar: 'SK' },
-  { name: 'James Wright', role: 'Software Engineer', quote: 'Clean, fast, and thoughtfully designed. The focus timer alone was worth switching from my old setup.', avatar: 'JW' },
+const proofPoints = [
+  {
+    icon: Compass,
+    title: 'One obvious next step',
+    copy: 'New users land on a guided first-win path instead of a dense dashboard with no direction.',
+  },
+  {
+    icon: LineChart,
+    title: 'Progress with evidence',
+    copy: 'The app reflects what happened: closed days, protected focus, moved goals, and unfinished threads.',
+  },
+  {
+    icon: RefreshCw,
+    title: 'Recovery without shame',
+    copy: 'Streak freezes and neutral copy help users return without feeling like the system is scolding them.',
+  },
 ];
 
 export function TestimonialsSection() {
   return (
-    <section className="py-24 bg-secondary/50">
+    <section className="bg-secondary/45 py-20">
       <div className="container mx-auto px-6">
         <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
+          className="mx-auto max-w-2xl text-center"
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Loved by productive people</h2>
-          <p className="text-lg text-muted-foreground">Join thousands who've transformed how they manage their lives.</p>
+          <p className="text-eyebrow mb-3">Built for trust</p>
+          <h2 className="text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
+            Motivation without turning your life into a toy.
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-muted-foreground">
+            LifeOS uses reward feedback, but the system stays serious: no loot boxes, no social pressure, no shame language.
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={t.name}
-              className="rounded-2xl border border-border bg-card p-8 shadow-card"
-              initial={{ opacity: 0, y: 20 }}
+        <div className="mx-auto mt-10 grid max-w-5xl gap-4 md:grid-cols-3">
+          {proofPoints.map((point, index) => (
+            <motion.article
+              key={point.title}
+              initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="rounded-lg border border-border bg-card p-6 shadow-card"
             >
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} className="h-4 w-4 fill-warning text-warning" />
-                ))}
-              </div>
-              <p className="text-foreground mb-6 leading-relaxed">"{t.quote}"</p>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-sm font-semibold text-primary-foreground">
-                  {t.avatar}
+              <div className="mb-5 flex items-center justify-between">
+                <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <point.icon className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm">{t.name}</p>
-                  <p className="text-muted-foreground text-sm">{t.role}</p>
-                </div>
+                <CheckCircle2 className="h-4 w-4 text-success" />
               </div>
-            </motion.div>
+              <h3 className="text-base font-semibold text-foreground">{point.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{point.copy}</p>
+            </motion.article>
           ))}
         </div>
       </div>

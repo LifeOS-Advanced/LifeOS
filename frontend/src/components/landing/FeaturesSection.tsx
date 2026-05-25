@@ -1,135 +1,127 @@
 import { motion } from 'framer-motion';
-import { CheckSquare, Target, BookOpen, Timer, BarChart3, Zap } from 'lucide-react';
+import { Activity, ArrowRight, BookOpen, CheckCircle2, Moon, Sunrise, Target, Timer } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const features = [
+const primaryFeatures = [
   {
-    icon: CheckSquare,
-    title: 'Smart Tasks',
-    description: 'Organize with priorities, tags, and goal linking. Board or list view. Recurring tasks, subtasks, and due dates built in.',
-    color: 'hsl(238 84% 60%)',
-    bg: 'hsl(238 84% 60% / 0.08)',
-    size: 'large',
-  },
-  {
-    icon: Zap,
-    title: 'Habit Tracking',
-    description: 'Build streaks, track daily habits, and see your consistency grow over time.',
-    color: 'hsl(168 72% 42%)',
-    bg: 'hsl(168 72% 42% / 0.08)',
-    size: 'small',
-  },
-  {
-    icon: Target,
-    title: 'Goal System',
-    description: 'Set goals with milestones, link tasks and habits, track progress with visual indicators.',
-    color: 'hsl(38 95% 48%)',
-    bg: 'hsl(38 95% 48% / 0.08)',
-    size: 'small',
-  },
-  {
-    icon: BookOpen,
-    title: 'Quick Notes',
-    description: 'Capture ideas instantly. Pin, tag, and search your knowledge base with rich text support.',
-    color: 'hsl(210 88% 52%)',
-    bg: 'hsl(210 88% 52% / 0.08)',
-    size: 'small',
+    icon: Sunrise,
+    title: 'Start with intention',
+    description: 'Daily Start turns mood, energy, priorities, top tasks, habits, and focus time into one clear plan.',
+    detail: 'Morning cue',
+    tone: 'text-warning',
+    bg: 'bg-warning/10',
   },
   {
     icon: Timer,
-    title: 'Focus Timer',
-    description: 'Pomodoro sessions with labels and distraction tracking for deep work.',
-    color: 'hsl(152 65% 38%)',
-    bg: 'hsl(152 65% 38% / 0.08)',
-    size: 'small',
+    title: 'Reward real work',
+    description: 'XP, quests, streaks, and optional reward sounds fire only after meaningful actions, not random clicks.',
+    detail: 'Healthy loop',
+    tone: 'text-primary',
+    bg: 'bg-primary/10',
   },
   {
-    icon: BarChart3,
-    title: 'Life Insights',
-    description: 'See your entire life system at a glance. Completion trends, focus analytics, and habit streaks in one place.',
-    color: 'hsl(268 80% 55%)',
-    bg: 'hsl(268 80% 55% / 0.08)',
-    size: 'large',
+    icon: Moon,
+    title: 'Close the day',
+    description: 'Evening Shutdown captures what moved, what got delayed, and tomorrow\'s first task before the day disappears.',
+    detail: 'Daily closure',
+    tone: 'text-accent',
+    bg: 'bg-accent/10',
   },
+  {
+    icon: BookOpen,
+    title: 'Continue the story',
+    description: 'Weekly Story and carry-forward threads show what should continue next, without shame or fake praise.',
+    detail: 'Narrative memory',
+    tone: 'text-success',
+    bg: 'bg-success/10',
+  },
+];
+
+const connectedModules = [
+  { label: 'Tasks', icon: CheckCircle2 },
+  { label: 'Habits', icon: Activity },
+  { label: 'Goals', icon: Target },
+  { label: 'Focus', icon: Timer },
 ];
 
 export function FeaturesSection() {
   return (
-    <section className="py-28 bg-background relative overflow-hidden">
-      {/* Background texture */}
-      <div className="absolute inset-0 opacity-[0.018]"
-        style={{ backgroundImage: 'radial-gradient(hsl(222 35% 9%) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-
-      <div className="relative container mx-auto px-6">
-        <motion.div
-          className="max-w-xl mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <p className="text-eyebrow mb-3">What's inside</p>
-          <h2 className="font-serif text-4xl sm:text-5xl text-foreground leading-[1.1] mb-4">
-            Six modules.<br />
-            <span className="italic text-muted-foreground">One system.</span>
-          </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Every tool you need to manage your work, health, and personal growth — all talking to each other.
-          </p>
-        </motion.div>
-
-        {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
-          {features.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              className={`group relative rounded-2xl border border-border bg-card p-7 overflow-hidden hover:-translate-y-1 transition-all duration-300 cursor-default ${feature.size === 'large' && i === 0 ? 'md:col-span-2 lg:col-span-2' : ''} ${feature.size === 'large' && i === 5 ? 'md:col-span-2 lg:col-span-2' : ''}`}
-              style={{ boxShadow: 'var(--shadow-md)' }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    <section className="relative overflow-hidden border-t border-border/70 bg-background pb-20 pt-4 lg:pb-24 lg:pt-6">
+      <div className="container mx-auto px-6">
+        <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-xl"
+          >
+            <p className="text-eyebrow mb-3">Why it feels different</p>
+            <h2 className="font-serif text-4xl leading-[1.08] text-foreground sm:text-5xl">
+              A productivity system that remembers the day.
+            </h2>
+            <p className="mt-5 text-sm leading-7 text-muted-foreground">
+              LifeOS is not just a place to store tasks. It gives each day a beginning, a meaningful middle, and a clean ending.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {connectedModules.map(({ label, icon: Icon }) => (
+                <span key={label} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground">
+                  <Icon className="h-3.5 w-3.5 text-primary" />
+                  {label}
+                </span>
+              ))}
+            </div>
+            <Link
+              to="/signup"
+              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80"
             >
-              {/* Ambient color glow on hover */}
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{ background: `radial-gradient(circle at 20% 50%, ${feature.color.replace(')', ' / 0.06)')}, transparent 70%)` }}
-              />
+              Build your first loop
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
 
-              <div className="relative z-10">
-                <div
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-xl mb-5 transition-transform duration-300 group-hover:scale-110"
-                  style={{ background: feature.bg, color: feature.color }}
-                >
-                  <feature.icon className="h-5 w-5" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {primaryFeatures.map((feature, index) => (
+              <motion.article
+                key={feature.title}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="rounded-lg border border-border bg-card p-5 shadow-card transition-colors hover:border-primary/35"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className={`grid h-10 w-10 place-items-center rounded-lg ${feature.bg}`}>
+                    <feature.icon className={`h-5 w-5 ${feature.tone}`} />
+                  </div>
+                  <span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-semibold uppercase text-muted-foreground">
+                    {feature.detail}
+                  </span>
                 </div>
-
-                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-
-                {/* Decorative corner accent */}
-                <div
-                  className="absolute bottom-0 right-0 h-24 w-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                  style={{
-                    background: `radial-gradient(circle at 100% 100%, ${feature.color.replace(')', ' / 0.12)')}, transparent 70%)`,
-                    borderRadius: '0 0 1rem 0',
-                  }}
-                />
-              </div>
-            </motion.div>
-          ))}
+                <h3 className="mt-5 text-lg font-semibold text-foreground">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{feature.description}</p>
+              </motion.article>
+            ))}
+          </div>
         </div>
 
-        {/* Bottom note */}
-        <motion.p
-          className="text-center text-sm text-muted-foreground mt-12"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-12 rounded-lg border border-border bg-card p-5 shadow-card"
         >
-          All modules work together — tasks linked to goals, habits linked to goals, notes linked to tasks.
-          <span className="text-foreground font-medium"> One connected system.</span>
-        </motion.p>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">True north</p>
+              <p className="mt-2 text-lg font-semibold text-foreground">Loop Closure Rate</p>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground md:col-span-2">
+              The main win is not raw busyness. It is Daily Start completed, meaningful work done, and Evening Shutdown finished. That is the behavior LifeOS makes visible.
+            </p>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

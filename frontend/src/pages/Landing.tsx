@@ -18,23 +18,26 @@ export default function Landing() {
       <div id="testimonials"><TestimonialsSection /></div>
 
       {/* CTA Section */}
-      <section className="py-24 bg-background">
+      <section className="bg-background py-20">
         <div className="container mx-auto px-6">
           <motion.div
-            className="max-w-3xl mx-auto text-center rounded-3xl gradient-primary p-12 md:p-16 shadow-glow"
+            className="mx-auto grid max-w-5xl gap-8 rounded-lg border border-border bg-card p-7 shadow-card md:grid-cols-[1fr_auto] md:items-center md:p-9"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-primary-foreground mb-4">
-              Ready to organize your life?
-            </h2>
-            <p className="text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">
-              Join thousands of people who use LifeOS to stay focused, build habits, and achieve their goals.
-            </p>
-            <Link to="/signup">
-              <Button size="lg" variant="secondary" className="h-12 px-8 text-base font-semibold">
-                Start for free
+            <div>
+              <p className="text-eyebrow mb-3">Start small</p>
+              <h2 className="text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
+                Build one complete day first.
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">
+                Create an account, finish Daily Start, complete one meaningful action, and close the day. That is enough to feel the system working.
+              </p>
+            </div>
+            <Link to="/signup" className="md:justify-self-end">
+              <Button size="lg" className="h-12 rounded-lg gradient-primary px-7 text-sm font-semibold text-primary-foreground shadow-glow">
+                Start your first loop
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>

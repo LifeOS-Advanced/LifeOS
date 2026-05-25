@@ -13,7 +13,7 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
           <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-          <a href="#testimonials" className="hover:text-foreground transition-colors">Testimonials</a>
+          <a href="#testimonials" className="hover:text-foreground transition-colors">Trust</a>
           <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
         </div>
 
@@ -23,7 +23,7 @@ export function Navbar() {
           </Link>
           <Link to="/signup">
             <Button size="sm" className="gradient-primary text-primary-foreground font-medium shadow-glow hover:opacity-90 transition-opacity">
-              Get Started
+              Start loop
               <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Button>
           </Link>
