@@ -1,6 +1,6 @@
 export type LifestyleMode = 'student' | 'freelancer' | 'employee' | 'creator' | 'personal-growth';
 
-export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus';
+export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus' | 'discipline';
 
 export type ImprovementArea = 'discipline' | 'studying' | 'productivity' | 'health' | 'money' | 'focus';
 export type DayIntensity = 'light' | 'moderate' | 'intense';
@@ -102,6 +102,83 @@ export interface FocusSession {
   distractionNotes?: string;
   interruptions?: number;
   taskId?: string;
+}
+
+export type DisciplineTargetStatus = 'active' | 'paused' | 'archived';
+export type ReplacementActionCategory = 'body' | 'breathing' | 'environment' | 'reflection' | 'focus' | 'social' | 'custom';
+export type UrgeOutcome = 'interrupted' | 'delayed' | 'relapsed';
+
+export interface DisciplineTarget {
+  id: string;
+  name: string;
+  description?: string;
+  identityStatement?: string;
+  status: DisciplineTargetStatus;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ReplacementAction {
+  id: string;
+  title: string;
+  description?: string;
+  category: ReplacementActionCategory;
+  durationMinutes: number;
+  targetId?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface RelapseReview {
+  whatHappened?: string;
+  whatTriggered?: string;
+  nextChange?: string;
+  nextReplacementActionId?: string;
+  reviewedAt?: string;
+}
+
+export interface UrgeLog {
+  id: string;
+  targetId?: string;
+  replacementActionId?: string;
+  intensity: number;
+  trigger: string;
+  emotion: string;
+  context?: string;
+  location?: string;
+  outcome: UrgeOutcome;
+  replacementCompleted: boolean;
+  notes?: string;
+  occurredAt: string;
+  review?: RelapseReview;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface DisciplineInsightCount {
+  label: string;
+  count: number;
+}
+
+export interface DisciplineHourCount {
+  hour: number;
+  count: number;
+}
+
+export interface DisciplineInsights {
+  periodDays: number;
+  totalUrges: number;
+  interruptedCount: number;
+  delayedCount: number;
+  relapseCount: number;
+  replacementCompletedCount: number;
+  averageIntensity: number;
+  topTriggers: DisciplineInsightCount[];
+  topEmotions: DisciplineInsightCount[];
+  topContexts: DisciplineInsightCount[];
+  highRiskHours: DisciplineHourCount[];
+  recentUrges: UrgeLog[];
 }
 
 export type Mood = 1 | 2 | 3 | 4 | 5;
@@ -282,6 +359,10 @@ export type RewardEventType =
   | 'daily_start'
   | 'evening_shutdown'
   | 'weekly_review'
+  | 'urge_interrupted'
+  | 'replacement_completed'
+  | 'relapse_reviewed'
+  | 'discipline_routine_completed'
   | 'quest_bonus'
   | 'daily_quests_complete';
 
@@ -382,7 +463,7 @@ export interface RewardEventInput {
   metadata?: Record<string, unknown>;
 }
 
-export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
+export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights' | 'discipline';
 
 export type AccentTheme = 'indigo' | 'emerald' | 'slate' | 'amber';
 
@@ -435,8 +516,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   timezone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
   weekStartDay: 1,
   defaultFocusDuration: 25,
-  dashboardWidgets: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
-  widgetOrder: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+  dashboardWidgets: ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'],
+  widgetOrder: ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'],
   pinnedModules: [],
   accentTheme: 'indigo',
   notifications: {

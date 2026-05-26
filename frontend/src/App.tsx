@@ -31,6 +31,7 @@ const Notes = lazy(() => import('./pages/app/Notes'));
 const CalendarPage = lazy(() => import('./pages/app/Calendar'));
 const Insights = lazy(() => import('./pages/app/Insights'));
 const Review = lazy(() => import('./pages/app/Review'));
+const Discipline = lazy(() => import('./pages/app/Discipline'));
 
 const PageFallback = () => (
   <div className="max-w-4xl mx-auto py-12 animate-pulse space-y-4">
@@ -121,6 +122,26 @@ export default function App() {
                         <RouteErrorBoundary>
                           <Suspense fallback={<PageFallback />}>
                             <Insights />
+                          </Suspense>
+                        </RouteErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="discipline"
+                      element={
+                        <RouteErrorBoundary>
+                          <Suspense fallback={<PageFallback />}>
+                            <Discipline />
+                          </Suspense>
+                        </RouteErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="discipline/:section"
+                      element={
+                        <RouteErrorBoundary>
+                          <Suspense fallback={<PageFallback />}>
+                            <Discipline />
                           </Suspense>
                         </RouteErrorBoundary>
                       }

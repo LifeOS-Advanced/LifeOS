@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useProfile } from '@/lib/queries';
-import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart, Sunrise, Moon, type LucideIcon } from 'lucide-react';
+import { CheckSquare, Zap, Target, BookOpen, Timer, TrendingUp, Star, Link2, LineChart, Sunrise, Moon, ShieldCheck, Flame, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -22,7 +22,7 @@ import { DEFAULT_PREFERENCES, DashboardWidgetKey } from '@/lib/types';
 import { getDailyLoopProgress, getNextLoopActionPreview, isNewUserSession, shouldShowFirstWeekCard } from '@/lib/daily-loop';
 import { useDailyLoopState } from '@/lib/useDailyLoopState';
 import { getLatestOpenCarryForward, updateCarryForwardStatus } from '@/lib/continuity';
-import { useDailyStart, useEveningShutdown, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useSaveWeeklyReview, useTasks, useWeeklyNarrative, useWeeklyReviews } from '@/lib/queries';
+import { useDailyStart, useDisciplineInsights, useEveningShutdown, useFocusSessions, useGoals, useHabits, useLifeMomentum, useNotes, useSaveWeeklyReview, useTasks, useWeeklyNarrative, useWeeklyReviews } from '@/lib/queries';
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 10 },
@@ -40,6 +40,7 @@ export default function Dashboard() {
   const { data: notes = [] } = useNotes();
   const { data: sessions = [] } = useFocusSessions();
   const { data: momentum, isLoading: momentumLoading } = useLifeMomentum();
+  const { data: disciplineInsights } = useDisciplineInsights();
   const { data: dailyStart } = useDailyStart(today);
   const { data: eveningShutdown } = useEveningShutdown(today);
   const weekStart = ymd(startOfWeek());
@@ -101,6 +102,7 @@ export default function Dashboard() {
     { key: 'habits' as DashboardWidgetKey, label: 'Active habits', value: habits.length, icon: Zap, color: 'text-accent' },
     { key: 'goals' as DashboardWidgetKey, label: 'Goals in progress', value: goals.length, icon: Target, color: 'text-warning' },
     { key: 'focus' as DashboardWidgetKey, label: 'Focus sessions', value: todaySessions.length, icon: Timer, color: 'text-success' },
+    { key: 'discipline' as DashboardWidgetKey, label: 'Urges interrupted', value: disciplineInsights?.interruptedCount ?? 0, icon: ShieldCheck, color: 'text-primary' },
   ];
   const stats = baseStats
     .filter(s => show(s.key))
@@ -231,6 +233,48 @@ export default function Dashboard() {
       {show('momentum') && (
         <motion.section {...fadeIn(0.07)}>
           <LifeMomentumCard momentum={momentum} loading={momentumLoading} />
+        </motion.section>
+      )}
+
+      {show('discipline') && (
+        <motion.section {...fadeIn(0.075)}>
+          <Link to="/app/discipline" className="block rounded-xl border border-border bg-card p-5 shadow-card hover:shadow-card-hover hover:border-primary/40 transition-all">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-h3 text-foreground">Discipline Engine</h2>
+                    <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">New</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {disciplineInsights?.totalUrges
+                      ? `${disciplineInsights.interruptedCount} urge${disciplineInsights.interruptedCount === 1 ? '' : 's'} interrupted in the last ${disciplineInsights.periodDays} days.`
+                      : 'Map triggers and prepare replacement actions before the next urge.'}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 md:w-72">
+                <div className="rounded-lg surface-sunken px-3 py-2 text-center">
+                  <p className="text-lg font-semibold text-foreground">{disciplineInsights?.totalUrges ?? 0}</p>
+                  <p className="text-[10px] text-muted-foreground">Logged</p>
+                </div>
+                <div className="rounded-lg surface-sunken px-3 py-2 text-center">
+                  <p className="text-lg font-semibold text-success">{disciplineInsights?.interruptedCount ?? 0}</p>
+                  <p className="text-[10px] text-muted-foreground">Interrupted</p>
+                </div>
+                <div className="rounded-lg surface-sunken px-3 py-2 text-center">
+                  <p className="text-lg font-semibold text-warning">{disciplineInsights?.relapseCount ?? 0}</p>
+                  <p className="text-[10px] text-muted-foreground">To review</p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                Open <Flame className="h-3.5 w-3.5" />
+              </span>
+            </div>
+          </Link>
         </motion.section>
       )}
 

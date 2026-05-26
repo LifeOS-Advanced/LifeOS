@@ -1,4 +1,4 @@
-import { Task, Habit, Goal, Note, FocusSession, UserProfile, DailyCheckIn, WeeklyReview } from './types';
+import { Task, Habit, Goal, Note, FocusSession, UserProfile, DailyCheckIn, WeeklyReview, DisciplineTarget, ReplacementAction, UrgeLog } from './types';
 
 const STORAGE_KEYS = {
   tasks: 'lifeos_tasks',
@@ -11,6 +11,9 @@ const STORAGE_KEYS = {
   authenticated: 'lifeos_authenticated',
   checkIns: 'lifeos_check_ins',
   reviews: 'lifeos_weekly_reviews',
+  disciplineTargets: 'lifeos_discipline_targets',
+  replacementActions: 'lifeos_replacement_actions',
+  urgeLogs: 'lifeos_urge_logs',
 };
 
 function get<T>(key: string, fallback: T): T {
@@ -86,3 +89,11 @@ export const addWeeklyReview = (r: WeeklyReview) => {
   const all = getWeeklyReviews().filter(x => x.weekStart !== r.weekStart);
   setWeeklyReviews([r, ...all]);
 };
+
+// Discipline Engine
+export const getDisciplineTargets = () => get<DisciplineTarget[]>(STORAGE_KEYS.disciplineTargets, []);
+export const setDisciplineTargets = (t: DisciplineTarget[]) => set(STORAGE_KEYS.disciplineTargets, t);
+export const getReplacementActions = () => get<ReplacementAction[]>(STORAGE_KEYS.replacementActions, []);
+export const setReplacementActions = (r: ReplacementAction[]) => set(STORAGE_KEYS.replacementActions, r);
+export const getUrgeLogs = () => get<UrgeLog[]>(STORAGE_KEYS.urgeLogs, []);
+export const setUrgeLogs = (u: UrgeLog[]) => set(STORAGE_KEYS.urgeLogs, u);

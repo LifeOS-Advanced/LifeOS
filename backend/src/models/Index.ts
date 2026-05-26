@@ -303,6 +303,10 @@ export type RewardEventType =
   | 'daily_start'
   | 'evening_shutdown'
   | 'weekly_review'
+  | 'urge_interrupted'
+  | 'replacement_completed'
+  | 'relapse_reviewed'
+  | 'discipline_routine_completed'
   | 'quest_bonus'
   | 'daily_quests_complete';
 
@@ -347,7 +351,20 @@ const RewardEventSchema = new Schema<IRewardEvent>(
     type: {
       type: String,
       required: true,
-      enum: ['task_completed', 'habit_checked', 'focus_completed', 'daily_start', 'evening_shutdown', 'weekly_review', 'quest_bonus', 'daily_quests_complete'],
+      enum: [
+        'task_completed',
+        'habit_checked',
+        'focus_completed',
+        'daily_start',
+        'evening_shutdown',
+        'weekly_review',
+        'urge_interrupted',
+        'replacement_completed',
+        'relapse_reviewed',
+        'discipline_routine_completed',
+        'quest_bonus',
+        'daily_quests_complete',
+      ],
     },
     xp: { type: Number, required: true, min: 0 },
     title: { type: String, required: true, maxlength: 160 },

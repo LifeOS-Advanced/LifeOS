@@ -1,4 +1,4 @@
-import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays, LineChart, Pin, Sunrise, Moon, Trophy } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Zap, Target, BookOpen, Timer, Settings, LogOut, Sparkles, CalendarDays, LineChart, Pin, Sunrise, Moon, Trophy, ShieldCheck } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useProfile } from '@/lib/queries';
@@ -23,6 +23,7 @@ const moduleItems: Record<ModuleKey, { title: string; url: string; icon: typeof 
   goals: { title: 'Goals',  url: '/app/goals',  icon: Target },
   notes: { title: 'Notes',  url: '/app/notes',  icon: BookOpen },
   focus: { title: 'Focus',  url: '/app/focus',  icon: Timer },
+  discipline: { title: 'Discipline', url: '/app/discipline', icon: ShieldCheck },
 };
 
 const dashboardItem = { title: 'Dashboard',     url: '/app',             icon: LayoutDashboard };
@@ -40,7 +41,7 @@ export function AppSidebar() {
   const { data: profile } = useProfile();
   const { logout } = useAuth();
 
-  const enabled    = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[]);
+  const enabled    = profile?.enabledModules ?? (['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline'] as ModuleKey[]);
   const pinned     = (profile?.preferences?.pinnedModules ?? []).filter(k => enabled.includes(k));
   const moduleNav  = enabled.filter(k => !pinned.includes(k)).map(k => moduleItems[k]).filter(Boolean);
   const pinnedNav  = pinned.map(k => moduleItems[k]).filter(Boolean);

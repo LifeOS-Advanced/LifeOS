@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon, Palette, Pin, ArrowUp, ArrowDown, Eye, EyeOff, Volume2 } from 'lucide-react';
+import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon, Palette, Pin, ArrowUp, ArrowDown, Eye, EyeOff, Volume2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionHeader, Chip } from '@/components/app/patterns';
 import { playRewardSound } from '@/lib/reward-sounds';
@@ -20,6 +20,7 @@ const moduleList: { key: ModuleKey; label: string; icon: typeof CheckSquare }[] 
   { key: 'goals', label: 'Goals', icon: Target },
   { key: 'notes', label: 'Notes', icon: BookOpen },
   { key: 'focus', label: 'Focus', icon: Timer },
+  { key: 'discipline', label: 'Discipline', icon: ShieldCheck },
 ];
 
 const widgetMeta: Record<DashboardWidgetKey, string> = {
@@ -28,10 +29,11 @@ const widgetMeta: Record<DashboardWidgetKey, string> = {
   habits: 'Habits',
   goals: 'Goals',
   focus: 'Focus stats',
+  discipline: 'Discipline Engine',
   consistency: 'Consistency',
   insights: 'Insights',
 };
-const ALL_WIDGETS: DashboardWidgetKey[] = ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'];
+const ALL_WIDGETS: DashboardWidgetKey[] = ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'];
 
 const focusPresets = [15, 25, 45, 50, 90];
 
@@ -46,7 +48,7 @@ function getTimezones(): string[] {
 }
 
 function buildInitialProfile(source?: UserProfile | null): UserProfile {
-  const initial = source || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[], theme: 'light' as const };
+  const initial = source || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline'] as ModuleKey[], theme: 'light' as const };
   const initialPreferences = {
     ...DEFAULT_PREFERENCES,
     ...(initial.preferences || {}),
@@ -63,7 +65,7 @@ function buildInitialProfile(source?: UserProfile | null): UserProfile {
     initialPreferences.dashboardWidgets = [...new Set<DashboardWidgetKey>(['momentum', ...initialPreferences.dashboardWidgets])];
     initialPreferences.widgetOrder = [...new Set<DashboardWidgetKey>(['today', 'momentum', ...(initialPreferences.widgetOrder ?? [])])];
   }
-  return { ...initial, preferences: initialPreferences };
+  return { ...initial, enabledModules: [...new Set<ModuleKey>([...initial.enabledModules, 'discipline'])], preferences: initialPreferences };
 }
 
 export default function SettingsPage() {

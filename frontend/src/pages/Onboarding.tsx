@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { LifestyleMode, ModuleKey, ImprovementArea, DayIntensity } from '@/lib/types';
 import {
   GraduationCap, Briefcase, Building2, Palette, Heart,
-  CheckSquare, Zap, Target, BookOpen, Timer,
+  CheckSquare, Zap, Target, BookOpen, Timer, ShieldCheck,
   ArrowRight, Check, Brain, DollarSign, Activity, Sparkles, Flame, BookMarked,
   Coffee, Sun, Rocket,
 } from 'lucide-react';
@@ -45,6 +45,7 @@ const modules: { key: ModuleKey; label: string; desc: string; icon: typeof Check
   { key: 'goals', label: 'Goals', desc: 'Set targets with milestones and progress', icon: Target },
   { key: 'notes', label: 'Notes', desc: 'Capture ideas and knowledge', icon: BookOpen },
   { key: 'focus', label: 'Focus', desc: 'Deep work with pomodoro timer', icon: Timer },
+  { key: 'discipline', label: 'Discipline', desc: 'Interrupt urges and map triggers', icon: ShieldCheck },
 ];
 
 const TOTAL_STEPS = 6;
@@ -56,7 +57,7 @@ export default function Onboarding() {
   const [selectedImprovements, setSelectedImprovements] = useState<ImprovementArea[]>([]);
   const [intensity, setIntensity] = useState<DayIntensity>('moderate');
   const [priority, setPriority] = useState<ModuleKey>('tasks');
-  const [selectedModules, setSelectedModules] = useState<ModuleKey[]>(['tasks', 'habits', 'goals', 'notes', 'focus']);
+  const [selectedModules, setSelectedModules] = useState<ModuleKey[]>(['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline']);
   const [firstHabitTitle, setFirstHabitTitle] = useState('');
 
   const toggleModule = (key: ModuleKey) => {

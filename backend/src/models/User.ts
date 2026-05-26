@@ -2,9 +2,9 @@ import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export type LifestyleMode = 'student' | 'freelancer' | 'employee' | 'creator' | 'personal-growth';
-export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus';
+export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus' | 'discipline';
 export type AccentTheme = 'indigo' | 'emerald' | 'slate' | 'amber';
-export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
+export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights' | 'discipline';
 
 export interface IUserPreferences {
   timezone: string;
@@ -56,11 +56,11 @@ const PreferencesSchema = new Schema<IUserPreferences>(
     defaultFocusDuration: { type: Number, default: 25, min: 5, max: 180 },
     dashboardWidgets: {
       type: [String],
-      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'],
     },
     widgetOrder: {
       type: [String],
-      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'],
     },
     pinnedModules: { type: [String], default: [] },
     accentTheme: { type: String, enum: ['indigo', 'emerald', 'slate', 'amber'], default: 'indigo' },
@@ -103,7 +103,7 @@ const UserSchema = new Schema<IUser>(
     },
     enabledModules: {
       type: [String],
-      default: ['tasks', 'habits', 'goals', 'notes', 'focus'],
+      default: ['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline'],
     },
     theme: { type: String, enum: ['light', 'dark', 'system'], default: 'light' },
     improvementFocus: { type: [String], default: [] },

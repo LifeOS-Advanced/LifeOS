@@ -22,6 +22,10 @@ const xpRules: Record<RewardEventType, (input: RewardEventInput) => number> = {
   daily_start: () => 25,
   evening_shutdown: () => 30,
   weekly_review: () => 75,
+  urge_interrupted: () => 20,
+  replacement_completed: () => 15,
+  relapse_reviewed: () => 25,
+  discipline_routine_completed: () => 20,
   quest_bonus: () => 5,
   daily_quests_complete: () => 25,
 };
@@ -33,6 +37,10 @@ const eventTitles: Record<RewardEventType, string> = {
   daily_start: 'Daily Start completed',
   evening_shutdown: 'Evening Shutdown completed',
   weekly_review: 'Weekly Reset completed',
+  urge_interrupted: 'Urge interrupted',
+  replacement_completed: 'Replacement action completed',
+  relapse_reviewed: 'Relapse review completed',
+  discipline_routine_completed: 'Discipline routine completed',
   quest_bonus: 'Daily quest done',
   daily_quests_complete: 'All daily quests complete',
 };

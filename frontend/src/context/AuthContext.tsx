@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name:            data.user.name,
         email:           data.user.email,
         lifestyleMode:   data.user.lifestyleMode  ?? 'personal-growth',
-        enabledModules:  data.user.enabledModules ?? ['tasks', 'habits', 'goals', 'notes', 'focus'],
+        enabledModules:  [...new Set([...(data.user.enabledModules ?? ['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline']), 'discipline' as const])],
         theme:           data.user.theme          ?? 'light',
         preferences,
       });

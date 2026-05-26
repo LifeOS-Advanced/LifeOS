@@ -66,7 +66,10 @@ function intensityForEvent(eventType?: string): RewardToastIntensity {
     eventType === 'focus_completed' ||
     eventType === 'daily_start' ||
     eventType === 'evening_shutdown' ||
-    eventType === 'weekly_review'
+    eventType === 'weekly_review' ||
+    eventType === 'urge_interrupted' ||
+    eventType === 'replacement_completed' ||
+    eventType === 'relapse_reviewed'
   ) {
     return 'medium';
   }
@@ -75,6 +78,12 @@ function intensityForEvent(eventType?: string): RewardToastIntensity {
 
 function variantForEvent(eventType?: string): RewardToastVariant {
   if (eventType === 'focus_completed') return 'focus';
+  if (
+    eventType === 'urge_interrupted' ||
+    eventType === 'replacement_completed' ||
+    eventType === 'relapse_reviewed' ||
+    eventType === 'discipline_routine_completed'
+  ) return 'xp';
   if (
     eventType === 'daily_start' ||
     eventType === 'evening_shutdown' ||

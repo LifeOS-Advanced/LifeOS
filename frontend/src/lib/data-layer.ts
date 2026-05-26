@@ -8,7 +8,7 @@ import { api, getToken } from './api';
 import type {
   Task, Habit, Goal, Note, FocusSession, UserProfile, Subtask, Milestone,
   DailyStart, EveningShutdown, SearchResults, LifeMomentum, UserProgress, RewardEventInput,
-  WeeklyReview, WeeklyNarrativeRecap,
+  WeeklyReview, WeeklyNarrativeRecap, DisciplineTarget, ReplacementAction, UrgeLog, DisciplineInsights,
 } from './types';
 import { DEFAULT_PREFERENCES } from './types';
 import { computeLifeMomentum } from './insights';
@@ -53,6 +53,12 @@ type ApiUser = {
 };
 type ApiDailyStart = Omit<DailyStart, 'id'> & { _id?: string; id?: string };
 type ApiEveningShutdown = Omit<EveningShutdown, 'id'> & { _id?: string; id?: string };
+type ApiDisciplineTarget = Omit<DisciplineTarget, 'id'> & { _id?: string; id?: string };
+type ApiReplacementAction = Omit<ReplacementAction, 'id'> & { _id?: string; id?: string };
+type ApiUrgeLog = Omit<UrgeLog, 'id'> & { _id?: string; id?: string };
+type DisciplineTargetPayload = Omit<DisciplineTarget, 'id' | 'createdAt' | 'updatedAt'>;
+type ReplacementActionPayload = Omit<ReplacementAction, 'id' | 'createdAt' | 'updatedAt'>;
+type UrgeLogPayload = Omit<UrgeLog, 'id' | 'createdAt' | 'updatedAt'>;
 
 type TaskPayload = Omit<Task, 'id' | 'createdAt'> & Partial<Pick<Task, 'createdAt'>>;
 type HabitPayload = Omit<Habit, 'id' | 'createdAt' | 'streak' | 'completedDates'> & Partial<Pick<Habit, 'streak' | 'completedDates' | 'createdAt'>>;
@@ -60,6 +66,7 @@ const flowKeys = {
   dailyStart: 'lifeos_daily_start',
   eveningShutdown: 'lifeos_evening_shutdown',
 };
+const DEFAULT_MODULES: UserProfile['enabledModules'] = ['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline'];
 
 const objectIdPattern = /^[a-f\d]{24}$/i;
 const isObjectId = (value?: string) => !!value && objectIdPattern.test(value);
@@ -210,7 +217,7 @@ function normalizeProfileFromApi(user: ApiUser): UserProfile {
     name: user.name,
     email: user.email,
     lifestyleMode: user.lifestyleMode ?? 'personal-growth',
-    enabledModules: user.enabledModules ?? ['tasks', 'habits', 'goals', 'notes', 'focus'],
+    enabledModules: [...new Set([...(user.enabledModules ?? DEFAULT_MODULES), 'discipline' as const])],
     theme: user.theme ?? 'light',
     improvementFocus: user.improvementFocus,
     dayIntensity: user.dayIntensity,
@@ -251,6 +258,30 @@ const normalizeEveningShutdown = (flow: ApiEveningShutdown): EveningShutdown => 
   delayedTaskIds: flow.delayedTaskIds ?? [],
 });
 
+const normalizeDisciplineTarget = (target: ApiDisciplineTarget): DisciplineTarget => ({
+  ...target,
+  id: target.id ?? target._id ?? crypto.randomUUID(),
+  status: target.status ?? 'active',
+  createdAt: target.createdAt ?? new Date().toISOString(),
+});
+
+const normalizeReplacementAction = (action: ApiReplacementAction): ReplacementAction => ({
+  ...action,
+  id: action.id ?? action._id ?? crypto.randomUUID(),
+  category: action.category ?? 'custom',
+  durationMinutes: action.durationMinutes ?? 2,
+  isDefault: action.isDefault ?? false,
+  createdAt: action.createdAt ?? new Date().toISOString(),
+});
+
+const normalizeUrgeLog = (urge: ApiUrgeLog): UrgeLog => ({
+  ...urge,
+  id: urge.id ?? urge._id ?? crypto.randomUUID(),
+  replacementCompleted: urge.replacementCompleted ?? false,
+  occurredAt: urge.occurredAt ?? new Date().toISOString(),
+  createdAt: urge.createdAt ?? urge.occurredAt ?? new Date().toISOString(),
+});
+
 const getFlowMap = <T,>(key: string): Record<string, T> => {
   try {
     return JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, T>;
@@ -266,6 +297,48 @@ const setFlow = <T extends { date: string }>(key: string, value: T) => {
 };
 
 const emptySearchResults = (): SearchResults => ({ task: [], habit: [], goal: [], note: [], review: [] });
+
+function buildLocalDisciplineInsights(periodDays = 30): DisciplineInsights {
+  const since = new Date();
+  since.setDate(since.getDate() - periodDays + 1);
+  since.setHours(0, 0, 0, 0);
+  const urges = store.getUrgeLogs().filter(urge => new Date(urge.occurredAt).getTime() >= since.getTime());
+  const tally = (field: 'trigger' | 'emotion' | 'context') => {
+    const counts = new Map<string, number>();
+    urges.forEach(urge => {
+      const label = urge[field]?.trim();
+      if (!label) return;
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([label, count]) => ({ label, count }));
+  };
+  const hours = new Map<number, number>();
+  urges.forEach(urge => {
+    const hour = new Date(urge.occurredAt).getHours();
+    hours.set(hour, (hours.get(hour) ?? 0) + 1);
+  });
+  const totalIntensity = urges.reduce((sum, urge) => sum + urge.intensity, 0);
+  return {
+    periodDays,
+    totalUrges: urges.length,
+    interruptedCount: urges.filter(urge => urge.outcome === 'interrupted').length,
+    delayedCount: urges.filter(urge => urge.outcome === 'delayed').length,
+    relapseCount: urges.filter(urge => urge.outcome === 'relapsed').length,
+    replacementCompletedCount: urges.filter(urge => urge.replacementCompleted).length,
+    averageIntensity: urges.length ? Math.round((totalIntensity / urges.length) * 10) / 10 : 0,
+    topTriggers: tally('trigger'),
+    topEmotions: tally('emotion'),
+    topContexts: tally('context'),
+    highRiskHours: [...hours.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([hour, count]) => ({ hour, count })),
+    recentUrges: urges.sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()).slice(0, 5),
+  };
+}
 
 export const dataLayer = {
   // Tasks
@@ -509,6 +582,165 @@ export const dataLayer = {
   saveFocusSessions: (s: FocusSession[]): Promise<FocusSession[]> => {
     if (!hasApiToken()) { store.setFocusSessions(s); return delay(s); }
     return delay(s);
+  },
+
+  // Discipline Engine
+  listDisciplineTargets: async (): Promise<DisciplineTarget[]> => {
+    if (!hasApiToken()) return delay(store.getDisciplineTargets());
+    const targets = await api.get<ApiDisciplineTarget[]>('/api/discipline/targets');
+    return targets.map(normalizeDisciplineTarget);
+  },
+  createDisciplineTarget: async (target: DisciplineTargetPayload): Promise<DisciplineTarget> => {
+    if (!hasApiToken()) {
+      const now = new Date().toISOString();
+      const created: DisciplineTarget = { ...target, id: `dt${Date.now()}`, createdAt: now, updatedAt: now };
+      store.setDisciplineTargets([created, ...store.getDisciplineTargets()]);
+      return delay(created);
+    }
+    return normalizeDisciplineTarget(await api.post<ApiDisciplineTarget>('/api/discipline/targets', target));
+  },
+  updateDisciplineTarget: async (id: string, updates: Partial<DisciplineTarget>): Promise<DisciplineTarget> => {
+    if (!hasApiToken()) {
+      const updated = store.getDisciplineTargets().map(target => target.id === id ? { ...target, ...updates, updatedAt: new Date().toISOString() } : target);
+      store.setDisciplineTargets(updated);
+      return delay(updated.find(target => target.id === id)!);
+    }
+    return normalizeDisciplineTarget(await api.patch<ApiDisciplineTarget>(`/api/discipline/targets/${id}`, updates));
+  },
+  deleteDisciplineTarget: async (id: string): Promise<string> => {
+    if (!hasApiToken()) {
+      store.setDisciplineTargets(store.getDisciplineTargets().filter(target => target.id !== id));
+      store.setReplacementActions(store.getReplacementActions().map(action => action.targetId === id ? { ...action, targetId: undefined } : action));
+      store.setUrgeLogs(store.getUrgeLogs().map(urge => urge.targetId === id ? { ...urge, targetId: undefined } : urge));
+      return delay(id);
+    }
+    await api.delete<unknown>(`/api/discipline/targets/${id}`);
+    return id;
+  },
+  listReplacementActions: async (): Promise<ReplacementAction[]> => {
+    if (!hasApiToken()) return delay(store.getReplacementActions());
+    const actions = await api.get<ApiReplacementAction[]>('/api/discipline/replacements');
+    return actions.map(normalizeReplacementAction);
+  },
+  createReplacementAction: async (action: ReplacementActionPayload): Promise<ReplacementAction> => {
+    if (!hasApiToken()) {
+      const now = new Date().toISOString();
+      const created: ReplacementAction = { ...action, id: `ra${Date.now()}`, createdAt: now, updatedAt: now };
+      store.setReplacementActions([created, ...store.getReplacementActions()]);
+      return delay(created);
+    }
+    return normalizeReplacementAction(await api.post<ApiReplacementAction>('/api/discipline/replacements', {
+      ...action,
+      targetId: isObjectId(action.targetId) ? action.targetId : undefined,
+    }));
+  },
+  updateReplacementAction: async (id: string, updates: Partial<ReplacementAction>): Promise<ReplacementAction> => {
+    if (!hasApiToken()) {
+      const updated = store.getReplacementActions().map(action => action.id === id ? { ...action, ...updates, updatedAt: new Date().toISOString() } : action);
+      store.setReplacementActions(updated);
+      return delay(updated.find(action => action.id === id)!);
+    }
+    return normalizeReplacementAction(await api.patch<ApiReplacementAction>(`/api/discipline/replacements/${id}`, {
+      ...updates,
+      targetId: isObjectId(updates.targetId) ? updates.targetId : undefined,
+    }));
+  },
+  deleteReplacementAction: async (id: string): Promise<string> => {
+    if (!hasApiToken()) {
+      store.setReplacementActions(store.getReplacementActions().filter(action => action.id !== id));
+      store.setUrgeLogs(store.getUrgeLogs().map(urge => urge.replacementActionId === id ? { ...urge, replacementActionId: undefined } : urge));
+      return delay(id);
+    }
+    await api.delete<unknown>(`/api/discipline/replacements/${id}`);
+    return id;
+  },
+  listUrgeLogs: async (): Promise<UrgeLog[]> => {
+    if (!hasApiToken()) return delay(store.getUrgeLogs().sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()));
+    const urges = await api.get<ApiUrgeLog[]>('/api/discipline/urges');
+    return urges.map(normalizeUrgeLog);
+  },
+  createUrgeLog: async (urge: UrgeLogPayload): Promise<{ urge: UrgeLog; progress?: UserProgress; replacementProgress?: UserProgress }> => {
+    if (!hasApiToken()) {
+      const now = new Date().toISOString();
+      const created: UrgeLog = { ...urge, id: `ul${Date.now()}`, occurredAt: urge.occurredAt ?? now, createdAt: now, updatedAt: now };
+      store.setUrgeLogs([created, ...store.getUrgeLogs()]);
+      const date = created.occurredAt.slice(0, 10);
+      const progress = created.outcome === 'interrupted'
+        ? recordLocalProgressEvent({
+          type: 'urge_interrupted',
+          date,
+          entityId: created.id,
+          title: 'Urge interrupted',
+          description: created.trigger,
+          metadata: { key: `urge_interrupted:${created.id}`, trigger: created.trigger },
+        })
+        : undefined;
+      const replacementProgress = created.replacementCompleted
+        ? recordLocalProgressEvent({
+          type: 'replacement_completed',
+          date,
+          entityId: created.id,
+          title: 'Replacement action completed',
+          metadata: { key: `replacement_completed:${created.id}`, replacementActionId: created.replacementActionId },
+        })
+        : undefined;
+      return delay({ urge: created, progress: replacementProgress ?? progress, replacementProgress });
+    }
+    const res = await api.post<{ urge: ApiUrgeLog; progress?: UserProgress; replacementProgress?: UserProgress }>('/api/discipline/urges', {
+      ...urge,
+      targetId: isObjectId(urge.targetId) ? urge.targetId : undefined,
+      replacementActionId: isObjectId(urge.replacementActionId) ? urge.replacementActionId : undefined,
+    });
+    return { urge: normalizeUrgeLog(res.urge), progress: res.progress, replacementProgress: res.replacementProgress };
+  },
+  updateUrgeLog: async (id: string, updates: Partial<UrgeLog>): Promise<{ urge: UrgeLog; progress?: UserProgress }> => {
+    if (!hasApiToken()) {
+      const previous = store.getUrgeLogs().find(urge => urge.id === id);
+      if (!previous) throw new Error('Urge log not found');
+      const reviewedAt = updates.review ? new Date().toISOString() : previous.review?.reviewedAt;
+      const next: UrgeLog = {
+        ...previous,
+        ...updates,
+        review: updates.review ? { ...updates.review, reviewedAt } : previous.review,
+        updatedAt: new Date().toISOString(),
+      };
+      store.setUrgeLogs(store.getUrgeLogs().map(urge => urge.id === id ? next : urge));
+      const date = next.occurredAt.slice(0, 10);
+      const progress = !previous.replacementCompleted && next.replacementCompleted
+        ? recordLocalProgressEvent({
+          type: 'replacement_completed',
+          date,
+          entityId: next.id,
+          title: 'Replacement action completed',
+          metadata: { key: `replacement_completed:${next.id}`, replacementActionId: next.replacementActionId },
+        })
+        : updates.review && !previous.review?.reviewedAt
+          ? recordLocalProgressEvent({
+            type: 'relapse_reviewed',
+            date,
+            entityId: next.id,
+            title: 'Relapse review completed',
+            description: next.trigger,
+            metadata: { key: `relapse_reviewed:${next.id}`, trigger: next.trigger },
+          })
+          : undefined;
+      return delay({ urge: next, progress });
+    }
+    const res = await api.patch<{ urge: ApiUrgeLog; progress?: UserProgress }>(`/api/discipline/urges/${id}`, {
+      ...updates,
+      targetId: isObjectId(updates.targetId) ? updates.targetId : undefined,
+      replacementActionId: isObjectId(updates.replacementActionId) ? updates.replacementActionId : undefined,
+      review: updates.review ? {
+        ...updates.review,
+        nextReplacementActionId: isObjectId(updates.review.nextReplacementActionId) ? updates.review.nextReplacementActionId : undefined,
+      } : undefined,
+    });
+    return { urge: normalizeUrgeLog(res.urge), progress: res.progress };
+  },
+  getDisciplineInsights: async (periodDays = 30): Promise<DisciplineInsights> => {
+    if (!hasApiToken()) return delay(buildLocalDisciplineInsights(periodDays));
+    const insights = await api.get<Omit<DisciplineInsights, 'recentUrges'> & { recentUrges: ApiUrgeLog[] }>(`/api/discipline/insights?periodDays=${periodDays}`);
+    return { ...insights, recentUrges: insights.recentUrges.map(normalizeUrgeLog) };
   },
 
   listWeeklyReviews: async (): Promise<WeeklyReview[]> => {

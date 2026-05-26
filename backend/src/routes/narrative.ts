@@ -21,7 +21,18 @@ const lifeAreaLabels: Record<string, string> = {
   projects: 'Projects',
 };
 
-const meaningfulTypes = new Set(['task_completed', 'habit_checked', 'focus_completed', 'daily_start', 'evening_shutdown', 'weekly_review']);
+const meaningfulTypes = new Set([
+  'task_completed',
+  'habit_checked',
+  'focus_completed',
+  'daily_start',
+  'evening_shutdown',
+  'weekly_review',
+  'urge_interrupted',
+  'replacement_completed',
+  'relapse_reviewed',
+  'discipline_routine_completed',
+]);
 
 const ymd = (date: Date) => date.toISOString().split('T')[0];
 
