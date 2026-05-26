@@ -64,7 +64,7 @@ export default function App() {
           <ConfirmProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <AuthProvider>
                 <Routes>
                   <Route path="/" element={<Landing />} />
