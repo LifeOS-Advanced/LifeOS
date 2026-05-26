@@ -71,6 +71,8 @@ export default function EveningShutdownPage() {
           dailyStartDone,
           profile,
           mainPriority: dailyStart?.mainPriority,
+          date,
+          tomorrowFirstTask,
         });
       }
       navigate('/app');

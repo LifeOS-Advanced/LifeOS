@@ -2,9 +2,9 @@ import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export type LifestyleMode = 'student' | 'freelancer' | 'employee' | 'creator' | 'personal-growth';
-export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus';
+export type ModuleKey = 'tasks' | 'habits' | 'goals' | 'notes' | 'focus' | 'discipline';
 export type AccentTheme = 'indigo' | 'emerald' | 'slate' | 'amber';
-export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights';
+export type DashboardWidgetKey = 'today' | 'momentum' | 'habits' | 'goals' | 'focus' | 'consistency' | 'insights' | 'discipline';
 
 export interface IUserPreferences {
   timezone: string;
@@ -18,6 +18,14 @@ export interface IUserPreferences {
     dailyReminders: boolean;
     habitStreakAlerts: boolean;
     goalDeadlineWarnings: boolean;
+    browserEnabled?: boolean;
+    morningReminderTime?: string;
+    eveningReminderTime?: string;
+    weeklyReviewReminder?: boolean;
+  };
+  sensory: {
+    rewardSounds: boolean;
+    soundVolume: number;
   };
 }
 
@@ -48,11 +56,11 @@ const PreferencesSchema = new Schema<IUserPreferences>(
     defaultFocusDuration: { type: Number, default: 25, min: 5, max: 180 },
     dashboardWidgets: {
       type: [String],
-      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'],
     },
     widgetOrder: {
       type: [String],
-      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'],
+      default: ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'],
     },
     pinnedModules: { type: [String], default: [] },
     accentTheme: { type: String, enum: ['indigo', 'emerald', 'slate', 'amber'], default: 'indigo' },
@@ -60,6 +68,14 @@ const PreferencesSchema = new Schema<IUserPreferences>(
       dailyReminders: { type: Boolean, default: true },
       habitStreakAlerts: { type: Boolean, default: true },
       goalDeadlineWarnings: { type: Boolean, default: true },
+      browserEnabled: { type: Boolean, default: false },
+      morningReminderTime: { type: String, default: '08:30' },
+      eveningReminderTime: { type: String, default: '20:30' },
+      weeklyReviewReminder: { type: Boolean, default: true },
+    },
+    sensory: {
+      rewardSounds: { type: Boolean, default: false },
+      soundVolume: { type: Number, default: 0.35, min: 0, max: 1 },
     },
   },
   { _id: false }
@@ -87,7 +103,7 @@ const UserSchema = new Schema<IUser>(
     },
     enabledModules: {
       type: [String],
-      default: ['tasks', 'habits', 'goals', 'notes', 'focus'],
+      default: ['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline'],
     },
     theme: { type: String, enum: ['light', 'dark', 'system'], default: 'light' },
     improvementFocus: { type: [String], default: [] },
@@ -100,10 +116,10 @@ const UserSchema = new Schema<IUser>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret) => {
-        delete (ret as any).password;
-        delete (ret as any).refreshTokens;
-        delete (ret as any).__v;
+      transform: (_doc, ret: Record<string, unknown>) => {
+        delete ret.password;
+        delete ret.refreshTokens;
+        delete ret.__v;
         return ret;
       },
     },

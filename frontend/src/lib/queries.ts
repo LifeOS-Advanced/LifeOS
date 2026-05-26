@@ -4,7 +4,20 @@
  */
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { dataLayer } from './data-layer';
-import type { Task, Habit, Goal, Note, FocusSession, DailyStart, EveningShutdown, RewardEventInput, UserProfile } from './types';
+import type {
+  Task,
+  Habit,
+  Goal,
+  Note,
+  FocusSession,
+  DailyStart,
+  EveningShutdown,
+  RewardEventInput,
+  UserProfile,
+  DisciplineTarget,
+  ReplacementAction,
+  UrgeLog,
+} from './types';
 
 export const queryKeys = {
   tasks: ['tasks'] as QueryKey,
@@ -19,11 +32,15 @@ export const queryKeys = {
   momentum: (periodDays: number) => ['momentum', periodDays] as QueryKey,
   weeklyNarrative: (weekStart: string) => ['weekly-narrative', weekStart] as QueryKey,
   progress: ['progress'] as QueryKey,
+  disciplineTargets: ['discipline-targets'] as QueryKey,
+  replacementActions: ['replacement-actions'] as QueryKey,
+  urgeLogs: ['urge-logs'] as QueryKey,
+  disciplineInsights: (periodDays: number) => ['discipline-insights', periodDays] as QueryKey,
 };
 
 // ---- Tasks ----
 export const useTasks = () =>
-  useQuery({ queryKey: queryKeys.tasks, queryFn: dataLayer.listTasks, initialData: [] as Task[] });
+  useQuery({ queryKey: queryKeys.tasks, queryFn: dataLayer.listTasks });
 
 export const useSaveTasks = () => {
   const qc = useQueryClient();
@@ -153,7 +170,6 @@ export const useUniversalSearch = (query: string) =>
     queryKey: queryKeys.search(query),
     queryFn: () => dataLayer.search(query),
     enabled: query.trim().length > 0,
-    initialData: { task: [], habit: [], goal: [], note: [], review: [] },
   });
 
 export const useLifeMomentum = (periodDays = 30) =>
@@ -178,7 +194,7 @@ export const useRecordProgressEvent = () => {
 
 // ---- Habits ----
 export const useHabits = () =>
-  useQuery({ queryKey: queryKeys.habits, queryFn: dataLayer.listHabits, initialData: [] as Habit[] });
+  useQuery({ queryKey: queryKeys.habits, queryFn: dataLayer.listHabits });
 
 export const useSaveHabits = () => {
   const qc = useQueryClient();
@@ -257,7 +273,7 @@ export const useDeleteHabit = () => {
 
 // ---- Goals ----
 export const useGoals = () =>
-  useQuery({ queryKey: queryKeys.goals, queryFn: dataLayer.listGoals, initialData: [] as Goal[] });
+  useQuery({ queryKey: queryKeys.goals, queryFn: dataLayer.listGoals });
 
 export const useCreateGoal = () => {
   const qc = useQueryClient();
@@ -318,7 +334,6 @@ export const useNotes = (search?: string) =>
   useQuery({
     queryKey: search ? [...queryKeys.notes, search] as QueryKey : queryKeys.notes,
     queryFn: () => dataLayer.listNotes(search),
-    initialData: [] as Note[],
   });
 
 export const useCreateNote = () => {
@@ -364,6 +379,118 @@ export const useDeleteNote = () => {
   });
 };
 
+// ---- Discipline Engine ----
+export const useDisciplineTargets = () =>
+  useQuery({ queryKey: queryKeys.disciplineTargets, queryFn: dataLayer.listDisciplineTargets });
+
+export const useCreateDisciplineTarget = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: dataLayer.createDisciplineTarget,
+    onSuccess: (created) => {
+      qc.setQueryData<DisciplineTarget[]>(queryKeys.disciplineTargets, (prev = []) => [created, ...prev]);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.disciplineTargets }),
+  });
+};
+
+export const useUpdateDisciplineTarget = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<DisciplineTarget> }) => dataLayer.updateDisciplineTarget(id, updates),
+    onSuccess: (updated) => {
+      qc.setQueryData<DisciplineTarget[]>(queryKeys.disciplineTargets, (prev = []) => prev.map(target => target.id === updated.id ? updated : target));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.disciplineTargets }),
+  });
+};
+
+export const useDeleteDisciplineTarget = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dataLayer.deleteDisciplineTarget(id),
+    onSuccess: (id) => {
+      qc.setQueryData<DisciplineTarget[]>(queryKeys.disciplineTargets, (prev = []) => prev.filter(target => target.id !== id));
+      qc.invalidateQueries({ queryKey: queryKeys.replacementActions });
+      qc.invalidateQueries({ queryKey: queryKeys.urgeLogs });
+      qc.invalidateQueries({ queryKey: ['discipline-insights'] });
+    },
+  });
+};
+
+export const useReplacementActions = () =>
+  useQuery({ queryKey: queryKeys.replacementActions, queryFn: dataLayer.listReplacementActions });
+
+export const useCreateReplacementAction = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: dataLayer.createReplacementAction,
+    onSuccess: (created) => {
+      qc.setQueryData<ReplacementAction[]>(queryKeys.replacementActions, (prev = []) => [created, ...prev]);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.replacementActions }),
+  });
+};
+
+export const useUpdateReplacementAction = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<ReplacementAction> }) => dataLayer.updateReplacementAction(id, updates),
+    onSuccess: (updated) => {
+      qc.setQueryData<ReplacementAction[]>(queryKeys.replacementActions, (prev = []) => prev.map(action => action.id === updated.id ? updated : action));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: queryKeys.replacementActions }),
+  });
+};
+
+export const useDeleteReplacementAction = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dataLayer.deleteReplacementAction(id),
+    onSuccess: (id) => {
+      qc.setQueryData<ReplacementAction[]>(queryKeys.replacementActions, (prev = []) => prev.filter(action => action.id !== id));
+      qc.invalidateQueries({ queryKey: queryKeys.urgeLogs });
+      qc.invalidateQueries({ queryKey: ['discipline-insights'] });
+    },
+  });
+};
+
+export const useUrgeLogs = () =>
+  useQuery({ queryKey: queryKeys.urgeLogs, queryFn: dataLayer.listUrgeLogs });
+
+export const useCreateUrgeLog = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: dataLayer.createUrgeLog,
+    onSuccess: ({ urge, progress }) => {
+      qc.setQueryData<UrgeLog[]>(queryKeys.urgeLogs, (prev = []) => [urge, ...prev.filter(row => row.id !== urge.id)]);
+      if (progress) qc.setQueryData(queryKeys.progress, progress);
+      qc.invalidateQueries({ queryKey: ['discipline-insights'] });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+      qc.invalidateQueries({ queryKey: ['weekly-narrative'] });
+    },
+  });
+};
+
+export const useUpdateUrgeLog = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<UrgeLog> }) => dataLayer.updateUrgeLog(id, updates),
+    onSuccess: ({ urge, progress }) => {
+      qc.setQueryData<UrgeLog[]>(queryKeys.urgeLogs, (prev = []) => prev.map(row => row.id === urge.id ? urge : row));
+      if (progress) qc.setQueryData(queryKeys.progress, progress);
+      qc.invalidateQueries({ queryKey: ['discipline-insights'] });
+      qc.invalidateQueries({ queryKey: ['momentum'] });
+      qc.invalidateQueries({ queryKey: queryKeys.progress });
+      qc.invalidateQueries({ queryKey: ['weekly-narrative'] });
+    },
+  });
+};
+
+export const useDisciplineInsights = (periodDays = 30) =>
+  useQuery({ queryKey: queryKeys.disciplineInsights(periodDays), queryFn: () => dataLayer.getDisciplineInsights(periodDays) });
+
 // ---- Profile ----
 export const useProfile = () =>
   useQuery({ queryKey: queryKeys.profile, queryFn: dataLayer.getProfile });
@@ -380,7 +507,7 @@ export const useSaveProfile = () => {
 
 // ---- Focus ----
 export const useFocusSessions = () =>
-  useQuery({ queryKey: queryKeys.focus, queryFn: dataLayer.listFocusSessions, initialData: [] as FocusSession[] });
+  useQuery({ queryKey: queryKeys.focus, queryFn: dataLayer.listFocusSessions });
 
 export const useSaveFocusSessions = () => {
   const qc = useQueryClient();
@@ -412,7 +539,7 @@ export const useCreateFocusSession = () => {
 };
 
 export const useWeeklyReviews = () =>
-  useQuery({ queryKey: ['weekly-reviews'], queryFn: dataLayer.listWeeklyReviews, initialData: [] });
+  useQuery({ queryKey: ['weekly-reviews'], queryFn: dataLayer.listWeeklyReviews });
 
 export const useSaveWeeklyReview = () => {
   const qc = useQueryClient();

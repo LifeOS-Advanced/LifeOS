@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Moon, Sparkles, Sunrise, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import type { DailyLoopHero as Hero } from '@/lib/daily-loop';
+import type { DailyLoopHero as Hero, LoopActionPreview } from '@/lib/daily-loop';
 import { MotivationalQuoteBar } from './MotivationalQuoteBar';
 import type { ImprovementArea } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,7 @@ interface DailyLoopHeroCardProps {
   questsTotal?: number;
   improvementFocus?: ImprovementArea[];
   isNewUser?: boolean;
+  nextAction?: LoopActionPreview;
 }
 
 export function DailyLoopHeroCard({
@@ -50,6 +51,7 @@ export function DailyLoopHeroCard({
   questsTotal = 6,
   improvementFocus,
   isNewUser,
+  nextAction,
 }: DailyLoopHeroCardProps) {
   const Icon = icons[hero.phase];
   const tone = phaseTone[hero.phase];
@@ -108,6 +110,29 @@ export function DailyLoopHeroCard({
         {almostComplete && <Sparkles className="absolute -right-1 -top-1 h-3.5 w-3.5 text-primary" />}
       </div>
 
+      {nextAction && (
+        <div className="relative rounded-lg border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Next reward
+              </p>
+              <p className="truncate text-sm font-semibold text-foreground">{nextAction.label}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium">
+              {nextAction.xp ? (
+                <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">
+                  +{nextAction.xp} XP
+                </span>
+              ) : null}
+              <span className="rounded-full bg-secondary px-2 py-1 text-muted-foreground">
+                {nextAction.estimate}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <div className="min-w-0 flex-1">
           <p className="text-base font-semibold text-foreground capitalize">
@@ -118,7 +143,7 @@ export function DailyLoopHeroCard({
           ) : null}
         </div>
         <Button asChild className="gradient-primary text-primary-foreground shrink-0">
-          <Link to={hero.route}>
+          <Link to={nextAction?.route ?? hero.route}>
             {hero.ctaLabel}
             <ArrowRight className="h-4 w-4 ml-1" />
           </Link>

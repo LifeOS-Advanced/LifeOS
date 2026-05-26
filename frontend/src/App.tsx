@@ -11,7 +11,8 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/app/ProtectedRoute';
 import { AppLayout } from './components/app/AppLayout';
 
-import Landing from './pages/Landing';
+import { HomeRoute } from './components/landing/HomeRoute';
+import { GuestOnlyRoute } from './components/landing/GuestOnlyRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import GitHubCallback from './pages/GitHubCallback';
@@ -31,6 +32,7 @@ const Notes = lazy(() => import('./pages/app/Notes'));
 const CalendarPage = lazy(() => import('./pages/app/Calendar'));
 const Insights = lazy(() => import('./pages/app/Insights'));
 const Review = lazy(() => import('./pages/app/Review'));
+const Discipline = lazy(() => import('./pages/app/Discipline'));
 
 const PageFallback = () => (
   <div className="max-w-4xl mx-auto py-12 animate-pulse space-y-4">
@@ -63,12 +65,12 @@ export default function App() {
           <ConfirmProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <AuthProvider>
                 <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/" element={<HomeRoute />} />
+                  <Route path="/login" element={<GuestOnlyRoute><Login /></GuestOnlyRoute>} />
+                  <Route path="/signup" element={<GuestOnlyRoute><Signup /></GuestOnlyRoute>} />
                   <Route path="/auth/github/callback" element={<GitHubCallback />} />
                   <Route path="/onboarding" element={<Onboarding />} />
 
@@ -121,6 +123,26 @@ export default function App() {
                         <RouteErrorBoundary>
                           <Suspense fallback={<PageFallback />}>
                             <Insights />
+                          </Suspense>
+                        </RouteErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="discipline"
+                      element={
+                        <RouteErrorBoundary>
+                          <Suspense fallback={<PageFallback />}>
+                            <Discipline />
+                          </Suspense>
+                        </RouteErrorBoundary>
+                      }
+                    />
+                    <Route
+                      path="discipline/:section"
+                      element={
+                        <RouteErrorBoundary>
+                          <Suspense fallback={<PageFallback />}>
+                            <Discipline />
                           </Suspense>
                         </RouteErrorBoundary>
                       }

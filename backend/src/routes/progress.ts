@@ -34,7 +34,20 @@ router.get('/history', async (req: Request, res: Response, next: NextFunction) =
 });
 
 router.post('/event', [
-  body('type').isIn(['task_completed', 'habit_checked', 'focus_completed', 'daily_start', 'evening_shutdown', 'weekly_review', 'quest_bonus', 'daily_quests_complete']),
+  body('type').isIn([
+    'task_completed',
+    'habit_checked',
+    'focus_completed',
+    'daily_start',
+    'evening_shutdown',
+    'weekly_review',
+    'urge_interrupted',
+    'replacement_completed',
+    'relapse_reviewed',
+    'discipline_routine_completed',
+    'quest_bonus',
+    'daily_quests_complete',
+  ]),
   body('date').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
   body('entityId').optional().isString().isLength({ max: 120 }),
   body('title').optional().isString().isLength({ max: 160 }),

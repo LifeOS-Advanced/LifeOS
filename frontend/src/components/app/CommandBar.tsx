@@ -13,7 +13,7 @@ import {
 import {
   CheckSquare, Zap, Target, BookOpen, Timer, LayoutDashboard, Settings,
   Plus, Sun, Moon, Sparkles, CalendarDays, LineChart, Trophy,
-  Sunrise,
+  Sunrise, ShieldCheck,
 } from 'lucide-react';
 import { getProfile, setProfile } from '@/lib/store';
 import { useUniversalSearch } from '@/lib/queries';
@@ -49,7 +49,9 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
   };
 
   const { data: results } = useUniversalSearch(query);
-  const hasResults = (['task', 'habit', 'goal', 'note', 'review'] as const).some(k => results[k].length > 0);
+  const emptyResults = { task: [], habit: [], goal: [], note: [], review: [] } as const;
+  const searchResults = results ?? emptyResults;
+  const hasResults = (['task', 'habit', 'goal', 'note', 'review'] as const).some(k => searchResults[k].length > 0);
 
   const renderGroup = (label: string, items: SearchResult[], Icon: typeof CheckSquare) => {
     if (items.length === 0) return null;
@@ -76,11 +78,11 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
 
         {query && hasResults && (
           <>
-            {renderGroup('Tasks', results.task, CheckSquare)}
-            {renderGroup('Notes', results.note, BookOpen)}
-            {renderGroup('Goals', results.goal, Target)}
-            {renderGroup('Habits', results.habit, Zap)}
-            {renderGroup('Reviews', results.review, Sparkles)}
+            {renderGroup('Tasks', searchResults.task, CheckSquare)}
+            {renderGroup('Notes', searchResults.note, BookOpen)}
+            {renderGroup('Goals', searchResults.goal, Target)}
+            {renderGroup('Habits', searchResults.habit, Zap)}
+            {renderGroup('Reviews', searchResults.review, Sparkles)}
             <CommandSeparator />
           </>
         )}
@@ -102,6 +104,9 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
           </CommandItem>
           <CommandItem onSelect={() => go('/app/focus')}>
             <Timer className="mr-2 h-4 w-4" />Start focus session
+          </CommandItem>
+          <CommandItem onSelect={() => go('/app/discipline/urge')}>
+            <ShieldCheck className="mr-2 h-4 w-4" />I have an urge
           </CommandItem>
           <CommandItem onSelect={() => go('/app/progress')}>
             <Trophy className="mr-2 h-4 w-4" />Open progress
@@ -131,6 +136,7 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
           <CommandItem onSelect={() => go('/app/goals')}><Target className="mr-2 h-4 w-4" />Goals</CommandItem>
           <CommandItem onSelect={() => go('/app/notes')}><BookOpen className="mr-2 h-4 w-4" />Notes</CommandItem>
           <CommandItem onSelect={() => go('/app/focus')}><Timer className="mr-2 h-4 w-4" />Focus</CommandItem>
+          <CommandItem onSelect={() => go('/app/discipline')}><ShieldCheck className="mr-2 h-4 w-4" />Discipline</CommandItem>
           <CommandItem onSelect={() => go('/app/progress')}><Trophy className="mr-2 h-4 w-4" />Progress</CommandItem>
           <CommandItem onSelect={() => go('/app/calendar')}><CalendarDays className="mr-2 h-4 w-4" />Calendar</CommandItem>
           <CommandItem onSelect={() => go('/app/insights')}><LineChart className="mr-2 h-4 w-4" />Insights</CommandItem>

@@ -5,7 +5,6 @@ import { User } from '../models/User';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { ok, created, AppError } from '../utils/response';
 import { protect } from '../middleware/auth';
-import { debugLog } from '../utils/debugLog';
 
 const router = Router();
 
@@ -29,9 +28,10 @@ function validate(req: Request, next: NextFunction): boolean {
 }
 
 function setRefreshCookie(res: Response, token: string) {
+  const isProd = process.env.NODE_ENV === 'production';
   res.cookie('refreshToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProd,
     sameSite: 'strict',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     path: '/api/auth',
@@ -172,18 +172,6 @@ router.post(
       if (!validate(req, next)) return;
       const { code, redirectUri: bodyRedirectUri } = req.body as { code: string; redirectUri?: string };
 
-      debugLog({
-        runId: 'post-fix',
-        hypothesisId: 'B',
-        location: 'auth.ts:github:entry',
-        message: 'github exchange requested',
-        data: {
-          hasCode: !!code,
-          redirectUri: bodyRedirectUri ?? null,
-          origin: req.headers.origin ?? null,
-        },
-      });
-
       const clientId = process.env.GITHUB_CLIENT_ID;
       const clientSecret = process.env.GITHUB_CLIENT_SECRET;
       if (!clientId || !clientSecret) {
@@ -239,14 +227,6 @@ router.post(
         error?: string;
         error_description?: string;
       };
-
-      debugLog({
-        runId: 'post-fix',
-        hypothesisId: 'B',
-        location: 'auth.ts:github-token',
-        message: 'github token exchange',
-        data: { ok: tokenRes.ok, hasToken: !!tokenData.access_token, error: tokenData.error },
-      });
 
       if (!tokenRes.ok || !tokenData.access_token) {
         throw new AppError(
@@ -308,23 +288,8 @@ router.post(
       await User.findByIdAndUpdate(user._id, { $push: { refreshTokens: refreshToken } });
       setRefreshCookie(res, refreshToken);
 
-      debugLog({
-        runId: 'post-fix',
-        hypothesisId: 'B',
-        location: 'auth.ts:github:success',
-        message: 'github user signed in',
-        data: { userId: String(user._id) },
-      });
-
       ok(res, { accessToken, user });
     } catch (err) {
-      debugLog({
-        runId: 'post-fix',
-        hypothesisId: 'B',
-        location: 'auth.ts:github:error',
-        message: 'github exchange failed',
-        data: { error: err instanceof Error ? err.message : 'unknown' },
-      });
       next(err);
     }
   },

@@ -29,7 +29,7 @@ const NoteSchema = new Schema<INote>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -66,7 +66,7 @@ const FocusSessionSchema = new Schema<IFocusSession>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -97,7 +97,7 @@ const DailyCheckInSchema = new Schema<IDailyCheckIn>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -150,7 +150,7 @@ const WeeklyReviewSchema = new Schema<IWeeklyReview>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -187,7 +187,7 @@ const DailyStartSchema = new Schema<IDailyStart>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -223,7 +223,7 @@ const EveningShutdownSchema = new Schema<IEveningShutdown>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -287,7 +287,7 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -303,6 +303,10 @@ export type RewardEventType =
   | 'daily_start'
   | 'evening_shutdown'
   | 'weekly_review'
+  | 'urge_interrupted'
+  | 'replacement_completed'
+  | 'relapse_reviewed'
+  | 'discipline_routine_completed'
   | 'quest_bonus'
   | 'daily_quests_complete';
 
@@ -347,7 +351,20 @@ const RewardEventSchema = new Schema<IRewardEvent>(
     type: {
       type: String,
       required: true,
-      enum: ['task_completed', 'habit_checked', 'focus_completed', 'daily_start', 'evening_shutdown', 'weekly_review', 'quest_bonus', 'daily_quests_complete'],
+      enum: [
+        'task_completed',
+        'habit_checked',
+        'focus_completed',
+        'daily_start',
+        'evening_shutdown',
+        'weekly_review',
+        'urge_interrupted',
+        'replacement_completed',
+        'relapse_reviewed',
+        'discipline_routine_completed',
+        'quest_bonus',
+        'daily_quests_complete',
+      ],
     },
     xp: { type: Number, required: true, min: 0 },
     title: { type: String, required: true, maxlength: 160 },
@@ -385,7 +402,7 @@ const UserProgressSchema = new Schema<IUserProgress>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 

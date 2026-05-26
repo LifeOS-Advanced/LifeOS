@@ -1,4 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { api, storeToken, clearToken } from '@/lib/api';
 import { trackLoopEvent } from '@/lib/analytics';
@@ -33,11 +34,14 @@ const AuthContext = createContext<AuthContextType | null>(null);
 // ── Provider ──────────────────────────────────────────────────
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   /** Shared post-login setup: persist token + profile, then navigate. */
   function handleSuccess(data: AuthResponse) {
     storeToken(data.accessToken);
     setAuthenticated(true);
+    // Drop any pre-login empty cache so entity lists fetch immediately.
+    queryClient.invalidateQueries();
 
     if (data.user) {
       const preferences = {
@@ -47,12 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...DEFAULT_PREFERENCES.notifications,
           ...(data.user.preferences?.notifications ?? {}),
         },
+        sensory: {
+          ...DEFAULT_PREFERENCES.sensory,
+          ...(data.user.preferences?.sensory ?? {}),
+        },
       };
       setProfile({
         name:            data.user.name,
         email:           data.user.email,
         lifestyleMode:   data.user.lifestyleMode  ?? 'personal-growth',
-        enabledModules:  data.user.enabledModules ?? ['tasks', 'habits', 'goals', 'notes', 'focus'],
+        enabledModules:  [...new Set([...(data.user.enabledModules ?? ['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline']), 'discipline' as const])],
         theme:           data.user.theme          ?? 'light',
         preferences,
       });
@@ -93,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     clearToken();
     setAuthenticated(false);
+    queryClient.clear();
     navigate('/', { replace: true });
   }
 

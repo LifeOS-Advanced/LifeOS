@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/lib/api';
-import { debugLog } from '@/lib/debug-log';
 
 const GITHUB_STATE_KEY = 'github_oauth_state';
 const GITHUB_EXCHANGE_KEY = 'github_oauth_exchanged';
@@ -24,14 +23,6 @@ export default function GitHubCallback() {
     const oauthError = searchParams.get('error');
     const state = searchParams.get('state');
     const savedState = sessionStorage.getItem(GITHUB_STATE_KEY);
-
-    debugLog('GitHubCallback.tsx:mount', 'callback params', {
-      hasCode: !!code,
-      hasError: !!oauthError,
-      stateMatch: !!state && state === savedState,
-      origin: window.location.origin,
-      alreadyExchanged: !!sessionStorage.getItem(GITHUB_EXCHANGE_KEY),
-    }, 'E');
 
     if (oauthError) {
       setError('GitHub sign-in was cancelled or denied.');
@@ -55,7 +46,6 @@ export default function GitHubCallback() {
       try {
         await loginWithGitHub(code);
         sessionStorage.setItem(GITHUB_EXCHANGE_KEY, code);
-        debugLog('GitHubCallback.tsx:success', 'github login ok', {}, 'B');
       } catch (err) {
         let msg = err instanceof ApiError ? err.message : 'GitHub sign-in failed';
         if (err instanceof ApiError && err.statusCode === 503) {
@@ -63,8 +53,6 @@ export default function GitHubCallback() {
         } else if (err instanceof ApiError && err.statusCode === 404) {
           msg = 'Auth API not found. Check VITE_API_URL points to your backend (e.g. http://localhost:5000) and that the API is running.';
         }
-        const statusCode = err instanceof ApiError ? err.statusCode : undefined;
-        debugLog('GitHubCallback.tsx:error', 'github login failed', { msg, statusCode }, 'B');
         setError(msg);
       }
     })();

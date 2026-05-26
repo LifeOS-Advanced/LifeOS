@@ -33,6 +33,14 @@ export function buildIdentityMessage(type?: RewardEventType | string): string {
       return 'Day closed.';
     case 'weekly_review':
       return 'Weekly review saved.';
+    case 'urge_interrupted':
+      return 'Urge interrupted.';
+    case 'replacement_completed':
+      return 'Replacement action completed.';
+    case 'relapse_reviewed':
+      return 'Relapse review saved.';
+    case 'discipline_routine_completed':
+      return 'Discipline routine completed.';
     default:
       return 'Progress recorded.';
   }

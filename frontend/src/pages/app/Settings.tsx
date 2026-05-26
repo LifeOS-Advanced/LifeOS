@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon, Palette, Pin, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
+import { User, Sun, Moon, CheckSquare, Zap, Target, BookOpen, Timer, Bell, LayoutDashboard, Globe, Calendar as CalIcon, Palette, Pin, ArrowUp, ArrowDown, Eye, EyeOff, Volume2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionHeader, Chip } from '@/components/app/patterns';
+import { playRewardSound } from '@/lib/reward-sounds';
 
 const moduleList: { key: ModuleKey; label: string; icon: typeof CheckSquare }[] = [
   { key: 'tasks', label: 'Tasks', icon: CheckSquare },
@@ -18,6 +20,7 @@ const moduleList: { key: ModuleKey; label: string; icon: typeof CheckSquare }[] 
   { key: 'goals', label: 'Goals', icon: Target },
   { key: 'notes', label: 'Notes', icon: BookOpen },
   { key: 'focus', label: 'Focus', icon: Timer },
+  { key: 'discipline', label: 'Discipline', icon: ShieldCheck },
 ];
 
 const widgetMeta: Record<DashboardWidgetKey, string> = {
@@ -26,10 +29,11 @@ const widgetMeta: Record<DashboardWidgetKey, string> = {
   habits: 'Habits',
   goals: 'Goals',
   focus: 'Focus stats',
+  discipline: 'Discipline Engine',
   consistency: 'Consistency',
   insights: 'Insights',
 };
-const ALL_WIDGETS: DashboardWidgetKey[] = ['today', 'momentum', 'habits', 'goals', 'focus', 'consistency', 'insights'];
+const ALL_WIDGETS: DashboardWidgetKey[] = ['today', 'momentum', 'habits', 'goals', 'focus', 'discipline', 'consistency', 'insights'];
 
 const focusPresets = [15, 25, 45, 50, 90];
 
@@ -44,7 +48,7 @@ function getTimezones(): string[] {
 }
 
 function buildInitialProfile(source?: UserProfile | null): UserProfile {
-  const initial = source || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus'] as ModuleKey[], theme: 'light' as const };
+  const initial = source || { name: 'User', email: 'user@example.com', lifestyleMode: 'personal-growth' as const, enabledModules: ['tasks', 'habits', 'goals', 'notes', 'focus', 'discipline'] as ModuleKey[], theme: 'light' as const };
   const initialPreferences = {
     ...DEFAULT_PREFERENCES,
     ...(initial.preferences || {}),
@@ -52,12 +56,16 @@ function buildInitialProfile(source?: UserProfile | null): UserProfile {
       ...DEFAULT_PREFERENCES.notifications,
       ...(initial.preferences?.notifications ?? {}),
     },
+    sensory: {
+      ...DEFAULT_PREFERENCES.sensory,
+      ...(initial.preferences?.sensory ?? {}),
+    },
   };
   if (!(initialPreferences.widgetOrder ?? []).includes('momentum')) {
     initialPreferences.dashboardWidgets = [...new Set<DashboardWidgetKey>(['momentum', ...initialPreferences.dashboardWidgets])];
     initialPreferences.widgetOrder = [...new Set<DashboardWidgetKey>(['today', 'momentum', ...(initialPreferences.widgetOrder ?? [])])];
   }
-  return { ...initial, preferences: initialPreferences };
+  return { ...initial, enabledModules: [...new Set<ModuleKey>([...initial.enabledModules, 'discipline'])], preferences: initialPreferences };
 }
 
 export default function SettingsPage() {
@@ -91,6 +99,10 @@ export default function SettingsPage() {
 
   const updatePrefs = (changes: Partial<UserPreferences>) => {
     update({ preferences: { ...prefs, ...changes } });
+  };
+
+  const updateSensory = (changes: Partial<UserPreferences['sensory']>) => {
+    updatePrefs({ sensory: { ...prefs.sensory, ...changes } });
   };
 
   const toggleModule = (key: ModuleKey) => {
@@ -357,6 +369,42 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground mt-3">
           These reminders run locally while LifeOS is open. Server push remains behind <code className="text-[10px]">/api/notifications</code>.
         </p>
+      </section>
+
+      {/* Sensory feedback */}
+      <section className="rounded-xl border border-border bg-card p-6 shadow-card">
+        <SectionHeader icon={Volume2} title="Sensory feedback" description="Optional reward sounds for meaningful loop moments. Off by default." />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3 py-1.5">
+            <div>
+              <span className="text-sm text-foreground">Reward sounds</span>
+              <p className="text-xs text-muted-foreground">Short Web Audio tones for XP, quests, focus, closure, and level-ups.</p>
+            </div>
+            <Switch checked={prefs.sensory.rewardSounds} onCheckedChange={(v) => updateSensory({ rewardSounds: v })} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-xs">Sound volume</Label>
+              <span className="text-xs tabular-nums text-muted-foreground">{Math.round((prefs.sensory.soundVolume ?? 0.35) * 100)}%</span>
+            </div>
+            <Slider
+              value={[prefs.sensory.soundVolume ?? 0.35]}
+              min={0}
+              max={1}
+              step={0.05}
+              onValueChange={([value]) => updateSensory({ soundVolume: value })}
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              void playRewardSound('quest_complete', prefs.sensory.soundVolume, true);
+            }}
+          >
+            Test reward sound
+          </Button>
+        </div>
       </section>
 
       <div className="flex justify-end">

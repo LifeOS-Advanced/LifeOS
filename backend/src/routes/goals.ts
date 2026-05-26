@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { body, param, validationResult } from 'express-validator';
+import { Types } from 'mongoose';
 import { protect } from '../middleware/auth';
 import { Goal } from '../models/Goal';
 import { ok, created, noContent, AppError } from '../utils/response';
@@ -75,7 +76,7 @@ router.patch('/:id/milestones/:mId/toggle', [
     const goal = await Goal.findOne({ _id: req.params.id, userId: req.userId });
     if (!goal) throw new AppError('Goal not found', 404);
 
-    const ms = (goal.milestones as any).id(req.params.mId);
+    const ms = goal.milestones.find((milestone) => String(milestone._id) === req.params.mId);
     if (!ms) throw new AppError('Milestone not found', 404);
     ms.completed = !ms.completed;
 
@@ -96,7 +97,7 @@ router.post('/:id/milestones', [
     if (!v(req, next)) return;
     const goal = await Goal.findOne({ _id: req.params.id, userId: req.userId });
     if (!goal) throw new AppError('Goal not found', 404);
-    goal.milestones.push({ title: req.body.title, completed: false } as any);
+    goal.milestones.push({ _id: new Types.ObjectId(), title: req.body.title, completed: false });
     await goal.save();
     ok(res, goal);
   } catch (err) { next(err); }

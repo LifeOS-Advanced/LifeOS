@@ -22,6 +22,7 @@ import progressRoutes from './routes/progress';
 import notificationRoutes from './routes/notifications';
 import analyticsRoutes from './routes/analytics';
 import narrativeRoutes from './routes/narrative';
+import disciplineRoutes from './routes/discipline';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 const app = express();
@@ -101,6 +102,7 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/narrative', narrativeRoutes);
+app.use('/api/discipline', disciplineRoutes);
 
 // ── Error handling ───────────────────────────────────────────
 app.use(notFound);
