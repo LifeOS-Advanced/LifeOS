@@ -71,7 +71,7 @@ const TaskSchema = new Schema<ITask>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 

@@ -18,6 +18,12 @@ function v(req: Request, next: NextFunction) {
   return true;
 }
 
+function addDays(date: string, days: number) {
+  const next = new Date(`${date}T00:00:00.000Z`);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next.toISOString().split('T')[0];
+}
+
 focusRouter.get('/', [
   query('from').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
   query('to').optional().matches(/^\d{4}-\d{2}-\d{2}$/),
@@ -146,7 +152,7 @@ reviewRouter.post('/', [
         sourceArea: req.body.carryForward.sourceArea,
         status: req.body.carryForward.status ?? 'open',
         createdFromWeekStart: req.body.carryForward.createdFromWeekStart ?? req.body.weekStart,
-        targetWeekStart: req.body.carryForward.targetWeekStart ?? req.body.weekStart,
+        targetWeekStart: req.body.carryForward.targetWeekStart ?? addDays(req.body.weekStart, 7),
       }
       : undefined;
     const review = await WeeklyReview.findOneAndUpdate(

@@ -29,7 +29,7 @@ const NoteSchema = new Schema<INote>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -66,7 +66,7 @@ const FocusSessionSchema = new Schema<IFocusSession>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -97,7 +97,7 @@ const DailyCheckInSchema = new Schema<IDailyCheckIn>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -150,7 +150,7 @@ const WeeklyReviewSchema = new Schema<IWeeklyReview>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -187,7 +187,7 @@ const DailyStartSchema = new Schema<IDailyStart>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -223,7 +223,7 @@ const EveningShutdownSchema = new Schema<IEveningShutdown>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -287,7 +287,7 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 
@@ -402,7 +402,7 @@ const UserProgressSchema = new Schema<IUserProgress>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true, transform: (_d, r: any) => { delete r.__v; return r; } },
+    toJSON: { virtuals: true, transform: (_d, r: Record<string, unknown>) => { delete r.__v; return r; } },
   }
 );
 

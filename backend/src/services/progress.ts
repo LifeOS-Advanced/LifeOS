@@ -269,7 +269,7 @@ function unlockAchievements(progress: Awaited<ReturnType<typeof getOrCreateProgr
 
   const todayFocus = progress.events
     .filter((event) => event.date === date && event.type === 'focus_completed')
-    .reduce((total, event) => total + Number(event.metadata?.duration ?? 0), Number(input.type === 'focus_completed' ? input.metadata?.duration ?? 0 : 0));
+    .reduce((total, event) => total + Number(event.metadata?.duration ?? 0), 0);
   if (todayFocus >= 90) unlock('deep_work_day');
 
   const weekStart = startOfWeek(date);

@@ -116,10 +116,10 @@ const UserSchema = new Schema<IUser>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret) => {
-        delete (ret as any).password;
-        delete (ret as any).refreshTokens;
-        delete (ret as any).__v;
+      transform: (_doc, ret: Record<string, unknown>) => {
+        delete ret.password;
+        delete ret.refreshTokens;
+        delete ret.__v;
         return ret;
       },
     },
