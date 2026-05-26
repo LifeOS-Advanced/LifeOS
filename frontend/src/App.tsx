@@ -11,7 +11,8 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/app/ProtectedRoute';
 import { AppLayout } from './components/app/AppLayout';
 
-import Landing from './pages/Landing';
+import { HomeRoute } from './components/landing/HomeRoute';
+import { GuestOnlyRoute } from './components/landing/GuestOnlyRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import GitHubCallback from './pages/GitHubCallback';
@@ -67,9 +68,9 @@ export default function App() {
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <AuthProvider>
                 <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/" element={<HomeRoute />} />
+                  <Route path="/login" element={<GuestOnlyRoute><Login /></GuestOnlyRoute>} />
+                  <Route path="/signup" element={<GuestOnlyRoute><Signup /></GuestOnlyRoute>} />
                   <Route path="/auth/github/callback" element={<GitHubCallback />} />
                   <Route path="/onboarding" element={<Onboarding />} />
 

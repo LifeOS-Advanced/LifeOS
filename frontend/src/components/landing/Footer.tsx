@@ -10,6 +10,7 @@ export function Footer() {
             <span className="text-lg font-bold text-foreground">LifeOS</span>
           </div>
           <div className="flex items-center gap-7 text-sm text-muted-foreground">
+            <a href="#loop" className="transition-colors hover:text-foreground">The loop</a>
             <a href="#features" className="transition-colors hover:text-foreground">Features</a>
             <a href="#testimonials" className="transition-colors hover:text-foreground">Trust</a>
             <a href="#faq" className="transition-colors hover:text-foreground">FAQ</a>

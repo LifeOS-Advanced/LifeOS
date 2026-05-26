@@ -40,7 +40,7 @@ export const queryKeys = {
 
 // ---- Tasks ----
 export const useTasks = () =>
-  useQuery({ queryKey: queryKeys.tasks, queryFn: dataLayer.listTasks, initialData: [] as Task[] });
+  useQuery({ queryKey: queryKeys.tasks, queryFn: dataLayer.listTasks });
 
 export const useSaveTasks = () => {
   const qc = useQueryClient();
@@ -170,7 +170,6 @@ export const useUniversalSearch = (query: string) =>
     queryKey: queryKeys.search(query),
     queryFn: () => dataLayer.search(query),
     enabled: query.trim().length > 0,
-    initialData: { task: [], habit: [], goal: [], note: [], review: [] },
   });
 
 export const useLifeMomentum = (periodDays = 30) =>
@@ -195,7 +194,7 @@ export const useRecordProgressEvent = () => {
 
 // ---- Habits ----
 export const useHabits = () =>
-  useQuery({ queryKey: queryKeys.habits, queryFn: dataLayer.listHabits, initialData: [] as Habit[] });
+  useQuery({ queryKey: queryKeys.habits, queryFn: dataLayer.listHabits });
 
 export const useSaveHabits = () => {
   const qc = useQueryClient();
@@ -274,7 +273,7 @@ export const useDeleteHabit = () => {
 
 // ---- Goals ----
 export const useGoals = () =>
-  useQuery({ queryKey: queryKeys.goals, queryFn: dataLayer.listGoals, initialData: [] as Goal[] });
+  useQuery({ queryKey: queryKeys.goals, queryFn: dataLayer.listGoals });
 
 export const useCreateGoal = () => {
   const qc = useQueryClient();
@@ -335,7 +334,6 @@ export const useNotes = (search?: string) =>
   useQuery({
     queryKey: search ? [...queryKeys.notes, search] as QueryKey : queryKeys.notes,
     queryFn: () => dataLayer.listNotes(search),
-    initialData: [] as Note[],
   });
 
 export const useCreateNote = () => {
@@ -383,7 +381,7 @@ export const useDeleteNote = () => {
 
 // ---- Discipline Engine ----
 export const useDisciplineTargets = () =>
-  useQuery({ queryKey: queryKeys.disciplineTargets, queryFn: dataLayer.listDisciplineTargets, initialData: [] as DisciplineTarget[] });
+  useQuery({ queryKey: queryKeys.disciplineTargets, queryFn: dataLayer.listDisciplineTargets });
 
 export const useCreateDisciplineTarget = () => {
   const qc = useQueryClient();
@@ -421,7 +419,7 @@ export const useDeleteDisciplineTarget = () => {
 };
 
 export const useReplacementActions = () =>
-  useQuery({ queryKey: queryKeys.replacementActions, queryFn: dataLayer.listReplacementActions, initialData: [] as ReplacementAction[] });
+  useQuery({ queryKey: queryKeys.replacementActions, queryFn: dataLayer.listReplacementActions });
 
 export const useCreateReplacementAction = () => {
   const qc = useQueryClient();
@@ -458,7 +456,7 @@ export const useDeleteReplacementAction = () => {
 };
 
 export const useUrgeLogs = () =>
-  useQuery({ queryKey: queryKeys.urgeLogs, queryFn: dataLayer.listUrgeLogs, initialData: [] as UrgeLog[] });
+  useQuery({ queryKey: queryKeys.urgeLogs, queryFn: dataLayer.listUrgeLogs });
 
 export const useCreateUrgeLog = () => {
   const qc = useQueryClient();
@@ -509,7 +507,7 @@ export const useSaveProfile = () => {
 
 // ---- Focus ----
 export const useFocusSessions = () =>
-  useQuery({ queryKey: queryKeys.focus, queryFn: dataLayer.listFocusSessions, initialData: [] as FocusSession[] });
+  useQuery({ queryKey: queryKeys.focus, queryFn: dataLayer.listFocusSessions });
 
 export const useSaveFocusSessions = () => {
   const qc = useQueryClient();
@@ -541,7 +539,7 @@ export const useCreateFocusSession = () => {
 };
 
 export const useWeeklyReviews = () =>
-  useQuery({ queryKey: ['weekly-reviews'], queryFn: dataLayer.listWeeklyReviews, initialData: [] });
+  useQuery({ queryKey: ['weekly-reviews'], queryFn: dataLayer.listWeeklyReviews });
 
 export const useSaveWeeklyReview = () => {
   const qc = useQueryClient();

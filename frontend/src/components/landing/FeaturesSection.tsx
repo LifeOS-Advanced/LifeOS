@@ -56,12 +56,12 @@ export function FeaturesSection() {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-xl"
           >
-            <p className="text-eyebrow mb-3">Why it feels different</p>
+            <p className="text-eyebrow mb-3">Everything connects</p>
             <h2 className="font-serif text-4xl leading-[1.08] text-foreground sm:text-5xl">
-              A productivity system that remembers the day.
+              Your whole life stack, wired into one closing ritual.
             </h2>
             <p className="mt-5 text-sm leading-7 text-muted-foreground">
-              LifeOS is not just a place to store tasks. It gives each day a beginning, a meaningful middle, and a clean ending.
+              Tasks, habits, goals, focus, notes, and discipline — none of them live alone. Each action nudges your daily loop, momentum score, and weekly story forward.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               {connectedModules.map(({ label, icon: Icon }) => (

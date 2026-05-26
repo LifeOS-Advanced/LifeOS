@@ -49,7 +49,9 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
   };
 
   const { data: results } = useUniversalSearch(query);
-  const hasResults = (['task', 'habit', 'goal', 'note', 'review'] as const).some(k => results[k].length > 0);
+  const emptyResults = { task: [], habit: [], goal: [], note: [], review: [] } as const;
+  const searchResults = results ?? emptyResults;
+  const hasResults = (['task', 'habit', 'goal', 'note', 'review'] as const).some(k => searchResults[k].length > 0);
 
   const renderGroup = (label: string, items: SearchResult[], Icon: typeof CheckSquare) => {
     if (items.length === 0) return null;
@@ -76,11 +78,11 @@ export function CommandBar({ open, onOpenChange }: CommandBarProps) {
 
         {query && hasResults && (
           <>
-            {renderGroup('Tasks', results.task, CheckSquare)}
-            {renderGroup('Notes', results.note, BookOpen)}
-            {renderGroup('Goals', results.goal, Target)}
-            {renderGroup('Habits', results.habit, Zap)}
-            {renderGroup('Reviews', results.review, Sparkles)}
+            {renderGroup('Tasks', searchResults.task, CheckSquare)}
+            {renderGroup('Notes', searchResults.note, BookOpen)}
+            {renderGroup('Goals', searchResults.goal, Target)}
+            {renderGroup('Habits', searchResults.habit, Zap)}
+            {renderGroup('Reviews', searchResults.review, Sparkles)}
             <CommandSeparator />
           </>
         )}
