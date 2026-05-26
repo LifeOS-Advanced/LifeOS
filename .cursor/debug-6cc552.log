@@ -1,0 +1,435 @@
+{"sessionId":"6cc552","timestamp":1779775151321,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775151323,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775151359,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775151368,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775152446,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775152446,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775152465,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775152468,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779775154575,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779775154556,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775154557,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775154573,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775155660,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775155673,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775155658,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775155659,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779775157697,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775157739,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775158667,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775158668,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779775158690,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775158668,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775158924,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775159061,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775161082,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775161638,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775162596,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775162731,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775162809,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775162812,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775163265,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775163269,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775163270,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775163272,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775163271,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775164128,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775164894,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775164896,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779775164898,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775164939,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775167904,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775168045,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775168047,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775168055,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775168056,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775168057,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775168057,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775168058,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775168410,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775168411,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775168417,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775168418,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775168541,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775168542,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775168543,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775168543,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779775168872,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775169160,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775169161,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775169163,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775169164,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775169165,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775169165,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775169168,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775169169,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775169170,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779775169170,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775169171,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775169171,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779775169172,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779775169422,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779775171231,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775171267,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775251472,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775251475,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775251473,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779775251517,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779775265933,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779775266205,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779775266206,"hypothesisId":"B","location":"queries.ts:useTasks","message":"queryFn completed","data":{"count":4}}
+{"sessionId":"6cc552","timestamp":1779775266559,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779775271769,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779775271770,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/app"}}
+{"sessionId":"6cc552","timestamp":1779775271771,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779775271799,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779776519052,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":true,"token":true,"active":true,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779776519135,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779776519053,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":true,"target":"/app"}}
+{"sessionId":"6cc552","timestamp":1779776519524,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":true}}
+{"sessionId":"6cc552","timestamp":1779776519525,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/notes","refreshed":true}}
+{"sessionId":"6cc552","timestamp":1779776519530,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":true}}
+{"sessionId":"6cc552","timestamp":1779776519532,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":true}}
+{"sessionId":"6cc552","timestamp":1779776519536,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":true}}
+{"sessionId":"6cc552","timestamp":1779776519538,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/focus","refreshed":true}}
+{"sessionId":"6cc552","timestamp":1779776519607,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/discipline/insights?periodDays=30","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519608,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/discipline/insights?periodDays=30","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519613,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519614,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519637,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/narrative/weekly?weekStart=2026-05-24","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519639,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/momentum?periodDays=30","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519641,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519642,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/narrative/weekly?weekStart=2026-05-24","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519644,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/momentum?periodDays=30","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519645,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519659,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519660,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519697,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519698,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519711,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779776519712,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779776519713,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779776519873,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779776519874,"hypothesisId":"B","location":"queries.ts:useTasks","message":"queryFn completed","data":{"count":4}}
+{"sessionId":"6cc552","timestamp":1779776527355,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779776528024,"hypothesisId":"B","location":"queries.ts:useTasks","message":"queryFn completed","data":{"count":4}}
+{"sessionId":"6cc552","timestamp":1779776528024,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779776528532,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779776528745,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779776529658,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/goals","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779776530245,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/notes","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780286501,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/tasks","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780286896,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780286893,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780286941,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780286942,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780286939,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780286944,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780286945,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780286980,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780286982,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780290989,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/tasks","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780291304,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291377,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291370,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291373,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291372,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291375,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291378,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291382,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291383,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780291386,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291403,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291406,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291408,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780291410,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291412,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291416,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291417,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780291420,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291423,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780291421,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780307814,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/tasks","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780310708,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/tasks","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780311057,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311073,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311075,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311076,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311079,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311082,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311078,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311084,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311086,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780311089,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311100,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311104,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311105,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780311109,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311110,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311112,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311114,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311116,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311119,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780311120,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780312738,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/focus","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780312831,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780312834,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780312837,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780312839,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780312841,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780312860,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/focus","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780312861,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/focus","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780314023,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/notes","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780314263,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780314266,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780314267,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780314264,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780314268,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780314285,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/notes","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780314286,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/notes","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780314873,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/goals","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780315032,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780315034,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780315036,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780315037,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780315039,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780315040,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780315042,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780315045,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/notes","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780315071,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/notes","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780315491,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780315548,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780315549,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780315553,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780315554,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355592,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780355891,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355895,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355899,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355901,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355904,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355907,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355910,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355911,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780355921,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355926,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355929,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355932,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355936,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355938,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355940,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355942,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780355943,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780374428,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780374780,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374789,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374794,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374830,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374835,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374826,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374828,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374831,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374837,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780374838,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374842,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374844,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374845,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374846,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374847,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374848,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780374848,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780450223,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/"}}
+{"sessionId":"6cc552","timestamp":1779780450991,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779780450991,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779780451039,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779780451104,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://127.0.0.1:5173/app/settings"}}
+{"sessionId":"6cc552","timestamp":1779780451144,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780451243,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780451248,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780451251,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780451253,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780451246,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780451247,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780451357,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779780451590,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780451591,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780451591,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780451592,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780451592,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780451724,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780451725,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780451726,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780451726,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780450952,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/app/habits"}}
+{"sessionId":"6cc552","timestamp":1779780451077,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780452020,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452054,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452056,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452062,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452067,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452072,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452077,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452084,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780452089,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452104,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452106,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452109,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452116,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452125,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452127,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452130,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780452145,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780488237,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/"}}
+{"sessionId":"6cc552","timestamp":1779780488255,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779780488255,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779780488257,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779780488293,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779780489365,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/app/habits"}}
+{"sessionId":"6cc552","timestamp":1779780489572,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780489782,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489840,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489842,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489843,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489845,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489862,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489863,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489876,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780489878,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489894,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489898,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489905,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489909,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489911,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489949,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489955,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780489960,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780508487,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/app/habits"}}
+{"sessionId":"6cc552","timestamp":1779780508522,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780508858,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508865,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508867,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508868,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508879,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508876,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508883,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508881,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780508896,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508902,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508905,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508907,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508908,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508910,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508912,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508913,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780508914,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780512075,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780512030,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/app/habits"}}
+{"sessionId":"6cc552","timestamp":1779780512419,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512432,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512434,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512436,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512439,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512442,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512446,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512448,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780512450,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512458,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512460,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512465,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512467,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512469,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512471,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512472,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780512474,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780648512,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/app/habits"}}
+{"sessionId":"6cc552","timestamp":1779780648555,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779780649093,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780649092,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649165,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/goals","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649169,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649178,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649183,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649176,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649181,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649187,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779780649190,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/goals","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780649191,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780649193,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780649195,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780649199,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780649204,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779780649202,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779780649201,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782023629,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/app/habits"}}
+{"sessionId":"6cc552","timestamp":1779782023682,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782028579,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Failed to fetch"}}
+{"sessionId":"6cc552","timestamp":1779782089320,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/auth/logout","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782089322,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/auth/logout","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782089326,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779782089328,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/app"}}
+{"sessionId":"6cc552","timestamp":1779782089329,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779782089401,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779782091079,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779782097142,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782097136,"hypothesisId":"D","location":"AuthContext.tsx:handleSuccess","message":"post-login state","data":{"hasToken":true,"onboarded":true}}
+{"sessionId":"6cc552","timestamp":1779782097455,"hypothesisId":"B","location":"queries.ts:useTasks","message":"queryFn completed","data":{"count":4}}
+{"sessionId":"6cc552","timestamp":1779782097454,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779782098039,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779782099983,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/habits","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782100750,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/goals","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782104499,"hypothesisId":"LOG","location":"main.tsx:boot","message":"frontend booted","data":{"prod":false,"href":"http://localhost:8080/app/goals"}}
+{"sessionId":"6cc552","timestamp":1779782104537,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/goals","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782105073,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779782105074,"hypothesisId":"B","location":"queries.ts:useTasks","message":"queryFn completed","data":{"count":4}}
+{"sessionId":"6cc552","timestamp":1779782105271,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779782122890,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782123976,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/discipline","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782126295,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/progress","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782127561,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/daily-start","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782128345,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/evening-shutdown","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782128901,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/insights","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782172175,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/review","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782172233,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/review","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782172503,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779782172504,"hypothesisId":"B","location":"queries.ts:useTasks","message":"queryFn completed","data":{"count":4}}
+{"sessionId":"6cc552","timestamp":1779782263496,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779782263493,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779782263573,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779782263499,"hypothesisId":"A,E","location":"session.ts:hasActiveSession","message":"session check","data":{"authed":false,"token":false,"active":false,"onboarded":false}}
+{"sessionId":"6cc552","timestamp":1779782263891,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/settings","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782264526,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782264526,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782264546,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782264547,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782264609,"hypothesisId":"A,D","location":"HomeRoute.tsx:render","message":"root route decision","data":{"active":false,"target":"/onboarding"}}
+{"sessionId":"6cc552","timestamp":1779782265280,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782265281,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782265289,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782265290,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782265307,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782265288,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782265308,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782265308,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782265309,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782265309,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782265309,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779782269655,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/reviews","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782269657,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/reviews","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782269843,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/profile","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782269842,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/profile","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782270519,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/start?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782270520,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/progress/today","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782270536,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782270539,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/habits","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782270541,"hypothesisId":"C,D","location":"api.ts:request","message":"401 refresh attempt","data":{"path":"/api/tasks?limit=100","refreshed":false}}
+{"sessionId":"6cc552","timestamp":1779782270543,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/start?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782270544,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/progress/today","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782270545,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/day-flows/shutdown?date=2026-05-26","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782270546,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/habits","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782270548,"hypothesisId":"C","location":"api.ts:request","message":"API error response","data":{"path":"/api/tasks?limit=100","status":401,"code":"INVALID_TOKEN"}}
+{"sessionId":"6cc552","timestamp":1779782270549,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
+{"sessionId":"6cc552","timestamp":1779782271449,"hypothesisId":"E","location":"ProtectedRoute.tsx:render","message":"app guard check","data":{"authed":true,"token":true,"path":"/app/review","mismatch":false}}
+{"sessionId":"6cc552","timestamp":1779782272701,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779782273470,"hypothesisId":"B,C","location":"data-layer.ts:listTasks","message":"list source","data":{"source":"api","count":4}}
+{"sessionId":"6cc552","timestamp":1779782273470,"hypothesisId":"B","location":"queries.ts:useTasks","message":"queryFn completed","data":{"count":4}}
+{"sessionId":"6cc552","timestamp":1779782292370,"hypothesisId":"C","location":"data-layer.ts:listTasks","message":"list failed","data":{"source":"api","error":"Invalid or expired token — please log in again"}}
